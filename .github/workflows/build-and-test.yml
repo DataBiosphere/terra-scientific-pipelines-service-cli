@@ -52,12 +52,10 @@ jobs:
 
       - name: Run linter check (ruff)
         run: |
-          cd teaspoons-cli
           poetry run ruff check
 
       - name: Run tests with coverage, write coverage report to coverage.xml
         run: |
-          cd teaspoons-cli
           poetry run pytest --cov-report xml:coverage.xml --cov=teaspoons
 
   notify-slack:
