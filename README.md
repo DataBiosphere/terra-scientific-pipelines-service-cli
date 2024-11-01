@@ -16,6 +16,12 @@ teaspoons-cli
 │   │   └── __init__.py
 │   │   └── auth_logic.py
 │   │   └── pipelines_logic.py
+│   └── __init__.py
+│   └── auth_helper.py
+│   └── cli.py
+│   └── client.py
+│   └── config.py
+│   └── teaspoons
 ├── tests
 │   └── commands
 │   │   └── test_auth_commands.py
@@ -23,14 +29,10 @@ teaspoons-cli
 │   └── logic
 │   │   └── test_auth_logic.py
 │   │   └── test_pipelines_logic.py
-│   └── __init__.py
-│   └── auth_helper.py
-│   └── cli.py
-│   └── client.py
-│   └── config.py
-│   └── teaspoons
-├── pyproject.toml
+├── .gitignore
+├── .teaspoons-cli-config
 ├── poetry.lock
+├── pyproject.toml
 ├── README.md
 ```
 
