@@ -39,4 +39,5 @@ class ClientWrapper:
         return _get_api_client(token, cli_config.config["TEASPOONS_API_URL"])
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # no action needed
         pass

@@ -66,7 +66,6 @@ def _clear_local_token(token_file: str):
         os.remove(token_file)
     except FileNotFoundError:
         LOGGER.debug("No local token found to clean up")
-        pass
 
 
 def _load_local_token(token_file: str) -> t.Optional[str]:
