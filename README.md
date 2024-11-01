@@ -1,5 +1,8 @@
 # Teaspoons CLI
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DataBiosphere_terra-scientific-pipelines-service-cli&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DataBiosphere_terra-scientific-pipelines-service-cli)
+
+
 ## Python CLI structure
 The CLI code is structured as follows:
 ```
