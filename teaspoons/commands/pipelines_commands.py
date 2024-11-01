@@ -32,4 +32,4 @@ def list():
 def get_info(pipeline_name: str):
     """Get information about a specific pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
-    _pretty_print(pipeline_info, LOGGER)
+    _pretty_print(pipeline_info)
