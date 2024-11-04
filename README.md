@@ -1,5 +1,8 @@
 # Teaspoons CLI
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DataBiosphere_terra-scientific-pipelines-service-cli&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DataBiosphere_terra-scientific-pipelines-service-cli)
+
+
 ## Python CLI structure
 The CLI code is structured as follows:
 ```
@@ -13,6 +16,12 @@ teaspoons-cli
 │   │   └── __init__.py
 │   │   └── auth_logic.py
 │   │   └── pipelines_logic.py
+│   └── __init__.py
+│   └── auth_helper.py
+│   └── cli.py
+│   └── client.py
+│   └── config.py
+│   └── teaspoons
 ├── tests
 │   └── commands
 │   │   └── test_auth_commands.py
@@ -20,14 +29,10 @@ teaspoons-cli
 │   └── logic
 │   │   └── test_auth_logic.py
 │   │   └── test_pipelines_logic.py
-│   └── __init__.py
-│   └── auth_helper.py
-│   └── cli.py
-│   └── client.py
-│   └── config.py
-│   └── teaspoons
-├── pyproject.toml
+├── .gitignore
+├── .teaspoons-cli-config
 ├── poetry.lock
+├── pyproject.toml
 ├── README.md
 ```
 
@@ -74,6 +79,9 @@ poetry lock      # only needed if you updated dependencies in pyproject.toml
 poetry install
 ```
 You do not need to re-run these commands each time you update code locally, unless you've added dependencies in pyproject.toml.
+
+If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of 
+your code changes.
 
 To run the tests, execute the following command from the root project (terra-scientific-pipelines-service-cli) directory:
 ```bash

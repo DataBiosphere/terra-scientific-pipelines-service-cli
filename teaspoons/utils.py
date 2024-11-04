@@ -12,7 +12,7 @@ from teaspoons_client.exceptions import ApiException
 LOGGER = logging.getLogger(__name__)
 
 
-def _pretty_print(obj: BaseModel, logger=LOGGER):
+def _pretty_print(obj: BaseModel):
     """
     Prints a pydantic model in a pretty format to the console
     """
