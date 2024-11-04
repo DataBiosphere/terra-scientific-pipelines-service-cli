@@ -31,6 +31,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 pythonpath = "teaspoons"
 
+[tool.coverage.run]
+branch = true
+relative_files = true
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
