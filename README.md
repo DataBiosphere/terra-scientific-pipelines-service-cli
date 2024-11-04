@@ -80,6 +80,9 @@ poetry install
 ```
 You do not need to re-run these commands each time you update code locally, unless you've added dependencies in pyproject.toml.
 
+If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of 
+your code changes.
+
 To run the tests, execute the following command from the root project (terra-scientific-pipelines-service-cli) directory:
 ```bash
 poetry run pytest
