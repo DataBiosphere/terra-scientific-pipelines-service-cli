@@ -1,4 +1,4 @@
-name: Test Python CLI
+name: Bump, Tag, Test, Publish Python CLI
 
 on:
   push:
@@ -108,8 +108,6 @@ jobs:
     needs: [ bump-check, tag-job, install-and-test-python-cli ]
     uses: ./.github/workflows/publish-cli.yml
     # if: ${{ github.event_name != 'pull_request' }}
-    with:
-      new-tag: ${{ needs.tag-job.outputs.tag }}
 
   notify-slack:
     needs: [ bump-check, install-and-test-python-cli ]
