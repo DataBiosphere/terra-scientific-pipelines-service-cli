@@ -2,7 +2,7 @@
 
 from click.testing import CliRunner
 from mockito import when, verify
-from teaspoons.commands import auth_commands
+from terralab.commands import auth_commands
 
 
 def test_login():

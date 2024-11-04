@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "teaspoons-cli"
+name = "terralab-cli"
 version = "0.0.1"
 description = "Command line interface for interacting with the Terra Scientific Pipelines Service, or Teaspoons."
 authors = ["Terra Scientific Services <teaspoons-developers@broadinstitute.org>"]
 readme = "README.md"
 packages = [
-    {include = "teaspoons"}
+    {include = "terralab"}
 ]
 
 [tool.poetry.dependencies]
@@ -29,7 +29,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-pythonpath = "teaspoons"
+pythonpath = "terralab"
 
 [tool.coverage.run]
 branch = true

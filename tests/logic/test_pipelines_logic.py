@@ -3,7 +3,7 @@
 import pytest
 from mockito import when, mock, verify
 
-from teaspoons.logic import pipelines_logic
+from terralab.logic import pipelines_logic
 from teaspoons_client.exceptions import ApiException
 
 

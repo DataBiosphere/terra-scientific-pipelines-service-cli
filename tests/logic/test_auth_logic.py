@@ -3,7 +3,7 @@
 import pytest
 from mockito import when, mock, verify
 
-from teaspoons.logic import auth_logic
+from terralab.logic import auth_logic
 
 
 @pytest.fixture
