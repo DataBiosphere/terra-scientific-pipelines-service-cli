@@ -100,7 +100,7 @@ jobs:
   notify-slack:
     needs: [ bump-check, tag-job, build-and-publish ]
     runs-on: ubuntu-latest
-    if: failure() && github.event_name == 'push' && needs.bump-check.outputs.is-bump == 'no'
+    if: failure() && needs.bump-check.outputs.is-bump == 'no'
 
     steps:
       - name: Notify Teaspoons Slack on Failure
