@@ -1,7 +1,6 @@
 name: Build and publish the CLI to PyPI
 
 on:
-  pull_request:
   workflow_call:
     inputs:
       new-tag:
@@ -54,4 +53,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
-          skip_existing: true
+          skip-existing: true
