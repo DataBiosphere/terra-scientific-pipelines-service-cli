@@ -33,7 +33,7 @@ pythonpath = "teaspoons"
 
 [tool.coverage.run]
 branch = true
-relative_files = true
+relative_files = true  # allows sonarcloud GHA step to process the coverage files
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
