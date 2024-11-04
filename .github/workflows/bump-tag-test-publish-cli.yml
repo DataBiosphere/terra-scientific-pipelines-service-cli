@@ -107,7 +107,8 @@ jobs:
   publish-to-pypi:
     needs: [ bump-check, tag-job, install-and-test-python-cli ]
     uses: ./.github/workflows/publish-cli.yml
-    # if: ${{ github.event_name != 'pull_request' }}
+    # only run this on push to main, i.e. not on each PR
+    if: ${{ github.event_name != 'pull_request' }}
 
   notify-slack:
     needs: [ bump-check, install-and-test-python-cli ]
