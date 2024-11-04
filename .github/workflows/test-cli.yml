@@ -30,6 +30,47 @@ jobs:
         with:
           event-name: ${{ github.event_name }}
 
+  tag-job:
+    needs: [ bump-check ]
+    runs-on: ubuntu-latest
+    if: needs.bump-check.outputs.is-bump == 'no'
+    outputs:
+      tag: ${{ steps.tag.outputs.new_tag }}
+    steps:
+      - name: Set part of semantic version to bump
+        id: controls
+        run: |
+          SEMVER_PART=""
+          CHECKOUT_BRANCH="$GITHUB_REF"
+          if ${{github.event_name == 'push' }}; then
+            SEMVER_PART="patch"
+          elif ${{github.event_name == 'workflow_dispatch' }}; then
+            SEMVER_PART=${{ github.event.inputs.bump }}
+            CHECKOUT_BRANCH=${{ github.event.inputs.branch }}
+          fi
+          echo ::set-output name=semver-part::$SEMVER_PART
+          echo ::set-output name=checkout-branch::$CHECKOUT_BRANCH
+
+      - name: Checkout current code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.controls.outputs.checkout-branch }}
+          token: ${{ secrets.BROADBOT_TOKEN }}
+
+      - name: Bump the tag to a new version
+        # https://github.com/DataBiosphere/github-actions/tree/master/actions/bumper
+        uses: databiosphere/github-actions/actions/bumper@bumper-0.4.0
+        id: tag
+        env:
+          DEFAULT_BUMP: patch
+          GITHUB_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
+          HOTFIX_BRANCHES: hotfix.*
+          OVERRIDE_BUMP: ${{ steps.controls.outputs.semver-part }}
+          RELEASE_BRANCHES: main
+          VERSION_FILE_PATH: pyproject.toml
+          VERSION_LINE_MATCH: "^version\\s*=\\s*\".*\""
+          VERSION_SUFFIX: SNAPSHOT
+
   install-and-test-python-cli:
     needs: [ bump-check ]
     runs-on: ubuntu-latest
