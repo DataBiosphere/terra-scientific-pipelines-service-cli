@@ -83,8 +83,9 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: Report current terralab-cli version
+      - name: Pull latest version, report current terralab-cli version
         run: |
+          git pull
           poetry version
 
       - name: Build the CLI using poetry

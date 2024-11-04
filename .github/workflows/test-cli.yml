@@ -49,6 +49,11 @@ jobs:
         run: |
           poetry install
 
+      - name: (TESTING) Pull latest version, report current terralab-cli version
+        run: |
+          git pull
+          poetry version
+
       - name: Run linter check (ruff)
         run: |
           poetry run ruff check
