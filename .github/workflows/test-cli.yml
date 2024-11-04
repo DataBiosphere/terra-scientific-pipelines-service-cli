@@ -105,14 +105,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   publish-to-pypi:
-    needs: [ bump-check, tag-job, build-and-test-python-cli ]
+    needs: [ bump-check, tag-job, install-and-test-python-cli ]
     uses: ./.github/workflows/publish-cli.yml
     # if: ${{ github.event_name != 'pull_request' }}
     with:
       new-tag: ${{ needs.tag-job.outputs.tag }}
 
   notify-slack:
-    needs: [ bump-check, build-and-test-python-cli ]
+    needs: [ bump-check, install-and-test-python-cli ]
     runs-on: ubuntu-latest
     if: failure() && github.event_name == 'push' && needs.bump-check.outputs.is-bump == 'no'
 
