@@ -2,7 +2,7 @@
 
 from click.testing import CliRunner
 
-from teaspoons import cli
+from terralab import cli
 
 
 def test_cli():

@@ -3,7 +3,7 @@
 import logging
 from click.testing import CliRunner
 from mockito import when, verify
-from teaspoons.commands import pipelines_commands
+from terralab.commands import pipelines_commands
 from teaspoons_client.models.pipeline import Pipeline
 from teaspoons_client.models.pipeline_with_details import PipelineWithDetails
 from teaspoons_client.exceptions import ApiException

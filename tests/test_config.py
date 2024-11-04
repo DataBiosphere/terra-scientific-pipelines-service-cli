@@ -1,7 +1,7 @@
 # tests/test_config
 
 from mockito import mock, when
-from teaspoons import config
+from terralab import config
 
 
 def test_config():

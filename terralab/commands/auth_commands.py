@@ -7,12 +7,12 @@ from logic import auth_logic
 
 @click.group()
 def auth():
-    """Commands for authenticating to Teaspoons"""
+    """Commands for authenticating to Terralab"""
 
 
 @auth.command()
 def login():
-    """Authenticate with Teaspoons via browser login to Terra b2c"""
+    """Authenticate with Terralab via browser login to Terra b2c"""
     auth_logic.check_local_token_and_fetch_if_needed()
 
 

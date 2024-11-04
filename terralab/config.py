@@ -8,7 +8,7 @@ from dotenv import dotenv_values
 class CliConfig:
     """A class to hold configuration information for the CLI"""
 
-    def __init__(self, config_file="../.teaspoons-cli-config"):
+    def __init__(self, config_file="../.terralab-cli-config"):
         self.config = dotenv_values(config_file)
 
         self.client_info = OAuth2ClientInfo.from_oidc_endpoint(
