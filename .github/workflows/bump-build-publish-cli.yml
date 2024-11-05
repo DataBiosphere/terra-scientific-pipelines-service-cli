@@ -26,6 +26,8 @@ jobs:
     needs: [ bump-check ]
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
+    outputs:
+      tag: ${{ steps.tag.outputs.new_tag }}
     steps:
       - name: Set part of semantic version to bump
         id: controls
@@ -73,6 +75,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ needs.tag-job.outputs.tag }}
           fetch-depth: 0
 
       - name: Set up Python 3.12
@@ -83,10 +86,12 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
-      - name: Pull latest version, report current terralab-cli version
-        run: |
-          git pull
-          poetry version
+      # - name: Pull newly tagged version, report current terralab-cli version
+      #   run: |
+      #     git fetch --all --tags --prune
+      #     git checkout tags/${{ needs.tag-job.outputs.tag }} -b main
+      #     poetry install
+      #     poetry version
 
       - name: Build the CLI using poetry
         run: |
