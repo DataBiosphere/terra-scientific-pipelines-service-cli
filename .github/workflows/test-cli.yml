@@ -51,7 +51,12 @@ jobs:
 
       - name: (TESTING) Pull latest version, report current terralab-cli version
         run: |
-          git pull
+          echo "version before getting tag"
+          poetry version
+          git fetch --all --tags --prune
+          git checkout tags/0.0.2 -b main
+          poetry install
+          echo "version after getting tag"
           poetry version
 
       - name: Run linter check (ruff)
