@@ -1,5 +1,6 @@
 [tool.poetry]
 name = "terralab-cli"
+# version is auto-incremented. do not edit.
 version = "0.0.3"
 description = "Command line interface for interacting with the Terra Scientific Pipelines Service, or Teaspoons."
 authors = ["Terra Scientific Services <teaspoons-developers@broadinstitute.org>"]
@@ -8,9 +9,12 @@ packages = [
     {include = "terralab"}
 ]
 
+[tool.poetry.scripts]
+terralab = "terralab.cli:cli"
+
 [tool.poetry.dependencies]
 python = "^3.9"
-terra-scientific-pipelines-service-api-client = "0.0.0"
+terra-scientific-pipelines-service-api-client = "^0.1.0"
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 oauth2-cli-auth = "^1.5.0"

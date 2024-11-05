@@ -533,20 +533,20 @@ files = [
 
 [[package]]
 name = "terra-scientific-pipelines-service-api-client"
-version = "0.0.0"
+version = "0.1.0"
 description = "Terra Scientific Pipelines Service"
 optional = false
 python-versions = "*"
 files = [
-    {file = "terra_scientific_pipelines_service_api_client-0.0.0-py3-none-any.whl", hash = "sha256:b2fc419f0b7405e5f9bc073810083f9178f7b4cf0ee13f239e2929ef8671bbce"},
-    {file = "terra_scientific_pipelines_service_api_client-0.0.0.tar.gz", hash = "sha256:79288247b470e81439d057d39e0b32ad45abba55e0b0a514c5e5eb37e8d61333"},
+    {file = "terra_scientific_pipelines_service_api_client-0.1.0-py3-none-any.whl", hash = "sha256:9b4328951061792b19cac5392a47520b1a765a9670161435d8acca1933431731"},
+    {file = "terra_scientific_pipelines_service_api_client-0.1.0.tar.gz", hash = "sha256:a997a4ffdea1c83af63702f38e99104fd2234f57ecbf40f39c20d6e905f1cb37"},
 ]
 
 [package.dependencies]
 pydantic = ">=2"
-python-dateutil = "*"
+python-dateutil = ">=2.8.2"
 typing-extensions = ">=4.7.1"
-urllib3 = ">=1.25.3,<2.1.0"
+urllib3 = ">=1.25.3,<3.0.0"
 
 [[package]]
 name = "tomli"
@@ -572,22 +572,22 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.0.7"
+version = "2.2.3"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "urllib3-2.0.7-py3-none-any.whl", hash = "sha256:fdb6d215c776278489906c2f8916e6e7d4f5a9b602ccbcfdf7f016fc8da0596e"},
-    {file = "urllib3-2.0.7.tar.gz", hash = "sha256:c97dfde1f7bd43a71c8d2a58e369e9b2bf692d1334ea9f9cae55add7d0dd0f84"},
+    {file = "urllib3-2.2.3-py3-none-any.whl", hash = "sha256:ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac"},
+    {file = "urllib3-2.2.3.tar.gz", hash = "sha256:e7d814a81dad81e6caf2ec9fdedb284ecc9c73076b62654547cc64ccdcae26e9"},
 ]
 
 [package.extras]
 brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
-secure = ["certifi", "cryptography (>=1.9)", "idna (>=2.0.0)", "pyopenssl (>=17.1.0)", "urllib3-secure-extra"]
+h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8cc2d0e0b4ad42d610beb3a7148469a30dc21ae142409c8849b308e7197c75b2"
+content-hash = "30170ec9870278bb7304f0c9f28558b3ced1ffddca711c61cbb5cf97c02aaf64"

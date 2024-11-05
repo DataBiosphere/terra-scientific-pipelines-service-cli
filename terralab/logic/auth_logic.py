@@ -1,14 +1,14 @@
 # logic/auth_logic.py
 
 import logging
-from auth_helper import (
+from terralab.auth_helper import (
     get_access_token_with_browser_open,
     _validate_token,
     _save_local_token,
     _load_local_token,
     _clear_local_token,
 )
-from config import CliConfig
+from terralab.config import CliConfig
 
 LOGGER = logging.getLogger(__name__)
 

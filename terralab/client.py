@@ -3,8 +3,8 @@
 import logging
 
 from teaspoons_client import Configuration, ApiClient
-from config import CliConfig
-from auth_helper import (
+from terralab.config import CliConfig
+from terralab.auth_helper import (
     _load_local_token,
     _validate_token,
     _save_local_token,
