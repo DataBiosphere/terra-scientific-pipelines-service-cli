@@ -49,7 +49,7 @@ def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
 def _validate_token(token: str) -> bool:
     try:
         # Attempt to read the token to ensure it is valid.  If it isn't, the file will be removed and None will be returned.
-        # Note: to simplify, not worrying about the signature of the token since that will be verified by the backend services
+        # Note: We explicitly do not verify the signature of the token since that will be verified by the backend services.
         # This is just to ensure the token is not expired
         jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
         return True
