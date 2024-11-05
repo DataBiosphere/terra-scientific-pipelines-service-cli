@@ -26,6 +26,8 @@ jobs:
     needs: [ bump-check ]
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
+    outputs:
+      tag: ${{ steps.tag.outputs.new_tag }}
     steps:
       - name: Set part of semantic version to bump
         id: controls
@@ -73,7 +75,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ needs.tag-job.outputs.tag }}
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -111,6 +113,6 @@ jobs:
           status: failure
           channel: "#terra-tsps-alerts"
           username: "Bump, Build, and Publish Terralab CLI"
-          author_name: "test-python-cli"
+          author_name: "bump-build-publish-cli workflow"
           icon_emoji: ":triangular_ruler:"
           fields: job, commit
