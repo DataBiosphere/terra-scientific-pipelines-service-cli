@@ -3,8 +3,8 @@
 import click
 import logging
 
-from logic import pipelines_logic
-from utils import _pretty_print, handle_api_exceptions
+from terralab.logic import pipelines_logic
+from terralab.utils import _pretty_print, handle_api_exceptions
 
 LOGGER = logging.getLogger(__name__)
 

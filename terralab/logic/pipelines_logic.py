@@ -4,7 +4,7 @@ from teaspoons_client import PipelinesApi
 from teaspoons_client.models.pipeline_with_details import PipelineWithDetails
 from teaspoons_client.models.pipeline import Pipeline
 
-from client import ClientWrapper
+from terralab.client import ClientWrapper
 
 
 def list_pipelines() -> list[Pipeline]:

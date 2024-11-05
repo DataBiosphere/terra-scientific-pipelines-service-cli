@@ -2,7 +2,7 @@
 
 import click
 
-from logic import auth_logic
+from terralab.logic import auth_logic
 
 
 @click.group()

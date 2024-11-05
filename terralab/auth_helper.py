@@ -13,7 +13,7 @@ from oauth2_cli_auth import (
     exchange_code_for_access_token,
 )
 
-from config import CliConfig
+from terralab.config import CliConfig
 
 
 LOGGER = logging.getLogger(__name__)
