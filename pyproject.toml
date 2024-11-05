@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-terra-scientific-pipelines-service-api-client = "0.0.0"
+terra-scientific-pipelines-service-api-client = "^0.1.0"
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 oauth2-cli-auth = "^1.5.0"
