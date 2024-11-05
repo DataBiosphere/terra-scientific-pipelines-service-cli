@@ -78,6 +78,6 @@ jobs:
           status: failure
           channel: "#terra-tsps-alerts"
           username: "Terralab CLI push to main branch"
-          author_name: "test-python-cli"
+          author_name: "test-cli workflow"
           icon_emoji: ":triangular_ruler:"
           fields: job, commit
