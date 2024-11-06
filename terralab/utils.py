@@ -36,3 +36,13 @@ def handle_api_exceptions(func):
             exit(1)
 
     return wrapper
+
+def process_json(json_data) -> dict:
+    """Process the given JSON string and return a dictionary."""
+    try:
+        data = json.loads(json_data)
+        # Process the data here
+        LOGGER.debug(f"Processed inputs: {data}")
+        return data 
+    except json.JSONDecodeError:
+        LOGGER.error('Invalid JSON string provided.')

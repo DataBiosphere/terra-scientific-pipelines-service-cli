@@ -1,9 +1,15 @@
 # tests/logic/test_submit_logic.py
 
 import pytest
+import uuid
 from mockito import when, mock, verify
 
 from terralab.logic import submit_logic
+from teaspoons_client import (
+    PreparePipelineRunRequestBody,
+    StartPipelineRunRequestBody,
+    JobControl,
+)
 from teaspoons_client.exceptions import ApiException
 
 
@@ -14,3 +20,113 @@ def mock_cli_config(unstub):
     yield config
     unstub()
 
+
+@pytest.fixture
+def mock_client_wrapper(unstub):
+    client = mock()
+    # Make the mock support context manager protocol
+    when(client).__enter__().thenReturn(client)
+    when(client).__exit__(None, None, None).thenReturn(None)
+
+    when(submit_logic).ClientWrapper(...).thenReturn(client)
+    yield client
+    unstub()
+
+
+@pytest.fixture
+def mock_pipeline_runs_api(mock_client_wrapper, unstub):
+    api = mock()
+    when(submit_logic).PipelineRunsApi(...).thenReturn(api)
+    yield api
+    unstub()
+
+
+def test_prepare_pipeline_run(mock_pipeline_runs_api):
+    # Arrange
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_pipeline_version = 1
+    test_pipeline_inputs = {}
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+        jobId=test_job_id,
+        pipelineVersion=test_pipeline_version,
+        pipelineInputs=test_pipeline_inputs,
+    )
+
+    mock_file_input_upload_urls = mock()
+    mock_pipeline_run_response = mock(
+        {"job_id": test_job_id, "file_input_upload_urls": mock_file_input_upload_urls}
+    )
+    when(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_pipeline_name, test_prepare_pipeline_run_request_body
+    ).thenReturn(mock_pipeline_run_response)
+
+    # Act
+    result = submit_logic.prepare_pipeline_run(
+        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs
+    )
+
+    # Assert
+    assert result == mock_file_input_upload_urls
+    verify(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_pipeline_name, test_prepare_pipeline_run_request_body
+    )
+
+
+def test_start_pipeline_run_running(mock_pipeline_runs_api):
+    # Arrange
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_description = "user-provided description"
+
+    test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
+        description=test_description, jobControl=JobControl(id=test_job_id)
+    )
+    mock_job_report = mock(
+        {"id": test_job_id, "status_code": 202}
+    )  # successful (running) status code
+    mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
+    when(mock_pipeline_runs_api).start_pipeline_run(
+        test_pipeline_name, test_start_pipeline_run_request_body
+    ).thenReturn(mock_async_pipeline_run_response)
+
+    # Act
+    result = submit_logic.start_pipeline_run(
+        test_pipeline_name, test_job_id, test_description
+    )
+
+    # Assert
+    assert result == mock_async_pipeline_run_response
+    verify(mock_pipeline_runs_api).start_pipeline_run(
+        test_pipeline_name, test_start_pipeline_run_request_body
+    )
+
+
+def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
+    # Arrange
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_description = "user-provided description"
+
+    test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
+        description=test_description, jobControl=JobControl(id=test_job_id)
+    )
+    mock_job_report = mock(
+        {"id": test_job_id, "status_code": 500}
+    )  # internal error status code
+    mock_error_report = mock({"message": "some error message"})
+    mock_async_pipeline_run_response = mock(
+        {"job_report": mock_job_report, "error_report": mock_error_report}
+    )
+    when(mock_pipeline_runs_api).start_pipeline_run(
+        test_pipeline_name, test_start_pipeline_run_request_body
+    ).thenReturn(mock_async_pipeline_run_response)
+
+    # Act
+    response = submit_logic.start_pipeline_run(test_pipeline_name, test_job_id, test_description)
+
+    # Assert
+    assert response == mock_async_pipeline_run_response
+    verify(mock_pipeline_runs_api).start_pipeline_run(
+        test_pipeline_name, test_start_pipeline_run_request_body
+    )

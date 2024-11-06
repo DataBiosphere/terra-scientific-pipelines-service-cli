@@ -6,6 +6,7 @@ import logging
 from terralab import __version__, log
 from terralab.commands.auth_commands import auth
 from terralab.commands.pipelines_commands import pipelines
+from terralab.commands.submit_commands import submit
 
 
 # Context settings for commands, for overwriting some click defaults
@@ -30,7 +31,7 @@ def cli(debug):
 
 cli.add_command(auth)
 cli.add_command(pipelines)
-# will add runs_app later
+cli.add_command(submit)
 
 
 if __name__ == "__main__":
