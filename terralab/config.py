@@ -1,6 +1,7 @@
 # config.py
 
 import logging
+from importlib import resources as impresources
 from pathlib import Path
 from oauth2_cli_auth import OAuth2ClientInfo
 from dotenv import dotenv_values
@@ -12,9 +13,15 @@ LOGGER = logging.getLogger(__name__)
 class CliConfig:
     """A class to hold configuration information for the CLI"""
 
-    def __init__(self, config_file="terralab/.terralab-cli-config"):
-        self.config = dotenv_values(config_file)
-        LOGGER.debug(f"Found config with values: {self.config}")
+    def __init__(self, config_file=".terralab-cli-config", package="terralab"):
+        # read values from the specified config file
+        try:
+            importable_config_file = impresources.files(package) / config_file
+            self.config = dotenv_values(importable_config_file)
+        except ModuleNotFoundError as e:
+            LOGGER.error(f"Failed to load config from {package}/{config_file}: {e}")
+            exit(1)
+        LOGGER.debug(f"Imported config with values: {self.config}")
 
         self.client_info = OAuth2ClientInfo.from_oidc_endpoint(
             self.config["OAUTH_OPENID_CONFIGURATION_URI"],

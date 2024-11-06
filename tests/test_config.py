@@ -8,7 +8,7 @@ def test_config():
     mock_client_info = mock()
     when(config.OAuth2ClientInfo).from_oidc_endpoint(...).thenReturn(mock_client_info)
 
-    test_config = config.CliConfig("tests/.test.config")
+    test_config = config.CliConfig(config_file=".test.config", package="tests")
 
     assert test_config.config["TEASPOONS_API_URL"] == "not-real"
     assert test_config.config["SERVER_PORT"] == "12345"
