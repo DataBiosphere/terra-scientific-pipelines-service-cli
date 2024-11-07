@@ -10,7 +10,6 @@ from teaspoons_client import (
     StartPipelineRunRequestBody,
     JobControl,
 )
-from teaspoons_client.exceptions import ApiException
 
 
 @pytest.fixture
@@ -59,7 +58,10 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
         test_input_name: {submit_logic.SIGNED_URL_KEY: test_signed_url}
     }
     mock_pipeline_run_response = mock(
-        {"job_id": test_job_id, "file_input_upload_urls": test_file_input_upload_urls_dict}
+        {
+            "job_id": test_job_id,
+            "file_input_upload_urls": test_file_input_upload_urls_dict,
+        }
     )
     when(mock_pipeline_runs_api).prepare_pipeline_run(
         test_pipeline_name, test_prepare_pipeline_run_request_body
@@ -127,7 +129,9 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
     ).thenReturn(mock_async_pipeline_run_response)
 
     # Act
-    response = submit_logic.start_pipeline_run(test_pipeline_name, test_job_id, test_description)
+    response = submit_logic.start_pipeline_run(
+        test_pipeline_name, test_job_id, test_description
+    )
 
     # Assert
     assert response == test_job_id
@@ -145,21 +149,28 @@ def test_prepare_upload_start_pipeline_run():
     test_inputs = {test_input_name: test_input_value}
     test_description = "user-provided description"
 
-
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
     when(submit_logic.uuid).uuid4().thenReturn(test_job_id)
 
     test_signed_url = "signed_url"
     test_upload_url_dict = {test_input_name: test_signed_url}
-    when(submit_logic).prepare_pipeline_run(test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs).thenReturn(test_upload_url_dict)
-    
-    when(submit_logic).upload_file_with_signed_url(test_input_value, test_signed_url)  # do nothing
+    when(submit_logic).prepare_pipeline_run(
+        test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs
+    ).thenReturn(test_upload_url_dict)
 
-    when(submit_logic).start_pipeline_run(test_pipeline_name, test_job_id_str, test_description).thenReturn(test_job_id)
+    when(submit_logic).upload_file_with_signed_url(
+        test_input_value, test_signed_url
+    )  # do nothing
+
+    when(submit_logic).start_pipeline_run(
+        test_pipeline_name, test_job_id_str, test_description
+    ).thenReturn(test_job_id)
 
     # Act
-    response = submit_logic.prepare_upload_start_pipeline_run(test_pipeline_name, test_pipeline_version, test_inputs, test_description)
+    response = submit_logic.prepare_upload_start_pipeline_run(
+        test_pipeline_name, test_pipeline_version, test_inputs, test_description
+    )
 
     # Assert
     assert response == test_job_id

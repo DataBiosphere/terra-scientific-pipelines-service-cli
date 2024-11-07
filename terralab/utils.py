@@ -7,7 +7,7 @@ import os
 from functools import wraps
 from pydantic import BaseModel
 
-from teaspoons_client import PipelineWithDetails, PipelineUserProvidedInputDefinition
+from teaspoons_client import PipelineWithDetails
 from teaspoons_client.exceptions import ApiException
 
 from terralab.logic.pipelines_logic import get_pipeline_info
@@ -48,9 +48,9 @@ def process_json(json_data) -> dict:
         data = json.loads(json_data)
         # Process the data here
         LOGGER.debug(f"Processed inputs: {data}")
-        return data 
+        return data
     except json.JSONDecodeError:
-        LOGGER.error('Invalid JSON string provided.')
+        LOGGER.error("Invalid JSON string provided.")
 
 
 def is_valid_local_file(local_file_path: str) -> bool:
@@ -64,16 +64,22 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
     pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name)
 
     input_error_messages = []
-    for input_info in pipeline_info.inputs:  # input_info is PipelineUserProvidedInputDefinition
+    for (
+        input_info
+    ) in pipeline_info.inputs:  # input_info is PipelineUserProvidedInputDefinition
         input_name: str = input_info.name
         LOGGER.debug(f"Validating input {input_name}")
         if input_name not in inputs_dict:
             input_error_messages.append(f"Missing required input {input_name}")
         else:
             # input is present in inputs_dict; if it's a file, extract the path and validate
-            if input_info.type == "FILE" and (not is_valid_local_file(inputs_dict[input_name])):
-                input_error_messages.append(f"Could not find provided file for input {input_name}: {inputs_dict[input_name]}")
-        
+            if input_info.type == "FILE" and (
+                not is_valid_local_file(inputs_dict[input_name])
+            ):
+                input_error_messages.append(
+                    f"Could not find provided file for input {input_name}: {inputs_dict[input_name]}"
+                )
+
     if input_error_messages:
         error_string = "\n\t".join(input_error_messages)
         LOGGER.error(f"Missing or invalid inputs provided:\n\t{error_string}")

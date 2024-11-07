@@ -8,7 +8,6 @@ from teaspoons_client import (
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
-    AsyncPipelineRunResponse,
 )
 
 from terralab.logic.upload_download_logic import upload_file_with_signed_url
@@ -19,7 +18,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 ## API wrapper functions
-SIGNED_URL_KEY = 'signedUrl'
+SIGNED_URL_KEY = "signedUrl"
+
 
 def prepare_pipeline_run(
     pipeline_name: str, job_id: uuid.UUID, pipeline_version: int, pipeline_inputs: dict
@@ -43,7 +43,10 @@ def prepare_pipeline_run(
         )
 
         result = response.file_input_upload_urls
-        return {input_name: signed_url_dict.get(SIGNED_URL_KEY) for input_name, signed_url_dict in result.items()}
+        return {
+            input_name: signed_url_dict.get(SIGNED_URL_KEY)
+            for input_name, signed_url_dict in result.items()
+        }
 
 
 def start_pipeline_run(
@@ -64,18 +67,25 @@ def start_pipeline_run(
 
 ## submit action
 
-def prepare_upload_start_pipeline_run(pipeline_name: str, pipeline_version: str, pipeline_inputs: dict, description: str) -> uuid.UUID:
+
+def prepare_upload_start_pipeline_run(
+    pipeline_name: str, pipeline_version: str, pipeline_inputs: dict, description: str
+) -> uuid.UUID:
     """Prepare pipeline run, upload input files, and start pipeline run.
     Returns the uuid of the job."""
     # generate a job id for the user
     job_id = str(uuid.uuid4())
     LOGGER.info(f"Generated job_id {job_id}")
 
-    file_input_upload_urls: dict = prepare_pipeline_run(pipeline_name, job_id, pipeline_version, pipeline_inputs)
+    file_input_upload_urls: dict = prepare_pipeline_run(
+        pipeline_name, job_id, pipeline_version, pipeline_inputs
+    )
 
     for input_name, signed_url in file_input_upload_urls.items():
         input_file_value = pipeline_inputs[input_name]
-        LOGGER.info(f"Uploading file {input_file_value} for {pipeline_name} input {input_name}")
+        LOGGER.info(
+            f"Uploading file {input_file_value} for {pipeline_name} input {input_name}"
+        )
         LOGGER.debug(f"Found signed url: {signed_url}")
 
         upload_file_with_signed_url(input_file_value, signed_url)
