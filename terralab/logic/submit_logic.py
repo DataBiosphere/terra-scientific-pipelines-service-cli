@@ -11,6 +11,7 @@ from teaspoons_client import (
     AsyncPipelineRunResponse,
 )
 
+from terralab.logic.upload_download_logic import upload_file_with_signed_url
 from terralab.client import ClientWrapper
 
 
@@ -18,11 +19,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 ## API wrapper functions
+SIGNED_URL_KEY = 'signedUrl'
 
 def prepare_pipeline_run(
     pipeline_name: str, job_id: uuid.UUID, pipeline_version: int, pipeline_inputs: dict
 ) -> dict:
-    """Call the preparePipelineRun Teaspoons endpoint and return the dict of file input upload urls."""
+    """Call the preparePipelineRun Teaspoons endpoint.
+    Return a dictionary of {input_name: signed_url}."""
     prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
         PreparePipelineRunRequestBody(
             jobId=job_id,
@@ -30,6 +33,7 @@ def prepare_pipeline_run(
             pipelineInputs=pipeline_inputs,
         )
     )
+
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         response: PreparePipelineRunResponse = (
@@ -38,7 +42,8 @@ def prepare_pipeline_run(
             )
         )
 
-        return response.file_input_upload_urls
+        result = response.file_input_upload_urls
+        return {input_name: signed_url_dict.get(SIGNED_URL_KEY) for input_name, signed_url_dict in result.items()}
 
 
 def start_pipeline_run(
@@ -54,7 +59,7 @@ def start_pipeline_run(
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         return pipeline_runs_client.start_pipeline_run(
             pipeline_name, start_pipeline_run_request_body
-        )
+        ).job_report.id
 
 
 ## submit action
@@ -68,11 +73,13 @@ def prepare_upload_start_pipeline_run(pipeline_name: str, pipeline_version: str,
 
     file_input_upload_urls: dict = prepare_pipeline_run(pipeline_name, job_id, pipeline_version, pipeline_inputs)
 
-    for input_name, upload_url_dict in file_input_upload_urls.items():
-        LOGGER.info(f"Uploading input {input_name}")
-        LOGGER.info(f"Found signed url: {upload_url_dict['signedUrl']}")
-        LOGGER.info("(SKIPPING UPLOAD FOR NOW)")
-    
-    # TODO implement upload, add start pipeline run
+    for input_name, signed_url in file_input_upload_urls.items():
+        input_file_value = pipeline_inputs[input_name]
+        LOGGER.info(f"Uploading file {input_file_value} for {pipeline_name} input {input_name}")
+        LOGGER.debug(f"Found signed url: {signed_url}")
 
-    return job_id
+        upload_file_with_signed_url(input_file_value, signed_url)
+
+    LOGGER.info(f"Input file upload complete; starting {pipeline_name} job {job_id}")
+
+    return start_pipeline_run(pipeline_name, job_id, description)

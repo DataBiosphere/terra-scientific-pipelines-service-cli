@@ -49,18 +49,20 @@ def test_get_info_success(caplog, unstub):
         inputs=[],
     )
 
+    test_pipeline_name = "test_pipeline"
+
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
-        "test_pipeline"
+        test_pipeline_name
     ).thenReturn(test_pipeline)
 
     with caplog.at_level(logging.DEBUG):
         result = runner.invoke(
-            pipelines_commands.pipelines, ["get-info", "test_pipeline"]
+            pipelines_commands.pipelines, ["get-info", test_pipeline_name]
         )
 
     assert result.exit_code == 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info("test_pipeline")
-    assert "test_pipeline" in caplog.text
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name)
+    assert test_pipeline_name in caplog.text
 
     unstub()
 
