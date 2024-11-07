@@ -88,35 +88,4 @@ In the `tests` directory, we have test files that can be run with pytest.
 
 
 ## Development
-You'll need to have poetry installed to manage python dependencies. Instructions for installing poetry can be found [here](https://python-poetry.org/docs/).
-
-To install the CLI locally, run the following commands from the root project directory:
-```
-poetry lock      # only needed if you updated dependencies in pyproject.toml
-poetry install
-```
-You do not need to re-run these commands each time you update code locally, unless you've added dependencies in pyproject.toml.
-
-If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of 
-your code changes.
-
-To run the tests, execute the following command from the root project (terra-scientific-pipelines-service-cli) directory:
-```bash
-poetry run pytest
-```
-
-To run tests with a coverage report printed to the terminal:
-```bash
-poetry run pytest --cov-report term --cov=terralab
-```
-
-To run the formatter, execute the following command from the root project directory:
-```bash
-poetry run black .
-```
-
-To run the linter with fixes, execute the following command from the root project directory:
-```bash
-poetry run ruff check --fix
-```
-To run the linter as a check without fixes, omit the `--fix` flag.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
