@@ -49,8 +49,9 @@ def process_json(json_data) -> dict:
         # Process the data here
         LOGGER.debug(f"Processed inputs: {data}")
         return data
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         LOGGER.error("Invalid JSON string provided.")
+        return None
 
 
 def is_valid_local_file(local_file_path: str) -> bool:
