@@ -75,7 +75,7 @@ def prepare_upload_start_pipeline_run(
     Returns the uuid of the job."""
     # generate a job id for the user
     job_id = str(uuid.uuid4())
-    LOGGER.info(f"Generated job_id {job_id}")
+    LOGGER.debug(f"Generated job_id {job_id}")
 
     file_input_upload_urls: dict = prepare_pipeline_run(
         pipeline_name, job_id, pipeline_version, pipeline_inputs
@@ -90,6 +90,6 @@ def prepare_upload_start_pipeline_run(
 
         upload_file_with_signed_url(input_file_value, signed_url)
 
-    LOGGER.info(f"Input file upload complete; starting {pipeline_name} job {job_id}")
+    LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
     return start_pipeline_run(pipeline_name, job_id, description)

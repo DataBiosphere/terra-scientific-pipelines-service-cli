@@ -15,8 +15,8 @@ terralab = "terralab.cli:cli"
 [tool.poetry.dependencies]
 python = "^3.9"
 # FOR TESTING LOCALLY
-# teaspoons-client = {path = "/Users/marymorg/workbench/terra-scientific-pipelines-service/python-client/generated"}
-terra-scientific-pipelines-service-api-client = "^0.1.0"
+teaspoons-client = {path = "/Users/marymorg/workbench/terra-scientific-pipelines-service/python-client/generated", develop = true}
+# terra-scientific-pipelines-service-api-client = "^0.1.0"
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 oauth2-cli-auth = "^1.5.0"

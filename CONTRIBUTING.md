@@ -53,6 +53,12 @@ To test changes in Teaspoons locally against your local CLI, do the following on
 
 Your CLI should now be importing the `teaspoons_client` via the local code rather than the package from PyPi.
 
+Note: if the locally generated code is not being imported as expected, try deleting and recreating the poetry virtual environment by running the following:
+```
+rm -rf $(poetry env info --path)
+poetry install
+```
+
 To run the CLI against your locally running instance of Teaspoons:
 4. In Teaspoons, run `./gradlew bootRun` and wait for the service to spin up locally.
 5. In this repo, edit the `terralab/.terralab-cli-config` file to point the `TEASPOONS_API_URL` to `http://localhost:8080` instead of the live environment deployment of Teaspoons.

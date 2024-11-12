@@ -64,7 +64,8 @@ def test_validate_pipeline_inputs(capture_logs):
     # Should fail with missing input
     with pytest.raises(SystemExit):
         utils.validate_pipeline_inputs(test_pipeline_name, {"input1": "value1"})
-        assert "Missing or invalid inputs provided" in capture_logs.text
+
+    assert "Missing or invalid inputs provided" in capture_logs.text
 
     # Should fail with invalid file input
     mock_file_input = mock()
@@ -78,4 +79,5 @@ def test_validate_pipeline_inputs(capture_logs):
         utils.validate_pipeline_inputs(
             test_pipeline_name, {"file_input": "nonexistent_file.txt"}
         )
-        assert "Missing or invalid inputs provided" in capture_logs.text
+
+    assert "Missing or invalid inputs provided" in capture_logs.text
