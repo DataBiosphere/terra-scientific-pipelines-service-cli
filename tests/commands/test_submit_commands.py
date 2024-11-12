@@ -5,7 +5,7 @@ import uuid
 from click.testing import CliRunner
 from mockito import when
 from terralab.commands import submit_commands
-
+from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)
 

@@ -5,6 +5,7 @@ import tempfile
 from mockito import when, mock
 
 from terralab.logic import upload_download_logic
+from tests.utils_for_tests import capture_logs
 
 
 def test_upload_file_with_signed_url(capture_logs):

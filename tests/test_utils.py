@@ -6,7 +6,7 @@ import tempfile
 
 from mockito import mock, when
 from terralab import utils
-
+from tests.utils_for_tests import capture_logs
 
 process_json_testdata = [
     # input, expected_output (failure = None)

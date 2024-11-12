@@ -6,6 +6,7 @@ from mockito import when, mock, verify
 from jwt import ExpiredSignatureError
 
 from terralab import auth_helper
+from tests.utils_for_tests import capture_logs
 
 
 @pytest.fixture

@@ -77,3 +77,6 @@ exclude = [
 # Same as Black.
 line-length = 88
 indent-width = 4
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/test_*.py" = ["F811", "F401"]  # see https://github.com/astral-sh/ruff/issues/10662
