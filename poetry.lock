@@ -692,21 +692,23 @@ files = [
 ]
 
 [[package]]
-name = "terra-scientific-pipelines-service-api-client"
-version = "0.1.2"
+name = "teaspoons-client"
+version = "0.0.0"
 description = "Terra Scientific Pipelines Service"
 optional = false
-python-versions = "*"
-files = [
-    {file = "terra_scientific_pipelines_service_api_client-0.1.2-py3-none-any.whl", hash = "sha256:704b60dd78e077d9b6c6228828b319f097c48c184e99480d966ab9128e162c49"},
-    {file = "terra_scientific_pipelines_service_api_client-0.1.2.tar.gz", hash = "sha256:3f630a46c50b19f28d68d34e3d601a477e3d29a622c16bc81299dc6f1d10c303"},
-]
+python-versions = "^3.7"
+files = []
+develop = true
 
 [package.dependencies]
 pydantic = ">=2"
 python-dateutil = ">=2.8.2"
 typing-extensions = ">=4.7.1"
-urllib3 = ">=1.25.3,<3.0.0"
+urllib3 = ">= 1.25.3"
+
+[package.source]
+type = "directory"
+url = "../workbench/terra-scientific-pipelines-service/python-client/generated"
 
 [[package]]
 name = "tomli"
@@ -771,4 +773,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "099ec24f522761b982693b4d59ee7ae4fe3fb34e76ac4f35adf6afd3e0e5dc98"
+content-hash = "ba175d000d4cbe37db2fea758263468321cc2c717e6b4e662ffefede16bc39fe"

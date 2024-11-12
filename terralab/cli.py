@@ -1,11 +1,13 @@
 # cli.py
 
 import click
+import collections
 import logging
+from typing import Optional, Mapping
 
 from terralab import __version__, log
-from terralab.commands.auth_commands import auth
-from terralab.commands.pipelines_commands import pipelines
+from terralab.commands.auth_commands import logout
+from terralab.commands.pipelines_commands import pipelines, list, get_info
 from terralab.commands.submit_commands import submit
 
 
@@ -15,11 +17,35 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOGGER = logging.getLogger(__name__)
 
 
-@click.group(name="terralab", context_settings=CONTEXT_SETTINGS)
+class OrderedGroup(click.Group):
+    """Override class to display the commands in the order they're added in the --help output"""
+
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        commands: Optional[Mapping[str, click.Command]] = None,
+        **kwargs
+    ):
+        super(OrderedGroup, self).__init__(name, commands, **kwargs)
+        #: the registered subcommands by their exported names.
+        self.commands = commands or collections.OrderedDict()
+
+    def list_commands(self, ctx: click.Context) -> Mapping[str, click.Command]:
+        return self.commands
+
+
+# TODO see if you can include group commands in -h
+@click.group(
+    name="terralab",
+    context_settings=CONTEXT_SETTINGS,
+    cls=OrderedGroup,
+    epilog="Check out our docs at ADD DOCS LINK!!!!!",
+)
 @click.version_option(__version__)
 @click.option(
     "--debug",
     is_flag=True,
+    hidden=True,  # doesn't show up in terralab --help menu
     help="DEBUG-level logging",
 )
 def cli(debug):
@@ -29,9 +55,12 @@ def cli(debug):
     )
 
 
-cli.add_command(auth)
-cli.add_command(pipelines)
+# the order in which these are added determines the order in which they show up in the --help output
 cli.add_command(submit)
+cli.add_command(pipelines)
+cli.add_command(list, name="  list")
+cli.add_command(get_info, name="  get-info")
+cli.add_command(logout)
 
 
 if __name__ == "__main__":

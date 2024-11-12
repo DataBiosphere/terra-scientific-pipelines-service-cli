@@ -22,7 +22,7 @@ def test_submit(capture_logs):
     when(submit_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
         test_inputs_dict
     )
-    when(submit_commands).validate_pipeline_inputs(
+    when(submit_commands.pipelines_logic).validate_pipeline_inputs(
         test_pipeline_name, test_inputs_dict
     )  # do nothing
 

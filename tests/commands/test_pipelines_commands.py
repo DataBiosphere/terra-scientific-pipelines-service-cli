@@ -4,9 +4,7 @@ import logging
 from click.testing import CliRunner
 from mockito import when, verify
 from terralab.commands import pipelines_commands
-from teaspoons_client.models.pipeline import Pipeline
-from teaspoons_client.models.pipeline_with_details import PipelineWithDetails
-from teaspoons_client.exceptions import ApiException
+from teaspoons_client import Pipeline, PipelineWithDetails, ApiException
 from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)

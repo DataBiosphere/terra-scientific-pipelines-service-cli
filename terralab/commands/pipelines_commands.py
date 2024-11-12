@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 def pipelines():
-    """Commands for running Teaspooons pipelines"""
+    """Get information about available pipelines"""
 
 
 @pipelines.command()

@@ -3,8 +3,11 @@
 import pytest
 from mockito import when, mock, verify
 
+from teaspoons_client import ApiException
+
 from terralab.logic import pipelines_logic
-from teaspoons_client.exceptions import ApiException
+
+from tests.utils_for_tests import capture_logs
 
 
 @pytest.fixture
@@ -89,3 +92,49 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
 
     # Verify the method was called
     verify(mock_pipelines_api).get_pipeline_details(pipeline_name=pipeline_name)
+
+
+def test_validate_pipeline_inputs(capture_logs):
+    test_pipeline_name = "test_pipeline"
+    test_inputs_dict = {"input1": "value1", "input2": "value2"}
+
+    mock_pipeline_info = mock()
+    mock_input1 = mock()
+    mock_input1.name = "input1"
+    mock_input1.type = "STRING"
+    mock_input2 = mock()
+    mock_input2.name = "input2"
+    mock_input2.type = "STRING"
+    mock_pipeline_info.inputs = [mock_input1, mock_input2]
+
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+        mock_pipeline_info
+    )
+
+    # Should succeed with valid inputs
+    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
+
+    # Should fail with missing input
+    with pytest.raises(SystemExit):
+        pipelines_logic.validate_pipeline_inputs(
+            test_pipeline_name, {"input1": "value1"}
+        )
+
+    assert "Missing or invalid inputs provided" in capture_logs.text
+
+    # Should fail with invalid file input
+    mock_file_input = mock()
+    mock_file_input.name = "file_input"
+    mock_file_input.type = "FILE"
+    mock_pipeline_info.inputs = [mock_file_input]
+
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+        mock_pipeline_info
+    )
+
+    with pytest.raises(SystemExit):
+        pipelines_logic.validate_pipeline_inputs(
+            test_pipeline_name, {"file_input": "nonexistent_file.txt"}
+        )
+
+    assert "Missing or invalid inputs provided" in capture_logs.text

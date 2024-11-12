@@ -5,6 +5,7 @@ import click
 from terralab.logic import auth_logic
 
 
+# TODO change to just logout
 @click.group()
 def auth():
     """Commands for authenticating to Terralab"""

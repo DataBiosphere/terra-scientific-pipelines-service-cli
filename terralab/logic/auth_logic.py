@@ -22,6 +22,7 @@ def check_local_token_and_fetch_if_needed():
         return
     token = get_access_token_with_browser_open(cli_config.client_info)
     _save_local_token(cli_config.token_file, token)
+    # TODO add whitespace after link OR clear output
 
 
 def clear_local_token():

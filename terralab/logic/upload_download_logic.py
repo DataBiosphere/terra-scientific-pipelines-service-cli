@@ -13,6 +13,8 @@ def upload_file_with_signed_url(local_file_path, signed_url):
     try:
         with open(local_file_path, "rb") as in_file:
             total_bytes = os.fstat(in_file.fileno()).st_size
+            # TODO explore options to make estimated time remaining more explicit
+            # time remaining more important than time elapsed so far.
             with tqdm.wrapattr(
                 in_file,
                 "read",
