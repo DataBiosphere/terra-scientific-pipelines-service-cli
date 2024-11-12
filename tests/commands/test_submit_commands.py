@@ -10,7 +10,7 @@ from terralab.commands import submit_commands
 LOGGER = logging.getLogger(__name__)
 
 
-def test_submit(caplog):
+def test_submit(capture_logs):
     runner = CliRunner()
 
     test_pipeline_name = "test_pipeline"
@@ -19,7 +19,7 @@ def test_submit(caplog):
 
     test_job_id = uuid.uuid4()
 
-    when(submit_commands).process_json(test_inputs_dict_str).thenReturn(
+    when(submit_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
         test_inputs_dict
     )
     when(submit_commands).validate_pipeline_inputs(
@@ -30,11 +30,13 @@ def test_submit(caplog):
         test_pipeline_name, 0, test_inputs_dict, ""
     ).thenReturn(test_job_id)
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(
-            submit_commands.submit,
-            [test_pipeline_name, "--inputs", test_inputs_dict_str],
-        )
+    result = runner.invoke(
+        submit_commands.submit,
+        [test_pipeline_name, "--inputs", test_inputs_dict_str],
+    )
 
     assert result.exit_code == 0
-    assert f"Successfully started {test_pipeline_name} job {test_job_id}" in caplog.text
+    assert (
+        f"Successfully started {test_pipeline_name} job {test_job_id}"
+        in capture_logs.text
+    )

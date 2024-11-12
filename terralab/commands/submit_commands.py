@@ -4,7 +4,7 @@ import click
 import logging
 
 from terralab.logic import submit_logic
-from terralab.utils import process_json, validate_pipeline_inputs
+from terralab.utils import process_json_to_dict, validate_pipeline_inputs
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 )
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
     """Command to submit a Teaspooons pipeline run"""
-    inputs_dict = process_json(inputs)
+    inputs_dict = process_json_to_dict(inputs)
 
     # validate inputs
     validate_pipeline_inputs(pipeline_name, inputs_dict)

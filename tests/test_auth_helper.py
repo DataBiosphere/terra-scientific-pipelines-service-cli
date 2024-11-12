@@ -1,7 +1,6 @@
 # tests/test_auth_helper.py
 
 import builtins
-import logging
 import pytest
 from mockito import when, mock, verify
 from jwt import ExpiredSignatureError
@@ -78,26 +77,24 @@ def test_validate_token_valid():
     assert auth_helper._validate_token(mock_token)
 
 
-def test_validate_token_expired(caplog):
+def test_validate_token_expired(capture_logs):
     mock_token = mock()
 
     when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ExpiredSignatureError())
 
-    with caplog.at_level(logging.DEBUG):
-        # should return False
-        assert not auth_helper._validate_token(mock_token)
-    assert "Token expired" in caplog.text
+    # should return False
+    assert not auth_helper._validate_token(mock_token)
+    assert "Token expired" in capture_logs.text
 
 
-def test_validate_token_other_error(caplog):
+def test_validate_token_other_error(capture_logs):
     mock_token = mock()
 
     when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ValueError())
 
-    with caplog.at_level(logging.DEBUG):
-        # should return False
-        assert not auth_helper._validate_token(mock_token)
-    assert "Error validating token" in caplog.text
+    # should return False
+    assert not auth_helper._validate_token(mock_token)
+    assert "Error validating token" in capture_logs.text
 
 
 def test_clear_local_token_success():
@@ -110,15 +107,14 @@ def test_clear_local_token_success():
     verify(auth_helper.os).remove(mock_token_file)
 
 
-def test_clear_local_token_not_found(caplog):
+def test_clear_local_token_not_found(capture_logs):
     mock_token_file = mock()
 
     when(auth_helper.os).remove(mock_token_file).thenRaise(FileNotFoundError())
 
-    with caplog.at_level(logging.DEBUG):
-        auth_helper._clear_local_token(mock_token_file)
+    auth_helper._clear_local_token(mock_token_file)
 
-    assert "No local token found to clean up" in caplog.text
+    assert "No local token found to clean up" in capture_logs.text
 
 
 def test_load_local_token_success(mock_builtin_open):

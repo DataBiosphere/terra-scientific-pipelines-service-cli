@@ -42,15 +42,17 @@ def handle_api_exceptions(func):
     return wrapper
 
 
-def process_json(json_data) -> dict:
-    """Process the given JSON string and return a dictionary."""
+def process_json_to_dict(json_data) -> dict:
+    """Process the given JSON string and return a dictionary.
+    Returns None if the input string is not able to be parsed to a dictionary."""
     try:
         data = json.loads(json_data)
-        # Process the data here
+        if not (isinstance(data, dict)):
+            raise TypeError
         LOGGER.debug(f"Processed inputs: {data}")
         return data
     except (json.JSONDecodeError, TypeError):
-        LOGGER.error("Invalid JSON string provided.")
+        LOGGER.error("Input string not parsable to a dictionary.")
         return None
 
 

@@ -12,7 +12,7 @@ from teaspoons_client.exceptions import ApiException
 LOGGER = logging.getLogger(__name__)
 
 
-def test_list_pipelines(caplog):
+def test_list_pipelines(capture_logs):
     runner = CliRunner()
     test_pipelines = [
         Pipeline(
@@ -29,17 +29,16 @@ def test_list_pipelines(caplog):
 
     when(pipelines_commands.pipelines_logic).list_pipelines().thenReturn(test_pipelines)
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(pipelines_commands.pipelines, ["list"])
+    result = runner.invoke(pipelines_commands.pipelines, ["list"])
 
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).list_pipelines()
-    assert "Found 2 available pipelines:" in caplog.text
-    assert "test_pipeline_1" in caplog.text
-    assert "test_pipeline_2" in caplog.text
+    assert "Found 2 available pipelines:" in capture_logs.text
+    assert "test_pipeline_1" in capture_logs.text
+    assert "test_pipeline_2" in capture_logs.text
 
 
-def test_get_info_success(caplog, unstub):
+def test_get_info_success(capture_logs, unstub):
     runner = CliRunner()
     test_pipeline = PipelineWithDetails(
         pipeline_name="test_pipeline",
@@ -55,14 +54,13 @@ def test_get_info_success(caplog, unstub):
         test_pipeline_name
     ).thenReturn(test_pipeline)
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(
-            pipelines_commands.pipelines, ["get-info", test_pipeline_name]
-        )
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["get-info", test_pipeline_name]
+    )
 
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name)
-    assert test_pipeline_name in caplog.text
+    assert test_pipeline_name in capture_logs.text
 
     unstub()
 
@@ -78,7 +76,7 @@ def test_get_info_missing_argument():
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
 
 
-def test_get_info_api_exception(caplog, unstub):
+def test_get_info_api_exception(capture_logs, unstub):
     runner = CliRunner()
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -91,17 +89,16 @@ def test_get_info_api_exception(caplog, unstub):
         )
     )
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(
-            pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
-        )
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
+    )
 
     # Assert the command failed and that the error handler formatted the error message
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name")
     assert (
         "API call failed with status code 400 (Error Reason): this is the body message"
-        in caplog.text
+        in capture_logs.text
     )
 
     unstub()

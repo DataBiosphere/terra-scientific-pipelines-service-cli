@@ -1,14 +1,13 @@
 # tests/test_upload_download_logic.py
 
 import os
-import logging
 import tempfile
 from mockito import when, mock
 
 from terralab.logic import upload_download_logic
 
 
-def test_upload_file_with_signed_url(caplog):
+def test_upload_file_with_signed_url(capture_logs):
     # Arrange
     test_signed_url = "signed_url"
 
@@ -28,10 +27,9 @@ def test_upload_file_with_signed_url(caplog):
         )
 
         # Act
-        with caplog.at_level(logging.DEBUG):
-            upload_download_logic.upload_file_with_signed_url(
-                test_local_file_path, test_signed_url
-            )
+        upload_download_logic.upload_file_with_signed_url(
+            test_local_file_path, test_signed_url
+        )
 
         # Assert
-        assert "File uploaded successfully" in caplog.text
+        assert "File uploaded successfully" in capture_logs.text
