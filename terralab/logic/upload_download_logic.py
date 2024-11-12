@@ -25,5 +25,5 @@ def upload_file_with_signed_url(local_file_path, signed_url):
         response.raise_for_status()  # Raise an exception if the upload fails
         LOGGER.info("File uploaded successfully")
     except Exception as e:
-        LOGGER.error("Error uploading file: ", e)
+        LOGGER.error("Error uploading file: {}", e)
         exit(1)

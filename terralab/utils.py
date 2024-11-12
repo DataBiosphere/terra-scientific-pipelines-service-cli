@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import typing
 
 from functools import wraps
 from pydantic import BaseModel
@@ -42,7 +43,7 @@ def handle_api_exceptions(func):
     return wrapper
 
 
-def process_json_to_dict(json_data) -> dict:
+def process_json_to_dict(json_data) -> typing.Optional[dict]:
     """Process the given JSON string and return a dictionary.
     Returns None if the input string is not able to be parsed to a dictionary."""
     try:
