@@ -114,6 +114,17 @@ def test_validate_pipeline_inputs(capture_logs):
     # Should succeed with valid inputs
     pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
 
+    # Should succeed with a warning about an unexpected input
+    test_inputs_dict = {
+        "input1": "value1",
+        "input2": "value2",
+        "extra_key": "extra_value",
+    }
+
+    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
+
+    assert "Warning: discarding unexpected input `extra_key`" in capture_logs.text
+
     # Should fail with missing input
     with pytest.raises(SystemExit):
         pipelines_logic.validate_pipeline_inputs(

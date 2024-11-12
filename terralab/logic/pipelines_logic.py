@@ -35,7 +35,6 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
     # retrieve required pipeline inputs; note currently this endpoint only returns required inputs
     pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name)
 
-    # TODO highlight the field name in the output so it's clearer
     input_error_messages = []
     for (
         input_info
@@ -43,15 +42,26 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
         input_name: str = input_info.name
         LOGGER.debug(f"Validating input {input_name}")
         if input_name not in inputs_dict:
-            input_error_messages.append(f"Missing required input {input_name}")
+            input_error_messages.append(f"Missing required input `{input_name}`")
         else:
             # input is present in inputs_dict; if it's a file, extract the path and validate
             if input_info.type == "FILE" and (
                 not is_valid_local_file(inputs_dict[input_name])
             ):
                 input_error_messages.append(
-                    f"Could not find provided file for input {input_name}: {inputs_dict[input_name]}"
+                    f"Could not find provided file for input `{input_name}`: `{inputs_dict[input_name]}`"
                 )
+
+    input_warning_messages = []
+    for provided_input_key in inputs_dict.keys():
+        if provided_input_key not in pipeline_info.inputs:
+            input_warning_messages.append(
+                f"Warning: discarding unexpected input `{provided_input_key}`"
+            )
+
+    if input_warning_messages:
+        warning_string = "\n".join(input_warning_messages)
+        LOGGER.warning(warning_string)
 
     if input_error_messages:
         error_string = "\n\t".join(input_error_messages)
