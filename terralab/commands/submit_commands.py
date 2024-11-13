@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 @click.argument("pipeline_name")
 @click.option(
     "--version", type=int, default=0, help="pipeline version; default: 0"
-)  # TODO default to latest
+)  # once TSPS-370 is done, remove default
 @click.option("--inputs", type=str, required=True, help="JSON string input")
 @click.option(
     "--description", type=str, default="", help="optional description for the job"

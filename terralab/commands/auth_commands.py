@@ -5,19 +5,7 @@ import click
 from terralab.logic import auth_logic
 
 
-# TODO change to just logout
-@click.group()
-def auth():
-    """Commands for authenticating to Terralab"""
-
-
-@auth.command()
-def login():
-    """Authenticate with Terralab via browser login to Terra b2c"""
-    auth_logic.check_local_token_and_fetch_if_needed()
-
-
-@auth.command()
+@click.command()
 def logout():
     """Clear the local authentication token"""
     auth_logic.clear_local_token()

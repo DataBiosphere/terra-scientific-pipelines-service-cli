@@ -3,13 +3,14 @@
 import jwt
 import logging
 import os
+import webbrowser
 import typing as t
 
+from collections.abc import Callable
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
     OAuthCallbackHttpServer,
     get_auth_url,
-    open_browser,
     exchange_code_for_access_token,
 )
 
@@ -37,13 +38,31 @@ def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
     server_port = CliConfig().server_port
     callback_server = OAuthCallbackHttpServer(server_port)
     auth_url = get_auth_url(client_info, callback_server.callback_url)
-    open_browser(f"{auth_url}&prompt=login")
+    _open_browser(f"{auth_url}&prompt=login", LOGGER.info)
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError("No code could be obtained from browser callback page")
     return exchange_code_for_access_token(
         client_info, callback_server.callback_url, code
     )
+
+
+def _open_browser(
+    url: str, print_open_browser_instruction: Callable[[str], None] | None = print
+) -> None:
+    """
+    Open browser using webbrowser module and show message about URL open
+    Customized from oauth2_cli_auth.code_grant
+
+    :param print_open_browser_instruction: Callback to print the instructions to open the browser. Set to None in order to supress the output.
+    :param url: URL to open and display
+    :return: None
+    """
+    if print_open_browser_instruction is not None:
+        print_open_browser_instruction(
+            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your broswer:\n\n{url}\n"
+        )
+    webbrowser.open(url)
 
 
 def _validate_token(token: str) -> bool:

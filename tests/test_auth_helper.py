@@ -45,7 +45,7 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
         mock_callback_server
     )
     when(auth_helper).get_auth_url(...).thenReturn(None)
-    when(auth_helper).open_browser(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
     when(auth_helper).exchange_code_for_access_token(...).thenReturn(mock_token)
 
@@ -62,7 +62,7 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config):
         mock_callback_server
     )
     when(auth_helper).get_auth_url(...).thenReturn(None)
-    when(auth_helper).open_browser(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(None)
 
     with pytest.raises(ValueError):

@@ -34,12 +34,11 @@ class OrderedGroup(click.Group):
         return self.commands
 
 
-# TODO see if you can include group commands in -h
 @click.group(
     name="terralab",
     context_settings=CONTEXT_SETTINGS,
     cls=OrderedGroup,
-    epilog="Check out our docs at ADD DOCS LINK!!!!!",
+    epilog="Check out our docs at [ADD DOCS LINK!!!!!]",
 )
 @click.version_option(__version__)
 @click.option(
@@ -56,10 +55,16 @@ def cli(debug):
 
 
 # the order in which these are added determines the order in which they show up in the --help output
+# submit
 cli.add_command(submit)
+
+# pipelines
 cli.add_command(pipelines)
-cli.add_command(list, name="  list")
-cli.add_command(get_info, name="  get-info")
+# pipelines sub-commands - still need to be called with the pipelines command
+cli.add_command(list, name="  pipelines list")
+cli.add_command(get_info, name="  pipelines get-info")
+
+# logout
 cli.add_command(logout)
 
 

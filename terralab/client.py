@@ -32,7 +32,6 @@ class ClientWrapper:
         cli_config = CliConfig()  # initialize the config from environment variables
         token = _load_local_token(cli_config.token_file)
         if not (token and _validate_token(token)):
-            LOGGER.info("No valid token found. Logging you in...")
             token = get_access_token_with_browser_open(cli_config.client_info)
         _save_local_token(cli_config.token_file, token)
 
