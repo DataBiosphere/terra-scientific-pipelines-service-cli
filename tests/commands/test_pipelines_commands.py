@@ -4,7 +4,12 @@ import logging
 from click.testing import CliRunner
 from mockito import when, verify
 from terralab.commands import pipelines_commands
-from teaspoons_client import Pipeline, PipelineWithDetails, ApiException
+from teaspoons_client import (
+    Pipeline,
+    PipelineWithDetails,
+    PipelineUserProvidedInputDefinition,
+    ApiException,
+)
 from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)
@@ -37,21 +42,23 @@ def test_list_pipelines(capture_logs):
 
 
 def test_get_info_success(capture_logs, unstub):
-    runner = CliRunner()
+    test_pipeline_name = "test_pipeline"
+    test_input_definition = PipelineUserProvidedInputDefinition(
+        name="test_input", type="test_type"
+    )
     test_pipeline = PipelineWithDetails(
-        pipeline_name="test_pipeline",
+        pipeline_name=test_pipeline_name,
         description="test_description",
         display_name="test_display_name",
         type="test_type",
-        inputs=[],
+        inputs=[test_input_definition],
     )
-
-    test_pipeline_name = "test_pipeline"
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
         test_pipeline_name
     ).thenReturn(test_pipeline)
 
+    runner = CliRunner()
     result = runner.invoke(
         pipelines_commands.pipelines, ["get-info", test_pipeline_name]
     )
@@ -59,6 +66,8 @@ def test_get_info_success(capture_logs, unstub):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name)
     assert test_pipeline_name in capture_logs.text
+    assert "test_description" in capture_logs.text
+    assert "test_input" in capture_logs.text
 
     unstub()
 

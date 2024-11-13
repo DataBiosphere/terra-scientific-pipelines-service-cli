@@ -1,12 +1,15 @@
 # tests/test_auth_helper.py
 
 import builtins
+import logging
 import pytest
 from mockito import when, mock, verify
 from jwt import ExpiredSignatureError
 
 from terralab import auth_helper
 from tests.utils_for_tests import capture_logs
+
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -52,6 +55,20 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     token = auth_helper.get_access_token_with_browser_open(mock_client_info)
 
     assert token == mock_token
+
+
+def test_open_browser(capture_logs):
+    test_url = "http://test/url"
+
+    when(auth_helper.webbrowser).open(test_url)  # do nothing
+
+    # nothing should print
+    auth_helper._open_browser(test_url, None)
+    assert "" == capture_logs.text
+
+    # when you pass a logging function, a message should be logged
+    auth_helper._open_browser(test_url, LOGGER.info)
+    assert test_url in capture_logs.text
 
 
 def test_get_access_token_with_browser_open_no_code(mock_cli_config):

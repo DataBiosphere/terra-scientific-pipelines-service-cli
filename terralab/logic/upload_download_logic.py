@@ -19,7 +19,7 @@ def upload_file_with_signed_url(local_file_path, signed_url):
                 total=total_bytes,
                 miniters=1,
                 desc="Upload progress",
-                bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [Est. time remaining: {remaining}, est. upload speed: {rate_fmt}{postfix}]",
+                bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [ETA: {remaining} ({rate_fmt}{postfix})]",
             ) as file_obj:
                 response = requests.request(
                     method="PUT",
