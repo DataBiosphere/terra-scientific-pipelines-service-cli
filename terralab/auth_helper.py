@@ -60,7 +60,7 @@ def _open_browser(
     """
     if print_open_browser_instruction is not None:
         print_open_browser_instruction(
-            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your broswer:\n\n{url}\n"
+            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your browser:\n\n{url}\n"
         )
     webbrowser.open(url)
 
