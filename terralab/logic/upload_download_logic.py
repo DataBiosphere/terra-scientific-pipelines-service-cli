@@ -13,14 +13,13 @@ def upload_file_with_signed_url(local_file_path, signed_url):
     try:
         with open(local_file_path, "rb") as in_file:
             total_bytes = os.fstat(in_file.fileno()).st_size
-            # TODO explore options to make estimated time remaining more explicit
-            # time remaining more important than time elapsed so far.
             with tqdm.wrapattr(
                 in_file,
                 "read",
                 total=total_bytes,
                 miniters=1,
                 desc="Upload progress",
+                bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [Est. time remaining: {remaining}, est. upload speed: {rate_fmt}{postfix}]",
             ) as file_obj:
                 response = requests.request(
                     method="PUT",
@@ -29,7 +28,7 @@ def upload_file_with_signed_url(local_file_path, signed_url):
                     headers={"Content-Type": "application/octet-stream"},
                 )
                 response.raise_for_status()
-        LOGGER.info(f"File {local_file_path} uploaded successfully")
+        LOGGER.info(f"\nFile `{local_file_path}` upload complete\n")
     except Exception as e:
         LOGGER.error(f"Error uploading file: {e}")
         exit(1)

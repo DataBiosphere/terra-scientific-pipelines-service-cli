@@ -36,10 +36,12 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
     pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name)
 
     input_error_messages = []
+    expected_input_keys = []
     for (
         input_info
     ) in pipeline_info.inputs:  # input_info is PipelineUserProvidedInputDefinition
         input_name: str = input_info.name
+        expected_input_keys.append(input_name)
         LOGGER.debug(f"Validating input {input_name}")
         if input_name not in inputs_dict:
             input_error_messages.append(f"Missing required input `{input_name}`")
@@ -54,7 +56,7 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
 
     input_warning_messages = []
     for provided_input_key in inputs_dict.keys():
-        if provided_input_key not in pipeline_info.inputs:
+        if provided_input_key not in expected_input_keys:
             input_warning_messages.append(
                 f"Warning: discarding unexpected input `{provided_input_key}`"
             )

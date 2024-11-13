@@ -33,7 +33,7 @@ def test_upload_file_with_signed_url_success(capture_logs):
         )
 
         # Assert
-        assert f"File {test_local_file_path} uploaded successfully" in capture_logs.text
+        assert f"File `{test_local_file_path}` upload complete" in capture_logs.text
 
 
 def test_upload_file_with_signed_url_failed(capture_logs):
