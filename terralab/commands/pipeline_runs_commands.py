@@ -23,7 +23,6 @@ LOGGER = logging.getLogger(__name__)
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
     """Submit a pipeline run"""
     inputs_dict = process_json_to_dict(inputs)
-    # TODO add check for if inputs_dict is None, then throw an error?
 
     # validate inputs
     pipelines_logic.validate_pipeline_inputs(pipeline_name, inputs_dict)
