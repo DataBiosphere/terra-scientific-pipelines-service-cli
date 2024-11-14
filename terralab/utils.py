@@ -10,6 +10,8 @@ from functools import wraps
 
 from teaspoons_client import ApiException
 
+from terralab.log import add_blankline_after
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,10 +23,10 @@ def handle_api_exceptions(func):
             return func(*args, **kwargs)
         except ApiException as e:
             formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
-            LOGGER.error(formatted_message)
+            LOGGER.error(add_blankline_after(formatted_message))
             exit(1)
         except Exception as e:
-            LOGGER.error(str(e))
+            LOGGER.error(add_blankline_after(str(e)))
             exit(1)
 
     return wrapper
@@ -40,7 +42,7 @@ def process_json_to_dict(json_data) -> dict:
         LOGGER.debug(f"Processed inputs: {data}")
         return data
     except (json.JSONDecodeError, TypeError):
-        LOGGER.error("Input string not parsable to a dictionary.")
+        LOGGER.error(add_blankline_after("Input string not parsable to a dictionary."))
         exit(1)
 
 
@@ -69,7 +71,7 @@ def upload_file_with_signed_url(local_file_path, signed_url):
                     headers={"Content-Type": "application/octet-stream"},
                 )
                 response.raise_for_status()
-        LOGGER.info(f"\nFile `{local_file_path}` upload complete\n")
+        LOGGER.info(add_blankline_after(f"File `{local_file_path}` upload complete"))
     except Exception as e:
-        LOGGER.error(f"Error uploading file: {e}")
+        LOGGER.error(add_blankline_after(f"Error uploading file: {e}"))
         exit(1)

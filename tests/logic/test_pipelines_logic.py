@@ -122,7 +122,7 @@ def test_validate_pipeline_inputs_extra_input_warning(capture_logs):
 
     pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
 
-    assert "Warning: discarding unexpected input `extra_key`" in capture_logs.text
+    assert "Ignoring unexpected input `extra_key`" in capture_logs.text
 
 
 def test_validate_pipeline_inputs_missing_input(capture_logs):

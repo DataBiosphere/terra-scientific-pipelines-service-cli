@@ -6,6 +6,7 @@ from teaspoons_client import PipelinesApi, PipelineWithDetails, Pipeline
 
 from terralab.client import ClientWrapper
 from terralab.utils import is_valid_local_file
+from terralab.log import indented, join_lines, add_blankline_after
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,35 +38,41 @@ def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
 
     input_error_messages = []
     expected_input_keys = []
-    for (
-        input_info
-    ) in pipeline_info.inputs:  # input_info is PipelineUserProvidedInputDefinition
+    for input_info in pipeline_info.inputs:  # PipelineUserProvidedInputDefinition
         input_name: str = input_info.name
         expected_input_keys.append(input_name)
         LOGGER.debug(f"Validating input {input_name}")
         if input_name not in inputs_dict:
-            input_error_messages.append(f"Missing required input `{input_name}`")
+            input_error_messages.append(
+                indented(f"Missing required input `{input_name}`")
+            )
         else:
             # input is present in inputs_dict; if it's a file, extract the path and validate
             if input_info.type == "FILE" and (
                 not is_valid_local_file(inputs_dict[input_name])
             ):
                 input_error_messages.append(
-                    f"Could not find provided file for input `{input_name}`: `{inputs_dict[input_name]}`"
+                    indented(
+                        f"Could not find provided file for input `{input_name}`: `{inputs_dict[input_name]}`"
+                    )
                 )
 
     input_warning_messages = []
     for provided_input_key in inputs_dict.keys():
         if provided_input_key not in expected_input_keys:
             input_warning_messages.append(
-                f"Warning: discarding unexpected input `{provided_input_key}`"
+                f"Ignoring unexpected input `{provided_input_key}`"
             )
 
     if input_warning_messages:
-        warning_string = "\n".join(input_warning_messages)
-        LOGGER.warning(warning_string)
+        LOGGER.warning(add_blankline_after(join_lines(input_warning_messages)))
 
     if input_error_messages:
-        error_string = "\n\t".join(input_error_messages)
-        LOGGER.error(f"Missing or invalid inputs provided:\n\t{error_string}")
+        LOGGER.error(
+            add_blankline_after(
+                join_lines(
+                    ["Missing or invalid inputs provided:"] + input_error_messages
+                )
+            )
+        )
         exit(1)
