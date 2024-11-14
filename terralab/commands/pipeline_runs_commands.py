@@ -3,7 +3,7 @@
 import click
 import logging
 
-from terralab.logic import submit_logic
+from terralab.logic import pipeline_runs_logic
 from terralab.utils import handle_api_exceptions, process_json_to_dict
 from terralab.logic import pipelines_logic
 
@@ -23,11 +23,12 @@ LOGGER = logging.getLogger(__name__)
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
     """Submit a pipeline run"""
     inputs_dict = process_json_to_dict(inputs)
+    # TODO add check for if inputs_dict is None, then throw an error?
 
     # validate inputs
     pipelines_logic.validate_pipeline_inputs(pipeline_name, inputs_dict)
 
-    submitted_job_id = submit_logic.prepare_upload_start_pipeline_run(
+    submitted_job_id = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         pipeline_name, version, inputs_dict, description
     )
 

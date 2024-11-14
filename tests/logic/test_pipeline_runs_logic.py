@@ -4,7 +4,7 @@ import pytest
 import uuid
 from mockito import when, mock, verify
 
-from terralab.logic import submit_logic
+from terralab.logic import pipeline_runs_logic
 from teaspoons_client import (
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
@@ -15,7 +15,7 @@ from teaspoons_client import (
 @pytest.fixture
 def mock_cli_config(unstub):
     config = mock({"token_file": "mock_token_file"})
-    when(submit_logic).CliConfig(...).thenReturn(config)
+    when(pipeline_runs_logic).CliConfig(...).thenReturn(config)
     yield config
     unstub()
 
@@ -27,7 +27,7 @@ def mock_client_wrapper(unstub):
     when(client).__enter__().thenReturn(client)
     when(client).__exit__(None, None, None).thenReturn(None)
 
-    when(submit_logic).ClientWrapper(...).thenReturn(client)
+    when(pipeline_runs_logic).ClientWrapper(...).thenReturn(client)
     yield client
     unstub()
 
@@ -35,7 +35,7 @@ def mock_client_wrapper(unstub):
 @pytest.fixture
 def mock_pipeline_runs_api(mock_client_wrapper, unstub):
     api = mock()
-    when(submit_logic).PipelineRunsApi(...).thenReturn(api)
+    when(pipeline_runs_logic).PipelineRunsApi(...).thenReturn(api)
     yield api
     unstub()
 
@@ -55,7 +55,7 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     test_input_name = "test_input"
     test_signed_url = "signed_url"
     test_file_input_upload_urls_dict = {
-        test_input_name: {submit_logic.SIGNED_URL_KEY: test_signed_url}
+        test_input_name: {pipeline_runs_logic.SIGNED_URL_KEY: test_signed_url}
     }
     mock_pipeline_run_response = mock(
         {
@@ -68,7 +68,7 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     ).thenReturn(mock_pipeline_run_response)
 
     # Act
-    result = submit_logic.prepare_pipeline_run(
+    result = pipeline_runs_logic.prepare_pipeline_run(
         test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs
     )
 
@@ -97,7 +97,7 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
     ).thenReturn(mock_async_pipeline_run_response)
 
     # Act
-    result = submit_logic.start_pipeline_run(
+    result = pipeline_runs_logic.start_pipeline_run(
         test_pipeline_name, test_job_id, test_description
     )
 
@@ -129,7 +129,7 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
     ).thenReturn(mock_async_pipeline_run_response)
 
     # Act
-    response = submit_logic.start_pipeline_run(
+    response = pipeline_runs_logic.start_pipeline_run(
         test_pipeline_name, test_job_id, test_description
     )
 
@@ -151,24 +151,24 @@ def test_prepare_upload_start_pipeline_run():
 
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
-    when(submit_logic.uuid).uuid4().thenReturn(test_job_id)
+    when(pipeline_runs_logic.uuid).uuid4().thenReturn(test_job_id)
 
     test_signed_url = "signed_url"
     test_upload_url_dict = {test_input_name: test_signed_url}
-    when(submit_logic).prepare_pipeline_run(
+    when(pipeline_runs_logic).prepare_pipeline_run(
         test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs
     ).thenReturn(test_upload_url_dict)
 
-    when(submit_logic).upload_file_with_signed_url(
+    when(pipeline_runs_logic).upload_file_with_signed_url(
         test_input_value, test_signed_url
     )  # do nothing
 
-    when(submit_logic).start_pipeline_run(
+    when(pipeline_runs_logic).start_pipeline_run(
         test_pipeline_name, test_job_id_str, test_description
     ).thenReturn(test_job_id)
 
     # Act
-    response = submit_logic.prepare_upload_start_pipeline_run(
+    response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         test_pipeline_name, test_pipeline_version, test_inputs, test_description
     )
 

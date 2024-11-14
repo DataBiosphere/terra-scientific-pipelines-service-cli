@@ -10,7 +10,7 @@ from teaspoons_client import (
     JobControl,
 )
 
-from terralab.logic.upload_download_logic import upload_file_with_signed_url
+from terralab.utils import upload_file_with_signed_url
 from terralab.client import ClientWrapper
 
 

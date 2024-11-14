@@ -8,7 +8,7 @@ from typing import Optional, Mapping
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
-from terralab.commands.submit_commands import submit
+from terralab.commands.pipeline_runs_commands import submit
 
 
 # Context settings for commands, for overwriting some click defaults
@@ -34,12 +34,7 @@ class OrderedGroup(click.Group):
         return self.commands
 
 
-@click.group(
-    name="terralab",
-    context_settings=CONTEXT_SETTINGS,
-    cls=OrderedGroup,
-    epilog="Check out our docs at [ADD DOCS LINK!!!!!]",
-)
+@click.group(context_settings=CONTEXT_SETTINGS, cls=OrderedGroup)
 @click.version_option(__version__)
 @click.option(
     "--debug",

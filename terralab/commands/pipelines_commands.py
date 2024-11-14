@@ -33,7 +33,7 @@ def get_info(pipeline_name: str):
     """Get information about a specific pipeline"""
     n_spaces = 16
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
-    LOGGER.info(f"\n{'Pipeline name:'.ljust(n_spaces)}{pipeline_info.pipeline_name}")
+    LOGGER.info(f"{'Pipeline name:'.ljust(n_spaces)}{pipeline_info.pipeline_name}")
     LOGGER.info(f"{'Description:'.ljust(n_spaces)}{pipeline_info.description}")
     LOGGER.info("Inputs: ")
     inputs_strings = []
