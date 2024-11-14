@@ -32,4 +32,4 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
         pipeline_name, version, inputs_dict, description
     )
 
-    LOGGER.info(f"Successfully started {pipeline_name} job {submitted_job_id}\n")
+    LOGGER.info(f"Successfully started {pipeline_name} job {submitted_job_id}")

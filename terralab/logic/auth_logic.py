@@ -11,4 +11,4 @@ def clear_local_token():
     """Clear the local authentication token"""
     cli_config = CliConfig()  # initialize the config from environment variables
     _clear_local_token(cli_config.token_file)
-    LOGGER.info("\nLogged out\n")
+    LOGGER.info("Logged out")

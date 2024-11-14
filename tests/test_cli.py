@@ -11,6 +11,12 @@ def test_cli():
     result = runner.invoke(cli.cli, ["-h"])
 
     # expect the following packages
-    expected_commands = ["auth", "pipelines", "submit"]
+    expected_commands = [
+        "submit",
+        "pipelines",
+        "pipelines list",
+        "pipelines get-info",
+        "logout",
+    ]
     for command in expected_commands:
         assert command in result.output

@@ -50,7 +50,6 @@ def test_is_valid_local_file():
 
 
 def test_upload_file_with_signed_url_success(capture_logs):
-    # Arrange
     test_signed_url = "signed_url"
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -66,15 +65,12 @@ def test_upload_file_with_signed_url_success(capture_logs):
 
         when(utils.requests).request(...).thenReturn(mock_response)
 
-        # Act
         utils.upload_file_with_signed_url(test_local_file_path, test_signed_url)
 
-        # Assert
         assert f"File `{test_local_file_path}` upload complete" in capture_logs.text
 
 
 def test_upload_file_with_signed_url_failed(capture_logs):
-    # Arrange
     test_signed_url = "signed_url"
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -92,7 +88,6 @@ def test_upload_file_with_signed_url_failed(capture_logs):
 
         when(utils.requests).request(...).thenReturn(mock_response)
 
-        # Act
         with pytest.raises(SystemExit):
             utils.upload_file_with_signed_url(test_local_file_path, test_signed_url)
 

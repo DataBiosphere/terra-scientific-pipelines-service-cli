@@ -19,5 +19,4 @@ def test_clear_local_token(mock_cli_config, unstub):
 
     auth_logic.clear_local_token()
 
-    # Verify the token was cleared and message was printed
     verify(auth_logic)._clear_local_token("mock_token_file")

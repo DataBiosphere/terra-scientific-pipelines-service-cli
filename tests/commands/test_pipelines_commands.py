@@ -75,10 +75,8 @@ def test_get_info_success(capture_logs, unstub):
 def test_get_info_missing_argument():
     runner = CliRunner()
 
-    # Assert the command raises a PipelineApi exception
     result = runner.invoke(pipelines_commands.pipelines, ["get-info"])
 
-    # Assert the command failed due to missing argument
     assert result.exit_code != 0
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
 
@@ -100,7 +98,6 @@ def test_get_info_api_exception(capture_logs, unstub):
         pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
     )
 
-    # Assert the command failed and that the error handler formatted the error message
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name")
     assert (

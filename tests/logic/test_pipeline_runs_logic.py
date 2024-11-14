@@ -41,7 +41,6 @@ def mock_pipeline_runs_api(mock_client_wrapper, unstub):
 
 
 def test_prepare_pipeline_run(mock_pipeline_runs_api):
-    # Arrange
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"
     test_pipeline_version = 1
@@ -67,12 +66,10 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
         test_pipeline_name, test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
-    # Act
     result = pipeline_runs_logic.prepare_pipeline_run(
         test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs
     )
 
-    # Assert
     assert result == {test_input_name: test_signed_url}
     verify(mock_pipeline_runs_api).prepare_pipeline_run(
         test_pipeline_name, test_prepare_pipeline_run_request_body
@@ -80,7 +77,6 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
 
 
 def test_start_pipeline_run_running(mock_pipeline_runs_api):
-    # Arrange
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"
     test_description = "user-provided description"
@@ -96,12 +92,10 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
         test_pipeline_name, test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    # Act
     result = pipeline_runs_logic.start_pipeline_run(
         test_pipeline_name, test_job_id, test_description
     )
 
-    # Assert
     assert result == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
         test_pipeline_name, test_start_pipeline_run_request_body
@@ -109,7 +103,6 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
 
 
 def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
-    # Arrange
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"
     test_description = "user-provided description"
@@ -128,12 +121,10 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
         test_pipeline_name, test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    # Act
     response = pipeline_runs_logic.start_pipeline_run(
         test_pipeline_name, test_job_id, test_description
     )
 
-    # Assert
     assert response == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
         test_pipeline_name, test_start_pipeline_run_request_body
@@ -141,7 +132,6 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
 
 
 def test_prepare_upload_start_pipeline_run():
-    # Arrange
     test_pipeline_name = "foobar"
     test_pipeline_version = 0
     test_input_name = "input_name"
@@ -167,10 +157,8 @@ def test_prepare_upload_start_pipeline_run():
         test_pipeline_name, test_job_id_str, test_description
     ).thenReturn(test_job_id)
 
-    # Act
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         test_pipeline_name, test_pipeline_version, test_inputs, test_description
     )
 
-    # Assert
     assert response == test_job_id
