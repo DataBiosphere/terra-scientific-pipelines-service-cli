@@ -162,13 +162,13 @@ def _validate_token(token: str) -> bool:
         # Note: We explicitly do not verify the signature of the token since that will be verified by the backend services.
         # This is just to ensure the token is not expired
         jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
-        LOGGER.debug(f"Token {token[:10]} is not expired")
+        LOGGER.debug(f"Token {token[-5:]} is not expired")
         return True
     except jwt.ExpiredSignatureError:
-        LOGGER.debug(f"Token {token[:10]}  expired")
+        LOGGER.debug(f"Token {token[-5:]}  expired")
         return False
     except Exception as e:
-        LOGGER.error(f"Error validating token {token[:10]} : {e}")
+        LOGGER.error(f"Error validating token {token[-5:]} : {e}")
         return False
 
 
