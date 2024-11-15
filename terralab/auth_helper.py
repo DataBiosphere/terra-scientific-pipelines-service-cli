@@ -6,12 +6,18 @@ import os
 import webbrowser
 import typing as t
 
+import base64
+import urllib
+import json
+import time
+from urllib.error import URLError
+
 from collections.abc import Callable
+
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
     OAuthCallbackHttpServer,
     get_auth_url,
-    exchange_code_for_access_token,
 )
 
 from terralab.config import CliConfig
@@ -21,7 +27,7 @@ from terralab.log import add_blankline_after
 LOGGER = logging.getLogger(__name__)
 
 
-def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
+def get_tokens_with_browser_open(client_info: OAuth2ClientInfo) -> tuple[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to use a custom auth url
 
@@ -34,7 +40,7 @@ def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
 
     :param client_info: Client Info for Oauth2 Interaction
     :param server_port: Port of the local web server to spin up
-    :return: Access Token
+    :return: Access Token and Refresh Token
     """
     server_port = CliConfig().server_port
     callback_server = OAuthCallbackHttpServer(server_port)
@@ -43,9 +49,9 @@ def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError("No code could be obtained from browser callback page")
-    return exchange_code_for_access_token(
-        client_info, callback_server.callback_url, code
-    )
+    
+    response_dict = exchange_code_for_response(client_info, callback_server.callback_url, code)
+    return response_dict["access_token"], response_dict["refresh_token"]
 
 
 def _open_browser(
@@ -67,6 +73,73 @@ def _open_browser(
         )
     webbrowser.open(url)
 
+def refresh_tokens(client_info: OAuth2ClientInfo, refresh_token: str) -> tuple[str, str]:
+    server_port = CliConfig().server_port
+    callback_server = OAuthCallbackHttpServer(server_port)
+
+    response_dict = exchange_code_for_response(client_info, callback_server.callback_url, refresh_token, grant_type="refresh_token")
+    return response_dict["access_token"], response_dict["refresh_token"]
+
+
+def exchange_code_for_response(
+        client_info: OAuth2ClientInfo,
+        redirect_uri: str,
+        code: str,
+        grant_type: str = "authorization_code",
+) -> dict:
+    """
+    Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens
+    Exchange a code for an access token using the endpoints from client info and return the entire response
+
+    :param client_info: Info about oauth2 client
+    :param redirect_uri: Callback URL
+    :param code: Code to redeem
+    :param grant_type: Type of grant request (default `authorization_code`, can also be `refresh_token`)
+    :return: Response from OAuth2 endpoint
+    """
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Basic " + base64.b64encode(f"{client_info.client_id}:".encode()).decode(),
+    }
+
+    # see documentation at https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
+    code_key = "code"
+    if grant_type == "refresh_token":
+        code_key = "refresh_token"
+    data = {
+        code_key: code,
+        "redirect_uri": redirect_uri,
+        "grant_type": grant_type,
+    }
+    encoded_data = urllib.parse.urlencode(data).encode('utf-8')
+
+    request = urllib.request.Request(client_info.token_url, data=encoded_data, headers=headers)
+    json_response = _load_json(request)
+
+    return json_response
+
+
+def _load_json(url_or_request: str | urllib.request.Request) -> dict:
+    with _urlopen_with_backoff(url_or_request) as response:
+        response_data = response.read().decode('utf-8')
+        json_response = json.loads(response_data)
+    return json_response
+
+
+def _urlopen_with_backoff(url, max_retries=3, base_delay=1, timeout=15):
+    retries = 0
+
+    while retries < max_retries:
+        try:
+            response = urllib.request.urlopen(url, timeout=timeout)
+            return response
+        except Exception:
+            retries += 1
+            delay = base_delay * (2 ** retries)
+            time.sleep(delay)
+
+    raise URLError(f"Failed to open URL after {max_retries} retries")
+
 
 def _validate_token(token: str) -> bool:
     try:
@@ -74,12 +147,13 @@ def _validate_token(token: str) -> bool:
         # Note: We explicitly do not verify the signature of the token since that will be verified by the backend services.
         # This is just to ensure the token is not expired
         jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
+        LOGGER.debug(f"Token {token[:10]} is not expired")
         return True
     except jwt.ExpiredSignatureError:
-        LOGGER.debug("Token expired")
+        LOGGER.debug(f"Token {token[:10]}  expired")
         return False
     except Exception as e:
-        LOGGER.error(f"Error validating token: {e}")
+        LOGGER.error(f"Error validating token {token[:10]} : {e}")
         return False
 
 
@@ -90,11 +164,13 @@ def _clear_local_token(token_file: str):
         LOGGER.debug("No local token found to clean up")
 
 
-def _load_local_token(token_file: str) -> t.Optional[str]:
+def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]:
     try:
         with open(token_file, "r") as f:
             token = f.read()
-            if _validate_token(token):
+            if not(validate):
+                return token
+            elif _validate_token(token):
                 return token
             else:
                 return None

@@ -52,7 +52,7 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
     when(auth_helper).exchange_code_for_access_token(...).thenReturn(mock_token)
 
-    token = auth_helper.get_access_token_with_browser_open(mock_client_info)
+    token = auth_helper.get_tokens_with_browser_open(mock_client_info)
 
     assert token == mock_token
 
@@ -83,7 +83,7 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config):
     when(mock_callback_server).wait_for_code().thenReturn(None)
 
     with pytest.raises(ValueError):
-        auth_helper.get_access_token_with_browser_open(mock_client_info)
+        auth_helper.get_tokens_with_browser_open(mock_client_info)
 
 
 def test_validate_token_valid():

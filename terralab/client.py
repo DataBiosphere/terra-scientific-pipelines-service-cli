@@ -8,7 +8,8 @@ from terralab.auth_helper import (
     _load_local_token,
     _validate_token,
     _save_local_token,
-    get_access_token_with_browser_open,
+    get_tokens_with_browser_open,
+    refresh_tokens
 )
 
 
@@ -30,12 +31,31 @@ class ClientWrapper:
 
     def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
-        token = _load_local_token(cli_config.token_file)
-        if not (token and _validate_token(token)):
-            token = get_access_token_with_browser_open(cli_config.client_info)
-        _save_local_token(cli_config.token_file, token)
+        # note that this load function only returns valid tokens
+        access_token = _load_local_token(cli_config.token_file)
+        refresh_token = _load_local_token(cli_config.refresh_file, validate=False)
 
-        return _get_api_client(token, cli_config.config["TEASPOONS_API_URL"])
+        if access_token:
+            LOGGER.debug(f"Found access token {access_token[:10]}")
+        if refresh_token:
+            LOGGER.debug(f"Found refresh token {refresh_token[:10]}")
+
+        # first check if the access_token is present and valid
+        if not (access_token):
+            # next check the refresh token
+            if not (refresh_token): # and _validate_token(refresh_token)):
+                LOGGER.debug("No active access or refresh tokens found.")
+                LOGGER.info("No valid token found. Logging you in...")
+                access_token, refresh_token = get_tokens_with_browser_open(cli_config.client_info)
+            else:
+                LOGGER.debug(f"Found refresh token {refresh_token[:10]}")
+                # found a refresh token, try to get a new access token
+                LOGGER.debug("Attempting to refresh tokens")
+                access_token, refresh_token = refresh_tokens(cli_config.client_info, refresh_token)
+            _save_local_token(cli_config.token_file, access_token)
+            _save_local_token(cli_config.refresh_file, refresh_token)
+
+        return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # no action needed
