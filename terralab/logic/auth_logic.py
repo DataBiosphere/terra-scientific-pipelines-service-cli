@@ -2,27 +2,11 @@
 
 import logging
 from terralab.auth_helper import (
-    get_tokens_with_browser_open,
-    _validate_token,
-    _save_local_token,
-    _load_local_token,
     _clear_local_token,
 )
 from terralab.config import CliConfig
 
 LOGGER = logging.getLogger(__name__)
-
-
-def check_local_token_and_fetch_if_needed():
-    """Authenticate with Teaspoons via browser login to Terra b2c"""
-    cli_config = CliConfig()  # initialize the config from environment variables
-    token = _load_local_token(cli_config.token_file)
-    if token and _validate_token(token):
-        LOGGER.info("Already authenticated")
-        return
-    access_token, refresh_token = get_tokens_with_browser_open(cli_config.client_info)
-    _save_local_token(cli_config.token_file, access_token)
-    _save_local_token(cli_config.refresh_file, refresh_token)
 
 
 def clear_local_token():

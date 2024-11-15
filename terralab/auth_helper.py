@@ -49,8 +49,10 @@ def get_tokens_with_browser_open(client_info: OAuth2ClientInfo) -> tuple[str, st
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError("No code could be obtained from browser callback page")
-    
-    response_dict = exchange_code_for_response(client_info, callback_server.callback_url, code)
+
+    response_dict = _exchange_code_for_response(
+        client_info, callback_server.callback_url, code
+    )
     return response_dict["access_token"], response_dict["refresh_token"]
 
 
@@ -73,22 +75,30 @@ def _open_browser(
         )
     webbrowser.open(url)
 
-def refresh_tokens(client_info: OAuth2ClientInfo, refresh_token: str) -> tuple[str, str]:
+
+def refresh_tokens(
+    client_info: OAuth2ClientInfo, refresh_token: str
+) -> tuple[str, str]:
     server_port = CliConfig().server_port
     callback_server = OAuthCallbackHttpServer(server_port)
 
-    response_dict = exchange_code_for_response(client_info, callback_server.callback_url, refresh_token, grant_type="refresh_token")
+    response_dict = _exchange_code_for_response(
+        client_info,
+        callback_server.callback_url,
+        refresh_token,
+        grant_type="refresh_token",
+    )
     return response_dict["access_token"], response_dict["refresh_token"]
 
 
-def exchange_code_for_response(
-        client_info: OAuth2ClientInfo,
-        redirect_uri: str,
-        code: str,
-        grant_type: str = "authorization_code",
+def _exchange_code_for_response(
+    client_info: OAuth2ClientInfo,
+    redirect_uri: str,
+    code: str,
+    grant_type: str = "authorization_code",
 ) -> dict:
     """
-    Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens
+    Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens.
     Exchange a code for an access token using the endpoints from client info and return the entire response
 
     :param client_info: Info about oauth2 client
@@ -99,7 +109,8 @@ def exchange_code_for_response(
     """
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic " + base64.b64encode(f"{client_info.client_id}:".encode()).decode(),
+        "Authorization": "Basic "
+        + base64.b64encode(f"{client_info.client_id}:".encode()).decode(),
     }
 
     # see documentation at https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
@@ -111,22 +122,26 @@ def exchange_code_for_response(
         "redirect_uri": redirect_uri,
         "grant_type": grant_type,
     }
-    encoded_data = urllib.parse.urlencode(data).encode('utf-8')
+    encoded_data = urllib.parse.urlencode(data).encode("utf-8")
 
-    request = urllib.request.Request(client_info.token_url, data=encoded_data, headers=headers)
+    request = urllib.request.Request(
+        client_info.token_url, data=encoded_data, headers=headers
+    )
     json_response = _load_json(request)
 
     return json_response
 
 
 def _load_json(url_or_request: str | urllib.request.Request) -> dict:
+    """Note: this is overridden from the oauth2-cli-auth library to support exchange_code_for_response."""
     with _urlopen_with_backoff(url_or_request) as response:
-        response_data = response.read().decode('utf-8')
+        response_data = response.read().decode("utf-8")
         json_response = json.loads(response_data)
     return json_response
 
 
 def _urlopen_with_backoff(url, max_retries=3, base_delay=1, timeout=15):
+    """Note: this is overridden from the oauth2-cli-auth library to support exchange_code_for_response."""
     retries = 0
 
     while retries < max_retries:
@@ -135,7 +150,7 @@ def _urlopen_with_backoff(url, max_retries=3, base_delay=1, timeout=15):
             return response
         except Exception:
             retries += 1
-            delay = base_delay * (2 ** retries)
+            delay = base_delay * (2**retries)
             time.sleep(delay)
 
     raise URLError(f"Failed to open URL after {max_retries} retries")
@@ -168,7 +183,7 @@ def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]
     try:
         with open(token_file, "r") as f:
             token = f.read()
-            if not(validate):
+            if not (validate):
                 return token
             elif _validate_token(token):
                 return token

@@ -6,10 +6,9 @@ from teaspoons_client import Configuration, ApiClient
 from terralab.config import CliConfig
 from terralab.auth_helper import (
     _load_local_token,
-    _validate_token,
     _save_local_token,
     get_tokens_with_browser_open,
-    refresh_tokens
+    refresh_tokens,
 )
 
 
@@ -43,15 +42,19 @@ class ClientWrapper:
         # first check if the access_token is present and valid
         if not (access_token):
             # next check the refresh token
-            if not (refresh_token): # and _validate_token(refresh_token)):
+            if not (refresh_token):  # and _validate_token(refresh_token)):
                 LOGGER.debug("No active access or refresh tokens found.")
                 LOGGER.info("No valid token found. Logging you in...")
-                access_token, refresh_token = get_tokens_with_browser_open(cli_config.client_info)
+                access_token, refresh_token = get_tokens_with_browser_open(
+                    cli_config.client_info
+                )
             else:
                 LOGGER.debug(f"Found refresh token {refresh_token[:10]}")
                 # found a refresh token, try to get a new access token
                 LOGGER.debug("Attempting to refresh tokens")
-                access_token, refresh_token = refresh_tokens(cli_config.client_info, refresh_token)
+                access_token, refresh_token = refresh_tokens(
+                    cli_config.client_info, refresh_token
+                )
             _save_local_token(cli_config.token_file, access_token)
             _save_local_token(cli_config.refresh_file, refresh_token)
 

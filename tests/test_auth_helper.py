@@ -42,7 +42,12 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     mock_client_info = mock()
     mock_callback_server = mock()
     mock_code = mock()
-    mock_token = mock()
+    expected_access_token = "accesstoken"
+    expected_refresh_token = "refreshtoken"
+    exchange_response_dict = {
+        "access_token": expected_access_token,
+        "refresh_token": expected_refresh_token,
+    }
 
     when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
         mock_callback_server
@@ -50,11 +55,16 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     when(auth_helper).get_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
-    when(auth_helper).exchange_code_for_access_token(...).thenReturn(mock_token)
+    when(auth_helper)._exchange_code_for_response(...).thenReturn(
+        exchange_response_dict
+    )
 
-    token = auth_helper.get_tokens_with_browser_open(mock_client_info)
+    access_token, refresh_token = auth_helper.get_tokens_with_browser_open(
+        mock_client_info
+    )
 
-    assert token == mock_token
+    assert access_token == expected_access_token
+    assert refresh_token == expected_refresh_token
 
 
 def test_open_browser(capture_logs):
@@ -87,31 +97,31 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config):
 
 
 def test_validate_token_valid():
-    mock_token = mock()
+    access_token = "accesstoken"
 
-    when(auth_helper.jwt).decode(mock_token, ...).thenReturn(None)
+    when(auth_helper.jwt).decode(access_token, ...).thenReturn(None)
 
     # should return True
-    assert auth_helper._validate_token(mock_token)
+    assert auth_helper._validate_token(access_token)
 
 
 def test_validate_token_expired(capture_logs):
-    mock_token = mock()
+    access_token = "accesstoken"
 
-    when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ExpiredSignatureError())
+    when(auth_helper.jwt).decode(access_token, ...).thenRaise(ExpiredSignatureError())
 
     # should return False
-    assert not auth_helper._validate_token(mock_token)
-    assert "Token expired" in capture_logs.text
+    assert not auth_helper._validate_token(access_token)
+    assert "expired" in capture_logs.text
 
 
 def test_validate_token_other_error(capture_logs):
-    mock_token = mock()
+    access_token = "accesstoken"
 
-    when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ValueError())
+    when(auth_helper.jwt).decode(access_token, ...).thenRaise(ValueError())
 
     # should return False
-    assert not auth_helper._validate_token(mock_token)
+    assert not auth_helper._validate_token(access_token)
     assert "Error validating token" in capture_logs.text
 
 
@@ -137,20 +147,20 @@ def test_clear_local_token_not_found(capture_logs):
 
 def test_load_local_token_success(mock_builtin_open):
     mock_token_file = mock()
-    mock_token = mock()
+    expected_access_token = "accesstoken"
 
-    when(mock_builtin_open).read().thenReturn(mock_token)
-    when(auth_helper)._validate_token(mock_token).thenReturn(True)
+    when(mock_builtin_open).read().thenReturn(expected_access_token)
+    when(auth_helper)._validate_token(expected_access_token).thenReturn(True)
 
-    assert auth_helper._load_local_token(mock_token_file) == mock_token
+    assert auth_helper._load_local_token(mock_token_file) == expected_access_token
 
 
 def test_load_local_token_invalid(mock_builtin_open):
     mock_token_file = mock()
-    mock_token = mock()
+    expected_access_token = "accesstoken"
 
-    when(mock_builtin_open).read().thenReturn(mock_token)
-    when(auth_helper)._validate_token(mock_token).thenReturn(False)
+    when(mock_builtin_open).read().thenReturn(expected_access_token)
+    when(auth_helper)._validate_token(expected_access_token).thenReturn(False)
 
     assert auth_helper._load_local_token(mock_token_file) is None
 
