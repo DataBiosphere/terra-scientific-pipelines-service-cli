@@ -4,15 +4,18 @@ import logging
 from click.testing import CliRunner
 from mockito import when, verify
 from terralab.commands import pipelines_commands
-from teaspoons_client.models.pipeline import Pipeline
-from teaspoons_client.models.pipeline_with_details import PipelineWithDetails
-from teaspoons_client.exceptions import ApiException
-
+from teaspoons_client import (
+    Pipeline,
+    PipelineWithDetails,
+    PipelineUserProvidedInputDefinition,
+    ApiException,
+)
+from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)
 
 
-def test_list_pipelines(caplog):
+def test_list_pipelines(capture_logs):
     runner = CliRunner()
     test_pipelines = [
         Pipeline(
@@ -29,38 +32,42 @@ def test_list_pipelines(caplog):
 
     when(pipelines_commands.pipelines_logic).list_pipelines().thenReturn(test_pipelines)
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(pipelines_commands.pipelines, ["list"])
+    result = runner.invoke(pipelines_commands.pipelines, ["list"])
 
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).list_pipelines()
-    assert "Found 2 available pipelines:" in caplog.text
-    assert "test_pipeline_1" in caplog.text
-    assert "test_pipeline_2" in caplog.text
+    assert "Found 2 available pipelines:" in capture_logs.text
+    assert "test_pipeline_1" in capture_logs.text
+    assert "test_pipeline_2" in capture_logs.text
 
 
-def test_get_info_success(caplog, unstub):
-    runner = CliRunner()
+def test_get_info_success(capture_logs, unstub):
+    test_pipeline_name = "test_pipeline"
+    test_input_definition = PipelineUserProvidedInputDefinition(
+        name="test_input", type="test_type"
+    )
     test_pipeline = PipelineWithDetails(
-        pipeline_name="test_pipeline",
+        pipeline_name=test_pipeline_name,
         description="test_description",
         display_name="test_display_name",
         type="test_type",
-        inputs=[],
+        inputs=[test_input_definition],
     )
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
-        "test_pipeline"
+        test_pipeline_name
     ).thenReturn(test_pipeline)
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(
-            pipelines_commands.pipelines, ["get-info", "test_pipeline"]
-        )
+    runner = CliRunner()
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["get-info", test_pipeline_name]
+    )
 
     assert result.exit_code == 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info("test_pipeline")
-    assert "test_pipeline" in caplog.text
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name)
+    assert test_pipeline_name in capture_logs.text
+    assert "test_description" in capture_logs.text
+    assert "test_input" in capture_logs.text
 
     unstub()
 
@@ -68,15 +75,13 @@ def test_get_info_success(caplog, unstub):
 def test_get_info_missing_argument():
     runner = CliRunner()
 
-    # Assert the command raises a PipelineApi exception
     result = runner.invoke(pipelines_commands.pipelines, ["get-info"])
 
-    # Assert the command failed due to missing argument
     assert result.exit_code != 0
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
 
 
-def test_get_info_api_exception(caplog, unstub):
+def test_get_info_api_exception(capture_logs, unstub):
     runner = CliRunner()
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -89,17 +94,15 @@ def test_get_info_api_exception(caplog, unstub):
         )
     )
 
-    with caplog.at_level(logging.DEBUG):
-        result = runner.invoke(
-            pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
-        )
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
+    )
 
-    # Assert the command failed and that the error handler formatted the error message
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name")
     assert (
         "API call failed with status code 400 (Error Reason): this is the body message"
-        in caplog.text
+        in capture_logs.text
     )
 
     unstub()

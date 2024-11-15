@@ -7,6 +7,9 @@ from mockito import when, mock, verify
 from jwt import ExpiredSignatureError
 
 from terralab import auth_helper
+from tests.utils_for_tests import capture_logs
+
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -45,13 +48,27 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
         mock_callback_server
     )
     when(auth_helper).get_auth_url(...).thenReturn(None)
-    when(auth_helper).open_browser(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
     when(auth_helper).exchange_code_for_access_token(...).thenReturn(mock_token)
 
     token = auth_helper.get_access_token_with_browser_open(mock_client_info)
 
     assert token == mock_token
+
+
+def test_open_browser(capture_logs):
+    test_url = "http://test/url"
+
+    when(auth_helper.webbrowser).open(test_url)  # do nothing
+
+    # nothing should print
+    auth_helper._open_browser(test_url, None)
+    assert "" == capture_logs.text
+
+    # when you pass a logging function, a message should be logged
+    auth_helper._open_browser(test_url, LOGGER.info)
+    assert test_url in capture_logs.text
 
 
 def test_get_access_token_with_browser_open_no_code(mock_cli_config):
@@ -62,7 +79,7 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config):
         mock_callback_server
     )
     when(auth_helper).get_auth_url(...).thenReturn(None)
-    when(auth_helper).open_browser(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(None)
 
     with pytest.raises(ValueError):
@@ -78,26 +95,24 @@ def test_validate_token_valid():
     assert auth_helper._validate_token(mock_token)
 
 
-def test_validate_token_expired(caplog):
+def test_validate_token_expired(capture_logs):
     mock_token = mock()
 
     when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ExpiredSignatureError())
 
-    with caplog.at_level(logging.DEBUG):
-        # should return False
-        assert not auth_helper._validate_token(mock_token)
-    assert "Token expired" in caplog.text
+    # should return False
+    assert not auth_helper._validate_token(mock_token)
+    assert "Token expired" in capture_logs.text
 
 
-def test_validate_token_other_error(caplog):
+def test_validate_token_other_error(capture_logs):
     mock_token = mock()
 
     when(auth_helper.jwt).decode(mock_token, ...).thenRaise(ValueError())
 
-    with caplog.at_level(logging.DEBUG):
-        # should return False
-        assert not auth_helper._validate_token(mock_token)
-    assert "Error validating token" in caplog.text
+    # should return False
+    assert not auth_helper._validate_token(mock_token)
+    assert "Error validating token" in capture_logs.text
 
 
 def test_clear_local_token_success():
@@ -110,15 +125,14 @@ def test_clear_local_token_success():
     verify(auth_helper.os).remove(mock_token_file)
 
 
-def test_clear_local_token_not_found(caplog):
+def test_clear_local_token_not_found(capture_logs):
     mock_token_file = mock()
 
     when(auth_helper.os).remove(mock_token_file).thenRaise(FileNotFoundError())
 
-    with caplog.at_level(logging.DEBUG):
-        auth_helper._clear_local_token(mock_token_file)
+    auth_helper._clear_local_token(mock_token_file)
 
-    assert "No local token found to clean up" in caplog.text
+    assert "No local token found to clean up" in capture_logs.text
 
 
 def test_load_local_token_success(mock_builtin_open):

@@ -5,23 +5,12 @@ from mockito import when, verify
 from terralab.commands import auth_commands
 
 
-def test_login():
-    runner = CliRunner()
-
-    when(auth_commands.auth_logic).check_local_token_and_fetch_if_needed()
-
-    result = runner.invoke(auth_commands.auth, ["login"])
-
-    assert result.exit_code == 0
-    verify(auth_commands.auth_logic).check_local_token_and_fetch_if_needed()
-
-
 def test_logout():
     runner = CliRunner()
 
     when(auth_commands.auth_logic).clear_local_token()
 
-    result = runner.invoke(auth_commands.auth, ["logout"])
+    result = runner.invoke(auth_commands.logout)
 
     assert result.exit_code == 0
     verify(auth_commands.auth_logic).clear_local_token()
