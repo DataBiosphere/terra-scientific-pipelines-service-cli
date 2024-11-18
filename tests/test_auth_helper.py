@@ -3,7 +3,7 @@
 import builtins
 import logging
 import pytest
-from mockito import when, mock, verify
+from mockito import when, mock, verify, times
 from jwt import ExpiredSignatureError
 from oauth2_cli_auth._timeout import TimeoutException
 
@@ -373,6 +373,23 @@ def test_load_local_token_invalid(mock_builtin_open):
     when(auth_helper)._validate_token(expected_access_token).thenReturn(False)
 
     assert auth_helper._load_local_token(mock_token_file) is None
+
+
+def test_load_local_token_do_not_validate(mock_builtin_open):
+    mock_token_file = mock()
+
+    expected_access_token = "accesstoken"
+
+    when(mock_builtin_open).read().thenReturn(expected_access_token)
+    when(auth_helper)._validate_token(...)
+
+    assert (
+        auth_helper._load_local_token(mock_token_file, validate=False)
+        == expected_access_token
+    )
+
+    # validate function should not have been called
+    verify(auth_helper, times(0))._validate_token()
 
 
 def test_load_local_token_file_not_found(mock_builtin_open):
