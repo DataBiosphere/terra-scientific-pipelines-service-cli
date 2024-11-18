@@ -1,4 +1,4 @@
-# logic/submit_logic.py
+# logic/pipeline_runs_logic.py
 
 import logging
 import uuid

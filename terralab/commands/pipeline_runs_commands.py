@@ -1,4 +1,4 @@
-# commands/submit_commands.py
+# commands/pipeline_runs_commands.py
 
 import click
 import logging

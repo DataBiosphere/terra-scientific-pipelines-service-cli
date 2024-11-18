@@ -6,13 +6,17 @@ import os
 import webbrowser
 import typing as t
 
+import base64
+import urllib
+
 from collections.abc import Callable
+
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
     OAuthCallbackHttpServer,
     get_auth_url,
-    exchange_code_for_access_token,
 )
+from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
 from terralab.log import add_blankline_after
@@ -21,7 +25,44 @@ from terralab.log import add_blankline_after
 LOGGER = logging.getLogger(__name__)
 
 
-def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
+def get_or_refresh_access_token(cli_config: CliConfig) -> str:
+    """
+    Check for a valid access token; if one exists, return it.
+
+    Otherwise, check for a refresh token; if one exists, attempt to get and save new tokens, and return the access token.
+
+    If refresh attempt fails or if no refresh token is found, prompt user to login via browser, get and save access and refresh tokens, and return the access token.
+
+    Returns a valid access token"""
+    """Get a valid access token, refreshing or obtaining a new one if necessary."""
+
+    access_token = _load_local_token(
+        cli_config.access_token_file
+    )  # note that this load function by default only returns valid tokens
+    if access_token:
+        return access_token
+
+    refresh_token = _load_local_token(
+        cli_config.refresh_token_file, validate=False
+    )  # refresh tokens cannot be validated
+    if refresh_token:
+        try:
+            LOGGER.debug("Attempting to refresh tokens")
+            access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
+        except Exception as e:
+            LOGGER.debug(f"Token refresh failed: {e}")
+            refresh_token = None
+
+    if not refresh_token:
+        LOGGER.debug("Getting new tokens via browser login")
+        access_token, refresh_token = get_tokens_with_browser_open(cli_config)
+
+    _save_local_token(cli_config.access_token_file, access_token)
+    _save_local_token(cli_config.refresh_token_file, refresh_token)
+    return access_token
+
+
+def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to use a custom auth url
 
@@ -34,18 +75,21 @@ def get_access_token_with_browser_open(client_info: OAuth2ClientInfo) -> str:
 
     :param client_info: Client Info for Oauth2 Interaction
     :param server_port: Port of the local web server to spin up
-    :return: Access Token
+    :return: Access Token and Refresh Token
     """
-    server_port = CliConfig().server_port
-    callback_server = OAuthCallbackHttpServer(server_port)
+    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    client_info = cli_config.client_info
+
     auth_url = get_auth_url(client_info, callback_server.callback_url)
     _open_browser(f"{auth_url}&prompt=login", LOGGER.info)
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError("No code could be obtained from browser callback page")
-    return exchange_code_for_access_token(
+
+    response_dict = _exchange_code_for_response(
         client_info, callback_server.callback_url, code
     )
+    return response_dict["access_token"], response_dict["refresh_token"]
 
 
 def _open_browser(
@@ -68,18 +112,85 @@ def _open_browser(
     webbrowser.open(url)
 
 
+def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]:
+    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    client_info = cli_config.client_info
+
+    response_dict = _exchange_code_for_response(
+        client_info,
+        callback_server.callback_url,
+        refresh_token,
+        grant_type="refresh_token",
+    )
+    return response_dict["access_token"], response_dict["refresh_token"]
+
+
+def _exchange_code_for_response(
+    client_info: OAuth2ClientInfo,
+    redirect_uri: str,
+    code: str,
+    grant_type: str = "authorization_code",
+) -> dict:
+    """
+    Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens.
+    Exchange a code for an access token using the endpoints from client info and return the entire response
+
+    :param client_info: Info about oauth2 client
+    :param redirect_uri: Callback URL
+    :param code: Code to redeem
+    :param grant_type: Type of grant request (default `authorization_code`, can also be `refresh_token`)
+    :return: Response from OAuth2 endpoint
+    """
+    # validate grant_type input. note this is not determined by user input.
+    if grant_type not in ["authorization_code", "refresh_token"]:
+        LOGGER.error(f"Authentication error: Unexpected grant_type {grant_type}")
+        exit(1)
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Basic "
+        + base64.b64encode(f"{client_info.client_id}:".encode()).decode(),
+    }
+
+    # see documentation at https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
+    code_key = "refresh_token" if grant_type == "refresh_token" else "code"
+    data = {
+        code_key: code,
+        "redirect_uri": redirect_uri,
+        "grant_type": grant_type,
+    }
+    encoded_data = urllib.parse.urlencode(data).encode("utf-8")
+
+    response = urllib.request.Request(
+        client_info.token_url, data=encoded_data, headers=headers
+    )
+
+    json_response = _load_json(response)
+
+    if "error" in json_response:
+        # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1
+        LOGGER.debug(
+            f"Error in authentication flow exchanging code for response: {json_response["error"]}; error description: {json_response["error_description"]}"
+        )
+    else:
+        LOGGER.debug("Token refresh successful")
+
+    return json_response
+
+
 def _validate_token(token: str) -> bool:
     try:
         # Attempt to read the token to ensure it is valid.  If it isn't, the file will be removed and None will be returned.
         # Note: We explicitly do not verify the signature of the token since that will be verified by the backend services.
         # This is just to ensure the token is not expired
         jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
+        LOGGER.debug("Token is not expired")
         return True
     except jwt.ExpiredSignatureError:
         LOGGER.debug("Token expired")
         return False
     except Exception as e:
-        LOGGER.error(f"Error validating token: {e}")
+        LOGGER.error(f"Error validating token : {e}")
         return False
 
 
@@ -90,15 +201,11 @@ def _clear_local_token(token_file: str):
         LOGGER.debug("No local token found to clean up")
 
 
-def _load_local_token(token_file: str) -> t.Optional[str]:
+def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]:
     try:
         with open(token_file, "r") as f:
             token = f.read()
-            if _validate_token(token):
-                return token
-            else:
-                return None
-
+            return token if not validate or _validate_token(token) else None
     except FileNotFoundError:
         _clear_local_token(token_file)
         return None

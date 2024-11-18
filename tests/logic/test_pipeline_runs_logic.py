@@ -1,4 +1,4 @@
-# tests/logic/test_submit_logic.py
+# tests/logic/test_pipeline_runs_logic.py
 
 import pytest
 import uuid

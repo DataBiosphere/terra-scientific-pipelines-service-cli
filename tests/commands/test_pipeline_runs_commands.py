@@ -1,4 +1,4 @@
-# tests/test_submit_commands.py
+# tests/commands/test_pipeline_runs_commands.py
 
 import logging
 import uuid
