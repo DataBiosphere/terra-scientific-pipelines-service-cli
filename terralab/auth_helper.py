@@ -8,9 +8,6 @@ import typing as t
 
 import base64
 import urllib
-import json
-import time
-from urllib.error import URLError
 
 from collections.abc import Callable
 
@@ -19,6 +16,7 @@ from oauth2_cli_auth import (
     OAuthCallbackHttpServer,
     get_auth_url,
 )
+from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
 from terralab.log import add_blankline_after
@@ -27,7 +25,48 @@ from terralab.log import add_blankline_after
 LOGGER = logging.getLogger(__name__)
 
 
-def get_tokens_with_browser_open(client_info: OAuth2ClientInfo) -> tuple[str, str]:
+def get_or_refresh_access_token(cli_config: CliConfig) -> str:
+    """
+    Check for a valid access token; if one exists, return it.
+
+    Otherwise, check for a refresh token; if one exists, attempt to get and save new tokens, and return the access token.
+
+    If refresh attempt fails or if no refresh token is found, prompt user to login via browser, get and save access and refresh tokens, and return the access token.
+
+    Returns a valid access token"""
+    # note that this load function by default only returns valid tokens
+    access_token = _load_local_token(cli_config.token_file)
+    refresh_token = _load_local_token(cli_config.refresh_file, validate=False)
+
+    if access_token:
+        LOGGER.debug(f"Found access token {access_token[-5:]}")
+    if refresh_token:
+        LOGGER.debug(f"Found refresh token {refresh_token[-5:]}")
+
+    if not (access_token):
+        # check for a refresh token
+        if refresh_token:
+            # found a refresh token, try to get a new access token
+            LOGGER.debug("Attempting to refresh tokens")
+            try:
+                access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
+            except Exception as e:
+                LOGGER.debug(
+                    f"Error refreshing tokens ({e}), resorting to browser login"
+                )
+                refresh_token = None
+
+        if not (refresh_token):
+            LOGGER.debug("No active access or refresh tokens found.")
+            access_token, refresh_token = get_tokens_with_browser_open(cli_config)
+
+        _save_local_token(cli_config.token_file, access_token)
+        _save_local_token(cli_config.refresh_file, refresh_token)
+
+    return access_token
+
+
+def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to use a custom auth url
 
@@ -42,8 +81,9 @@ def get_tokens_with_browser_open(client_info: OAuth2ClientInfo) -> tuple[str, st
     :param server_port: Port of the local web server to spin up
     :return: Access Token and Refresh Token
     """
-    server_port = CliConfig().server_port
-    callback_server = OAuthCallbackHttpServer(server_port)
+    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    client_info = cli_config.client_info
+
     auth_url = get_auth_url(client_info, callback_server.callback_url)
     _open_browser(f"{auth_url}&prompt=login", LOGGER.info)
     code = callback_server.wait_for_code()
@@ -76,11 +116,9 @@ def _open_browser(
     webbrowser.open(url)
 
 
-def refresh_tokens(
-    client_info: OAuth2ClientInfo, refresh_token: str
-) -> tuple[str, str]:
-    server_port = CliConfig().server_port
-    callback_server = OAuthCallbackHttpServer(server_port)
+def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]:
+    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    client_info = cli_config.client_info
 
     response_dict = _exchange_code_for_response(
         client_info,
@@ -130,30 +168,6 @@ def _exchange_code_for_response(
     json_response = _load_json(request)
 
     return json_response
-
-
-def _load_json(url_or_request: str | urllib.request.Request) -> dict:
-    """Note: this is overridden from the oauth2-cli-auth library to support exchange_code_for_response."""
-    with _urlopen_with_backoff(url_or_request) as response:
-        response_data = response.read().decode("utf-8")
-        json_response = json.loads(response_data)
-    return json_response
-
-
-def _urlopen_with_backoff(url, max_retries=3, base_delay=1, timeout=15):
-    """Note: this is overridden from the oauth2-cli-auth library to support exchange_code_for_response."""
-    retries = 0
-
-    while retries < max_retries:
-        try:
-            response = urllib.request.urlopen(url, timeout=timeout)
-            return response
-        except Exception:
-            retries += 1
-            delay = base_delay * (2**retries)
-            time.sleep(delay)
-
-    raise URLError(f"Failed to open URL after {max_retries} retries")
 
 
 def _validate_token(token: str) -> bool:
