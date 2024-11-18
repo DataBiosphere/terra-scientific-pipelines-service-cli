@@ -78,11 +78,11 @@ def upload_file_with_signed_url(local_file_path, signed_url):
         exit(1)
 
 def validate_job_id(job_id: str) -> uuid.UUID:
+    """Attempts to convert a string to a valid uuid. 
+    
+    Returns the uuid if successful, otherwise logs an error and exits."""
     try:
         return uuid.UUID(job_id)
     except (TypeError, ValueError):
         LOGGER.error("Input error: JOB_ID must be a valid uuid.")
-        exit(1)
-    except Exception as e:
-        LOGGER.error(f"Input error: unexpected error processing JOB_ID: {e}")
         exit(1)

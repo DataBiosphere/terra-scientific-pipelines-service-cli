@@ -95,14 +95,17 @@ def test_upload_file_with_signed_url_failed(capture_logs):
         assert "Error uploading file: some message" in capture_logs.text
 
 def test_validate_uuid(capture_logs):
+    # valid
     valid_uuid = uuid.uuid4()
     assert utils.validate_job_id(str(valid_uuid)) == valid_uuid
 
+    # invalid (uuid conversion raises ValueError)
     with pytest.raises(SystemExit):
         utils.validate_job_id("not a uuid")
     assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
     capture_logs.clear()
 
+    # empty (uuid conversion raises TypeError)
     with pytest.raises(SystemExit):
         utils.validate_job_id(None)
-    assert "Input error: unexpected error processing JOB_ID:" in capture_logs.text
+    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
