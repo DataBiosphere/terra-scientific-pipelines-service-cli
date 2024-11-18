@@ -142,6 +142,11 @@ def _exchange_code_for_response(
     :param grant_type: Type of grant request (default `authorization_code`, can also be `refresh_token`)
     :return: Response from OAuth2 endpoint
     """
+    # validate grant_type input. note this is not determined by user input.
+    if grant_type not in ["authorization_code", "refresh_token"]:
+        LOGGER.error(f"Authentication error: Unexpected grant_type {grant_type}")
+        exit(1)
+
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "Basic "

@@ -363,6 +363,19 @@ def test_exchange_code_for_response_refresh(capture_logs):
     assert "Token refresh successful" in capture_logs.text
 
 
+def test_exchange_code_for_response_bad_grant_type(capture_logs):
+    unexpected_grant_type = "what is this"
+    with pytest.raises(SystemExit):
+        auth_helper._exchange_code_for_response(
+            mock(), mock(), mock(), unexpected_grant_type
+        )
+
+    assert (
+        f"Authentication error: Unexpected grant_type {unexpected_grant_type}"
+        in capture_logs.text
+    )
+
+
 def test_validate_token_valid():
     access_token = "accesstoken"
 
