@@ -65,6 +65,15 @@ def start_pipeline_run(
         ).job_report.id
 
 
+def get_pipeline_run_status(
+    pipeline_name: str, job_id: uuid.UUID
+) -> uuid.UUID:
+    """Call the getPipelineRunResult Teaspoons endpoint and return the Async Job Response."""
+    
+    with ClientWrapper() as api_client:
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+        return pipeline_runs_client.get_pipeline_run_result(pipeline_name, job_id)
+
 ## submit action
 
 
@@ -95,9 +104,13 @@ def prepare_upload_start_pipeline_run(
     return start_pipeline_run(pipeline_name, job_id, description)
 
 
+## download action
+
 def get_result_and_download_pipeline_run_outputs(
     pipeline_name: str, job_id: uuid.UUID, local_destination: str
 ):
     """Retrieve pipeline run result, download all output files to local"""
     LOGGER.info(f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}")
+
+    
     pass
