@@ -26,7 +26,7 @@ class CliConfig:
         self.client_info = OAuth2ClientInfo.from_oidc_endpoint(
             self.config["OAUTH_OPENID_CONFIGURATION_URI"],
             client_id=self.config["OAUTH_CLIENT_ID"],
-            # scopes=[f"openid+email+profile+{self.config['OAUTH_CLIENT_ID']}"],
+            # including the offline_access scope is how we request a refresh token
             scopes=[f"offline_access+email+profile+{self.config['OAUTH_CLIENT_ID']}"],
         )
 
