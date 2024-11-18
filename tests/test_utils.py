@@ -3,6 +3,7 @@
 import os
 import pytest
 import tempfile
+import uuid
 from requests.exceptions import HTTPError
 
 from mockito import mock, when
@@ -92,3 +93,16 @@ def test_upload_file_with_signed_url_failed(capture_logs):
             utils.upload_file_with_signed_url(test_local_file_path, test_signed_url)
 
         assert "Error uploading file: some message" in capture_logs.text
+
+def test_validate_uuid(capture_logs):
+    valid_uuid = uuid.uuid4()
+    assert utils.validate_job_id(str(valid_uuid)) == valid_uuid
+
+    with pytest.raises(SystemExit):
+        utils.validate_job_id("not a uuid")
+    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    capture_logs.clear()
+
+    with pytest.raises(SystemExit):
+        utils.validate_job_id(None)
+    assert "Input error: unexpected error processing JOB_ID:" in capture_logs.text

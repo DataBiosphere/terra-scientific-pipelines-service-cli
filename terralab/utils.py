@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import requests
+import uuid
 from tqdm import tqdm
 
 from functools import wraps
@@ -74,4 +75,14 @@ def upload_file_with_signed_url(local_file_path, signed_url):
         LOGGER.info(add_blankline_after(f"File `{local_file_path}` upload complete"))
     except Exception as e:
         LOGGER.error(add_blankline_after(f"Error uploading file: {e}"))
+        exit(1)
+
+def validate_job_id(job_id: str) -> uuid.UUID:
+    try:
+        return uuid.UUID(job_id)
+    except (TypeError, ValueError):
+        LOGGER.error("Input error: JOB_ID must be a valid uuid.")
+        exit(1)
+    except Exception as e:
+        LOGGER.error(f"Input error: unexpected error processing JOB_ID: {e}")
         exit(1)
