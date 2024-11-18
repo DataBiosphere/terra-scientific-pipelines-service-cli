@@ -34,32 +34,31 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     If refresh attempt fails or if no refresh token is found, prompt user to login via browser, get and save access and refresh tokens, and return the access token.
 
     Returns a valid access token"""
-    # note that this load function by default only returns valid tokens
-    access_token = _load_local_token(cli_config.access_token_file)
+    """Get a valid access token, refreshing or obtaining a new one if necessary."""
+
+    access_token = _load_local_token(
+        cli_config.access_token_file
+    )  # note that this load function by default only returns valid tokens
+    if access_token:
+        return access_token
+
     refresh_token = _load_local_token(
         cli_config.refresh_token_file, validate=False
     )  # refresh tokens cannot be validated
+    if refresh_token:
+        try:
+            LOGGER.debug("Attempting to refresh tokens")
+            access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
+        except Exception as e:
+            LOGGER.debug(f"Token refresh failed: {e}")
+            refresh_token = None
 
-    if not (access_token):
-        # check for a refresh token
-        if refresh_token:
-            # found a refresh token, try to get a new access token
-            LOGGER.debug("Found a refresh token. Attempting to refresh tokens")
-            try:
-                access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
-            except Exception as e:
-                LOGGER.debug(
-                    f"Error refreshing tokens ({e}), resorting to browser login"
-                )
-                refresh_token = None
+    if not refresh_token:
+        LOGGER.debug("Getting new tokens via browser login")
+        access_token, refresh_token = get_tokens_with_browser_open(cli_config)
 
-        if not (refresh_token):
-            LOGGER.debug("No active access or refresh tokens found.")
-            access_token, refresh_token = get_tokens_with_browser_open(cli_config)
-
-        _save_local_token(cli_config.access_token_file, access_token)
-        _save_local_token(cli_config.refresh_token_file, refresh_token)
-
+    _save_local_token(cli_config.access_token_file, access_token)
+    _save_local_token(cli_config.refresh_token_file, refresh_token)
     return access_token
 
 
