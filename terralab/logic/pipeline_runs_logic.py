@@ -93,3 +93,11 @@ def prepare_upload_start_pipeline_run(
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
     return start_pipeline_run(pipeline_name, job_id, description)
+
+
+def get_result_and_download_pipeline_run_outputs(
+    pipeline_name: str, job_id: uuid.UUID, local_destination: str
+):
+    """Retrieve pipeline run result, download all output files to local"""
+    LOGGER.info(f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}")
+    pass

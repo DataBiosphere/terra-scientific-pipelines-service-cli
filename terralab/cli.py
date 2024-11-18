@@ -8,7 +8,7 @@ from typing import Optional, Mapping
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
-from terralab.commands.pipeline_runs_commands import submit
+from terralab.commands.pipeline_runs_commands import submit, download
 
 
 # Context settings for commands, for overwriting some click defaults
@@ -52,6 +52,9 @@ def cli(debug):
 # the order in which these are added determines the order in which they show up in the --help output
 # submit
 cli.add_command(submit)
+
+# download
+cli.add_command(download)
 
 # pipelines
 cli.add_command(pipelines)
