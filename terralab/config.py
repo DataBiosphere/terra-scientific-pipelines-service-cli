@@ -32,10 +32,10 @@ class CliConfig:
 
         self.server_port = int(self.config["SERVER_PORT"])
 
-        self.token_file = (
+        self.access_token_file = (
             f'{Path.home()}/{self.config["LOCAL_STORAGE_PATH"]}/access_token'
         )
 
-        self.refresh_file = (
+        self.refresh_token_file = (
             f'{Path.home()}/{self.config["LOCAL_STORAGE_PATH"]}/refresh_token'
         )

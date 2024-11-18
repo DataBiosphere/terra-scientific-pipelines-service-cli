@@ -35,19 +35,16 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
 
     Returns a valid access token"""
     # note that this load function by default only returns valid tokens
-    access_token = _load_local_token(cli_config.token_file)
-    refresh_token = _load_local_token(cli_config.refresh_file, validate=False)
-
-    if access_token:
-        LOGGER.debug(f"Found access token {access_token[-5:]}")
-    if refresh_token:
-        LOGGER.debug(f"Found refresh token {refresh_token[-5:]}")
+    access_token = _load_local_token(cli_config.access_token_file)
+    refresh_token = _load_local_token(
+        cli_config.refresh_token_file, validate=False
+    )  # refresh tokens cannot be validated
 
     if not (access_token):
         # check for a refresh token
         if refresh_token:
             # found a refresh token, try to get a new access token
-            LOGGER.debug("Attempting to refresh tokens")
+            LOGGER.debug("Found a refresh token. Attempting to refresh tokens")
             try:
                 access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
             except Exception as e:
@@ -60,8 +57,8 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
             LOGGER.debug("No active access or refresh tokens found.")
             access_token, refresh_token = get_tokens_with_browser_open(cli_config)
 
-        _save_local_token(cli_config.token_file, access_token)
-        _save_local_token(cli_config.refresh_file, refresh_token)
+        _save_local_token(cli_config.access_token_file, access_token)
+        _save_local_token(cli_config.refresh_token_file, refresh_token)
 
     return access_token
 
@@ -152,9 +149,7 @@ def _exchange_code_for_response(
     }
 
     # see documentation at https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#refresh-the-access-token
-    code_key = "code"
-    if grant_type == "refresh_token":
-        code_key = "refresh_token"
+    code_key = "refresh_token" if grant_type == "refresh_token" else "code"
     data = {
         code_key: code,
         "redirect_uri": redirect_uri,
@@ -162,10 +157,19 @@ def _exchange_code_for_response(
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")
 
-    request = urllib.request.Request(
+    response = urllib.request.Request(
         client_info.token_url, data=encoded_data, headers=headers
     )
-    json_response = _load_json(request)
+
+    json_response = _load_json(response)
+
+    if "error" in json_response:
+        # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1
+        LOGGER.debug(
+            f"Error in authentication flow exchanging code for response: {json_response["error"]}; error description: {json_response["error_description"]}"
+        )
+    else:
+        LOGGER.debug("Token refresh successful")
 
     return json_response
 
@@ -176,13 +180,13 @@ def _validate_token(token: str) -> bool:
         # Note: We explicitly do not verify the signature of the token since that will be verified by the backend services.
         # This is just to ensure the token is not expired
         jwt.decode(token, options={"verify_signature": False, "verify_exp": True})
-        LOGGER.debug(f"Token {token[-5:]} is not expired")
+        LOGGER.debug("Token is not expired")
         return True
     except jwt.ExpiredSignatureError:
-        LOGGER.debug(f"Token {token[-5:]}  expired")
+        LOGGER.debug("Token expired")
         return False
     except Exception as e:
-        LOGGER.error(f"Error validating token {token[-5:]} : {e}")
+        LOGGER.error(f"Error validating token : {e}")
         return False
 
 
@@ -197,13 +201,7 @@ def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]
     try:
         with open(token_file, "r") as f:
             token = f.read()
-            if not (validate):
-                return token
-            elif _validate_token(token):
-                return token
-            else:
-                return None
-
+            return token if not validate or _validate_token(token) else None
     except FileNotFoundError:
         _clear_local_token(token_file)
         return None

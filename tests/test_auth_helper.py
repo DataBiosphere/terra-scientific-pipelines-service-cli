@@ -17,8 +17,8 @@ LOGGER = logging.getLogger(__name__)
 def mock_cli_config(unstub):
     config = mock(
         {
-            "token_file": "mock_token_file",
-            "refresh_file": "mock_refresh_token_file",
+            "access_token_file": "mock_token_file",
+            "refresh_token_file": "mock_refresh_token_file",
             "client_info": "mock_client_info",
             "server_port": "0",
         }
@@ -222,15 +222,13 @@ def test_refresh_tokens(mock_cli_config):
     )
 
 
-def test_exchange_code_for_response_default():
+def test_exchange_code_for_response_default_success():
     # test with default grant_type = "authorization_code"
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
     mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
     test_redirect_url = "https://redirect/url"
     test_code = "test code"
-
-    mock_expected_json = mock()
 
     # defaults: code key for test_code, grant_type is authorization_code
     expected_data_dict = {
@@ -245,6 +243,8 @@ def test_exchange_code_for_response_default():
         "Authorization": "Basic Y2xpZW50aWQ6",  # base64 encoding of `clientid:`
     }
 
+    expected_json_response = {}
+
     when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
         mock_urlencode_output
     )
@@ -254,25 +254,77 @@ def test_exchange_code_for_response_default():
     when(auth_helper.urllib.request).Request(
         mock_token_url, data=mock_encoded_data, headers=expected_headers
     ).thenReturn(mock_request_response)
-    when(auth_helper)._load_json(mock_request_response).thenReturn(mock_expected_json)
+    when(auth_helper)._load_json(mock_request_response).thenReturn(
+        expected_json_response
+    )
 
     assert (
         auth_helper._exchange_code_for_response(
             mock_client_info, test_redirect_url, test_code
         )
-        == mock_expected_json
+        == expected_json_response
     )
 
 
-def test_exchange_code_for_response_refresh():
-    # test with specified grant_type = "refresh_token"
+def test_exchange_code_for_response_default_error(capture_logs):
+    # test with default grant_type = "authorization_code"
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
     mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
     test_redirect_url = "https://redirect/url"
     test_code = "test code"
 
-    mock_expected_json = mock()
+    # defaults: code key for test_code, grant_type is authorization_code
+    expected_data_dict = {
+        "code": test_code,
+        "redirect_uri": test_redirect_url,
+        "grant_type": "authorization_code",
+    }
+    mock_urlencode_output = mock()
+    mock_encoded_data = mock()
+    expected_headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Basic Y2xpZW50aWQ6",  # base64 encoding of `clientid:`
+    }
+
+    # define an error response
+    expected_json_response = {
+        "error": "some error",
+        "error_description": "more about the error",
+    }
+
+    when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
+        mock_urlencode_output
+    )
+    when(mock_urlencode_output).encode("utf-8").thenReturn(mock_encoded_data)
+
+    mock_request_response = mock()
+    when(auth_helper.urllib.request).Request(
+        mock_token_url, data=mock_encoded_data, headers=expected_headers
+    ).thenReturn(mock_request_response)
+    when(auth_helper)._load_json(mock_request_response).thenReturn(
+        expected_json_response
+    )
+
+    assert (
+        auth_helper._exchange_code_for_response(
+            mock_client_info, test_redirect_url, test_code
+        )
+        == expected_json_response
+    )
+    assert (
+        "Error in authentication flow exchanging code for response: some error; error description: more about the error"
+        in capture_logs.text
+    )
+
+
+def test_exchange_code_for_response_refresh(capture_logs):
+    # test with specified grant_type = "refresh_token"
+    mock_token_url = "https://some/url"
+    mock_client_id = "clientid"
+    mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
+    test_redirect_url = "https://redirect/url"
+    test_code = "test code"
 
     # refresh_token instead of code key for test_code, grant type is refresh_token
     expected_data_dict = {
@@ -287,6 +339,8 @@ def test_exchange_code_for_response_refresh():
         "Authorization": "Basic Y2xpZW50aWQ6",  # base64 encoding of `clientid:`
     }
 
+    expected_json_response = {}
+
     when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
         mock_urlencode_output
     )
@@ -296,14 +350,17 @@ def test_exchange_code_for_response_refresh():
     when(auth_helper.urllib.request).Request(
         mock_token_url, data=mock_encoded_data, headers=expected_headers
     ).thenReturn(mock_request_response)
-    when(auth_helper)._load_json(mock_request_response).thenReturn(mock_expected_json)
+    when(auth_helper)._load_json(mock_request_response).thenReturn(
+        expected_json_response
+    )
 
     assert (
         auth_helper._exchange_code_for_response(
             mock_client_info, test_redirect_url, test_code, "refresh_token"
         )
-        == mock_expected_json
+        == expected_json_response
     )
+    assert "Token refresh successful" in capture_logs.text
 
 
 def test_validate_token_valid():
