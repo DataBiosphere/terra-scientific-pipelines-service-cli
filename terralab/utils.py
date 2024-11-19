@@ -128,7 +128,7 @@ def download_files_with_signed_urls(
     local_destination_dir: str, signed_urls: list[str]
 ) -> list[str]:
     """Downloads a file or multiple files in parallel, using signed urls, to a specified local destination.
-    Returns the local file path(s) of the downloaded file(s)."""
+    Returns a list of the local file path(s) of the downloaded file(s)."""
 
     try:
         downloads = [
@@ -137,10 +137,13 @@ def download_files_with_signed_urls(
         ]
 
         with ThreadPoolExecutor(max_workers=len(downloads)) as ex:
-            return ex.map(download_with_pbar, downloads)  # list[str]
+            downloaded_file_paths: list[str] = ex.map(download_with_pbar, downloads)
     except Exception as e:
-        LOGGER.error(add_blankline_after(f"Error downloading outputs: {e}"))
+        LOGGER.error(add_blankline_after(f"Error downloading files: {e}"))
         exit(1)
+
+    LOGGER.info(add_blankline_after("All downloads complete"))
+    return downloaded_file_paths
 
 
 def validate_job_id(job_id: str) -> uuid.UUID:

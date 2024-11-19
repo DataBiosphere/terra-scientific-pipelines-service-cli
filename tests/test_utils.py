@@ -106,7 +106,6 @@ def test_download_files_with_signed_urls_success(capture_logs):
     when(mock_response).iter_content(...).thenReturn([b"chunk1", b"chunk2"])
 
     with tempfile.TemporaryDirectory() as test_download_dest_dir:
-
         when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
 
         local_file_paths = utils.download_files_with_signed_urls(
@@ -116,6 +115,7 @@ def test_download_files_with_signed_urls_success(capture_logs):
         for local_file_path in local_file_paths:
             assert os.path.exists(local_file_path)
 
+    assert "All downloads complete" in capture_logs.text
     assert f"Downloading {test_file_name}: complete" in capture_logs.text
 
 
@@ -131,7 +131,6 @@ def test_download_files_with_signed_urls_failed(capture_logs):
     )  # raise an error
 
     with tempfile.TemporaryDirectory() as test_download_dest_dir:
-
         when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
 
         with pytest.raises(SystemExit):
@@ -139,7 +138,7 @@ def test_download_files_with_signed_urls_failed(capture_logs):
                 test_download_dest_dir, [test_signed_url]
             )
 
-        assert "Error downloading outputs: some message" in capture_logs.text
+    assert "Error downloading files: some message" in capture_logs.text
 
 
 def test_validate_uuid(capture_logs):

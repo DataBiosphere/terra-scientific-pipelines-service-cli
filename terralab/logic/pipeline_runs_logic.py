@@ -15,6 +15,7 @@ from teaspoons_client import (
 
 from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 from terralab.client import ClientWrapper
+from terralab.log import indented
 
 
 LOGGER = logging.getLogger(__name__)
@@ -132,7 +133,9 @@ def get_result_and_download_pipeline_run_outputs(
         local_destination, signed_url_list
     )
 
-    LOGGER.info(f"All file outputs downloaded: {downloaded_files}")
+    LOGGER.info("All file outputs downloaded:")
+    for local_file_path in downloaded_files:
+        LOGGER.info(indented(local_file_path))
 
 
 def handle_non_success(

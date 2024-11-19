@@ -206,8 +206,11 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
         test_pipeline_name, test_job_id
     ).thenReturn(mock_async_pipeline_run_response)
 
+    expected_downloaded_file_paths = ["i am a file path"]
     when(pipeline_runs_logic).download_files_with_signed_urls(
         test_local_destination, [test_signed_url]
+    ).thenReturn(
+        expected_downloaded_file_paths
     )  # do nothing
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
