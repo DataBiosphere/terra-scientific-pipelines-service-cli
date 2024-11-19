@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 @click.group()
 def quotas():
-    """Get information about user quota"""
+    """Commands to get information about user quotas"""
 
 
 @quotas.command()
