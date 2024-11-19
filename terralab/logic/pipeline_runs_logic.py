@@ -13,7 +13,7 @@ from teaspoons_client import (
     ErrorReport,
 )
 
-from terralab.utils import upload_file_with_signed_url, download_file_with_signed_url
+from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 from terralab.client import ClientWrapper
 
 
@@ -127,12 +127,12 @@ def get_result_and_download_pipeline_run_outputs(
         exit(1)
 
     # extract output signed urls and download them all
-    output_signed_urls: dict = result.pipeline_run_report.outputs
-    for output_name, signed_url in output_signed_urls.items():
-        LOGGER.info(f"Downloading output {output_name}")
-        download_file_with_signed_url(local_destination, signed_url)
+    signed_url_list: list[str] = list(result.pipeline_run_report.outputs.values())
+    downloaded_files: list[str] = download_files_with_signed_urls(
+        local_destination, signed_url_list
+    )
 
-    LOGGER.info("All file outputs downloaded")
+    LOGGER.info(f"All file outputs downloaded: {downloaded_files}")
 
 
 def handle_non_success(

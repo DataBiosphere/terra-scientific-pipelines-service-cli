@@ -5,7 +5,9 @@ import logging
 import os
 import requests
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from functools import wraps
 
@@ -82,40 +84,62 @@ def upload_file_with_signed_url(local_file_path, signed_url):
         exit(1)
 
 
-def download_file_with_signed_url(local_destination_dir: str, signed_url: str) -> str:
-    """Downloads a file to a local destination using a signed url.
-    Returns the local file path of the downloaded file."""
-    try:
+class SignedUrlDownload:
+    def __init__(self, signed_url, local_destination_dir):
+        self.signed_url = signed_url
         # extract file name from signed url; signed url looks like:
         # https://storage.googleapis.com/fc-secure-6970c3a9-dc92-436d-af3d-917bcb4cf05a/test_signed_urls/helloworld.txt?x-goog-signature...
-        local_file_name = signed_url.split("?")[0].split("/")[-1]
-        local_file_path = os.path.join(local_destination_dir, local_file_name)
-        LOGGER.debug(f"Will download file to {local_file_path}")
+        self.file_name = signed_url.split("?")[0].split("/")[-1]
+        self.local_file_path = os.path.join(local_destination_dir, self.file_name)
+        LOGGER.debug(f"Will download file to `{self.local_file_path}`")
+        self.response = requests.get(signed_url, stream=True)
 
-        # download the file and write to local file
-        response = requests.get(signed_url, stream=True)
-        response.raise_for_status()
+        self.response.raise_for_status()
 
-        total_size = int(response.headers.get("content-length", 0))
-        block_size = 1024
+        self.total_size_bytes = int(self.response.headers.get("content-length", 0))
 
-        with open(local_file_path, "wb") as file:
-            with tqdm(
-                total=total_size,
-                unit="B",
-                unit_scale=True,
-                desc="Download progress",
-                bar_format=PROGRESS_BAR_FORMAT,
-            ) as progress_bar:
-                for data in response.iter_content(block_size):
-                    file.write(data)
-                    progress_bar.update(len(data))
 
-        LOGGER.info(add_blankline_after(f"File download complete: {local_file_path}"))
-        return local_file_path
+def download_with_pbar(download: SignedUrlDownload) -> str:
+    """Helper function to take a SignedUrlDownload object and perform a download with a progress bar.
+    Return the local file path of the downloaded file."""
+    download_block_size = 1024
 
+    with open(download.local_file_path, "wb") as file:
+        with tqdm(
+            total=download.total_size_bytes,
+            unit="B",
+            unit_scale=True,
+            desc=f"Downloading {download.file_name}",
+            bar_format=PROGRESS_BAR_FORMAT,
+            leave=False,  # remove progress bar when complete
+            dynamic_ncols=True,  # play nice with window resizing
+        ) as progress_bar:
+            for data in download.response.iter_content(download_block_size):
+                file.write(data)
+                progress_bar.update(len(data))
+
+    with logging_redirect_tqdm():  # log without interfering with progress bars
+        LOGGER.info(f"Downloading {download.file_name}: complete")
+
+    return download.local_file_path
+
+
+def download_files_with_signed_urls(
+    local_destination_dir: str, signed_urls: list[str]
+) -> list[str]:
+    """Downloads a file or multiple files in parallel, using signed urls, to a specified local destination.
+    Returns the local file path(s) of the downloaded file(s)."""
+
+    try:
+        downloads = [
+            SignedUrlDownload(signed_url, local_destination_dir)
+            for signed_url in signed_urls
+        ]
+
+        with ThreadPoolExecutor(max_workers=len(downloads)) as ex:
+            return ex.map(download_with_pbar, downloads)  # list[str]
     except Exception as e:
-        LOGGER.error(add_blankline_after(f"Error downloading file: {e}"))
+        LOGGER.error(add_blankline_after(f"Error downloading outputs: {e}"))
         exit(1)
 
 

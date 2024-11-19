@@ -206,8 +206,8 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
         test_pipeline_name, test_job_id
     ).thenReturn(mock_async_pipeline_run_response)
 
-    when(pipeline_runs_logic).download_file_with_signed_url(
-        test_local_destination, test_signed_url
+    when(pipeline_runs_logic).download_files_with_signed_urls(
+        test_local_destination, [test_signed_url]
     )  # do nothing
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
@@ -218,12 +218,11 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
         f"Getting results for {test_pipeline_name} run {test_job_id}"
         in capture_logs.text
     )
-    assert f"Downloading output {test_output_name}" in capture_logs.text
     assert "All file outputs downloaded" in capture_logs.text
 
     verify(pipeline_runs_logic).get_pipeline_run_status(test_pipeline_name, test_job_id)
-    verify(pipeline_runs_logic).download_file_with_signed_url(
-        test_local_destination, test_signed_url
+    verify(pipeline_runs_logic).download_files_with_signed_urls(
+        test_local_destination, [test_signed_url]
     )
 
 

@@ -95,7 +95,7 @@ def test_upload_file_with_signed_url_failed(capture_logs):
         assert "Error uploading file: some message" in capture_logs.text
 
 
-def test_download_file_with_signed_url_success(capture_logs):
+def test_download_files_with_signed_urls_success(capture_logs):
     test_file_name = "filename.ext"
     test_signed_url = f"signed_url/{test_file_name}?headers"
 
@@ -109,23 +109,24 @@ def test_download_file_with_signed_url_success(capture_logs):
 
         when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
 
-        local_file_path = utils.download_file_with_signed_url(
-            test_download_dest_dir, test_signed_url
+        local_file_paths = utils.download_files_with_signed_urls(
+            test_download_dest_dir, [test_signed_url]
         )
 
-        assert os.path.exists(local_file_path)
-        assert "File download complete" in capture_logs.text
+        for local_file_path in local_file_paths:
+            assert os.path.exists(local_file_path)
+
+    assert f"Downloading {test_file_name}: complete" in capture_logs.text
 
 
-def test_download_file_with_signed_url_failed(capture_logs):
+def test_download_files_with_signed_urls_failed(capture_logs):
     test_file_name = "filename.ext"
     test_signed_url = f"signed_url/{test_file_name}?headers"
 
     test_file_size = 2048
 
     mock_response = mock({"headers": {"content-length": test_file_size}})
-    when(mock_response).raise_for_status()  # do nothing
-    when(mock_response).iter_content(...).thenRaise(
+    when(mock_response).raise_for_status().thenRaise(
         HTTPError("some message")
     )  # raise an error
 
@@ -134,9 +135,11 @@ def test_download_file_with_signed_url_failed(capture_logs):
         when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
 
         with pytest.raises(SystemExit):
-            utils.download_file_with_signed_url(test_download_dest_dir, test_signed_url)
+            utils.download_files_with_signed_urls(
+                test_download_dest_dir, [test_signed_url]
+            )
 
-        assert "Error downloading file: some message" in capture_logs.text
+        assert "Error downloading outputs: some message" in capture_logs.text
 
 
 def test_validate_uuid(capture_logs):
