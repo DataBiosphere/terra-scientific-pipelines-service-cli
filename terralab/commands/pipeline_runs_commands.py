@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 @handle_api_exceptions
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
     """Submit a pipeline run
-    
+
     PIPELINE_NAME is the name of the pipeline to run"""
     inputs_dict = process_json_to_dict(inputs)
 
@@ -40,11 +40,16 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
 @click.command(short_help="Download all output files from a pipeline run")
 @click.argument("pipeline_name", type=str)
 @click.argument("job_id", type=str)
-@click.option("--local_destination", type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True), default=".", help="optional location to download results to. defaults to the current directory.")
+@click.option(
+    "--local_destination",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
+    default=".",
+    help="optional location to download results to. defaults to the current directory.",
+)
 @handle_api_exceptions
 def download(pipeline_name: str, job_id: uuid.UUID, local_destination: str):
     """Download all output files from a pipeline run
-    
+
     PIPELINE_NAME is the name of the pipeline that was run
 
     JOB_ID is the uuid identifier for the pipeline run"""

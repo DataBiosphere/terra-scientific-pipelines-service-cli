@@ -94,6 +94,51 @@ def test_upload_file_with_signed_url_failed(capture_logs):
 
         assert "Error uploading file: some message" in capture_logs.text
 
+
+def test_download_file_with_signed_url_success(capture_logs):
+    test_file_name = "filename.ext"
+    test_signed_url = f"signed_url/{test_file_name}?headers"
+
+    test_file_size = 2048
+
+    mock_response = mock({"headers": {"content-length": test_file_size}})
+    when(mock_response).raise_for_status()  # do nothing
+    when(mock_response).iter_content(...).thenReturn([b"chunk1", b"chunk2"])
+
+    with tempfile.TemporaryDirectory() as test_download_dest_dir:
+
+        when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
+
+        local_file_path = utils.download_file_with_signed_url(
+            test_download_dest_dir, test_signed_url
+        )
+
+        assert os.path.exists(local_file_path)
+        assert "File download complete" in capture_logs.text
+
+
+def test_download_file_with_signed_url_failed(capture_logs):
+    test_file_name = "filename.ext"
+    test_signed_url = f"signed_url/{test_file_name}?headers"
+
+    test_file_size = 2048
+
+    mock_response = mock({"headers": {"content-length": test_file_size}})
+    when(mock_response).raise_for_status()  # do nothing
+    when(mock_response).iter_content(...).thenRaise(
+        HTTPError("some message")
+    )  # raise an error
+
+    with tempfile.TemporaryDirectory() as test_download_dest_dir:
+
+        when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
+
+        with pytest.raises(SystemExit):
+            utils.download_file_with_signed_url(test_download_dest_dir, test_signed_url)
+
+        assert "Error downloading file: some message" in capture_logs.text
+
+
 def test_validate_uuid(capture_logs):
     # valid
     valid_uuid = uuid.uuid4()

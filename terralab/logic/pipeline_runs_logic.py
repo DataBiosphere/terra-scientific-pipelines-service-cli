@@ -2,15 +2,18 @@
 
 import logging
 import uuid
+from typing import Optional
 from teaspoons_client import (
     PipelineRunsApi,
     PreparePipelineRunResponse,
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
+    AsyncPipelineRunResponse,
+    ErrorReport,
 )
 
-from terralab.utils import upload_file_with_signed_url
+from terralab.utils import upload_file_with_signed_url, download_file_with_signed_url
 from terralab.client import ClientWrapper
 
 
@@ -67,12 +70,13 @@ def start_pipeline_run(
 
 def get_pipeline_run_status(
     pipeline_name: str, job_id: uuid.UUID
-) -> uuid.UUID:
-    """Call the getPipelineRunResult Teaspoons endpoint and return the Async Job Response."""
-    
+) -> AsyncPipelineRunResponse:
+    """Call the getPipelineRunResult Teaspoons endpoint and return the Async Pipeline Run Response."""
+
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_pipeline_run_result(pipeline_name, job_id)
+        return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
+
 
 ## submit action
 
@@ -106,11 +110,45 @@ def prepare_upload_start_pipeline_run(
 
 ## download action
 
+
 def get_result_and_download_pipeline_run_outputs(
     pipeline_name: str, job_id: uuid.UUID, local_destination: str
 ):
-    """Retrieve pipeline run result, download all output files to local"""
-    LOGGER.info(f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}")
+    """Retrieve pipeline run result, download all output files."""
+    LOGGER.info(
+        f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}"
+    )
+    result: AsyncPipelineRunResponse = get_pipeline_run_status(pipeline_name, job_id)
+    job_status: str = result.job_report.status
+    LOGGER.debug(f"Job {job_id} status is {job_status}")
+    if job_status != "SUCCEEDED":
+        LOGGER.error(f"Results not available for job {job_id} with status {job_status}")
+        LOGGER.error(handle_non_success(result))
+        exit(1)
 
-    
-    pass
+    # extract output signed urls and download them all
+    output_signed_urls: dict = result.pipeline_run_report.outputs
+    for output_name, signed_url in output_signed_urls.items():
+        LOGGER.info(f"Downloading output {output_name}")
+        download_file_with_signed_url(local_destination, signed_url)
+
+    LOGGER.info("All file outputs downloaded")
+
+
+def handle_non_success(
+    pipeline_run_response: AsyncPipelineRunResponse,
+) -> Optional[str]:
+    job_status: str = pipeline_run_response.job_report.status
+    if job_status == "SUCCEEDED":
+        return
+    elif job_status == "RUNNING":
+        return "Please wait until the pipeline run has completed to download outputs."
+    elif job_status == "PREPARING":
+        return "This job has not yet been started."
+    elif job_status == "FAILED":
+        error_report: ErrorReport = pipeline_run_response.error_report
+        return (
+            f"Pipeline run failed: {error_report.status_code}, {error_report.message}"
+        )
+    else:
+        return f"Unexpected pipeline run status {job_status}"

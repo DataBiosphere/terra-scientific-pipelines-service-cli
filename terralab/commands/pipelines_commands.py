@@ -34,7 +34,7 @@ def list():
 @handle_api_exceptions
 def get_info(pipeline_name: str):
     """Get information about a specific pipeline
-    
+
     PIPELINE_NAME is the name of the pipeline to request information about"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
 
