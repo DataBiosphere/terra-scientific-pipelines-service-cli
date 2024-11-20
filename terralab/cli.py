@@ -10,6 +10,8 @@ from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
 from terralab.commands.pipeline_runs_commands import submit, download
 from terralab.commands.quotas_commands import quota
+from terralab.commands.service_commands import service
+
 
 # Context settings for commands, for overwriting some click defaults
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -66,6 +68,9 @@ cli.add_command(quota)
 
 # logout
 cli.add_command(logout)
+
+# service utils
+cli.add_command(service)
 
 
 if __name__ == "__main__":
