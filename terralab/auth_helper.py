@@ -73,8 +73,7 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     - Wait for the code to arrive
     - Get access token from code
 
-    :param client_info: Client Info for Oauth2 Interaction
-    :param server_port: Port of the local web server to spin up
+    :param cli_config: Configuration object containing environment specific values
     :return: Access Token and Refresh Token
     """
     callback_server = OAuthCallbackHttpServer(cli_config.server_port)

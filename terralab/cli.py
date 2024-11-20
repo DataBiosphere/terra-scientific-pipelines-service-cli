@@ -9,7 +9,7 @@ from terralab import __version__, log
 from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
 from terralab.commands.pipeline_runs_commands import submit
-
+from terralab.commands.quotas_commands import quota
 
 # Context settings for commands, for overwriting some click defaults
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -58,6 +58,8 @@ cli.add_command(pipelines)
 # pipelines sub-commands - still need to be called with the pipelines command
 cli.add_command(list, name="  pipelines list")
 cli.add_command(get_info, name="  pipelines get-info")
+
+cli.add_command(quota)
 
 # logout
 cli.add_command(logout)
