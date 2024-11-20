@@ -122,9 +122,6 @@ def get_result_and_download_pipeline_run_outputs(
     LOGGER.debug(f"Job {job_id} status is {job_status}")
     if job_status != "SUCCEEDED":
         LOGGER.error(f"Results not available for job {job_id} with status {job_status}")
-        LOGGER.error(
-            indented("For more information, use the `terralab status` command")
-        )
         exit(1)
 
     # extract output signed urls and download them all
