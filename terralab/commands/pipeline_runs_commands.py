@@ -48,13 +48,14 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
     help="optional location to download results to. defaults to the current directory.",
 )
 @handle_api_exceptions
-def download(pipeline_name: str, job_id: uuid.UUID, local_destination: str):
+def download(pipeline_name: str, job_id: str, local_destination: str):
     """Download all output files from a pipeline run
 
-    PIPELINE_NAME is the name of the pipeline that was run
-
-    JOB_ID is the uuid identifier for the pipeline run"""
-    job_id_uuid = validate_job_id(job_id)
+    \b
+    Arguments:
+    PIPELINE_NAME       the name of the pipeline that was run
+    JOB_ID              the uuid identifier for the pipeline run"""
+    job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
         pipeline_name, job_id_uuid, local_destination

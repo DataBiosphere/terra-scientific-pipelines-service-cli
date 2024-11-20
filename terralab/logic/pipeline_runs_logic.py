@@ -124,7 +124,7 @@ def get_result_and_download_pipeline_run_outputs(
     LOGGER.debug(f"Job {job_id} status is {job_status}")
     if job_status != "SUCCEEDED":
         LOGGER.error(f"Results not available for job {job_id} with status {job_status}")
-        LOGGER.error(handle_non_success(result))
+        LOGGER.error(get_log_message_for_non_success(result))
         exit(1)
 
     # extract output signed urls and download them all
@@ -138,12 +138,15 @@ def get_result_and_download_pipeline_run_outputs(
         LOGGER.info(indented(local_file_path))
 
 
-def handle_non_success(
+def get_log_message_for_non_success(
     pipeline_run_response: AsyncPipelineRunResponse,
 ) -> Optional[str]:
+    """Helper function to generate a log message based on a query of a pipeline run whose status is not SUCCEEDED.
+    Returns a string explaining the current non-successful status of the pipeline run.
+    """
     job_status: str = pipeline_run_response.job_report.status
     if job_status == "SUCCEEDED":
-        return
+        raise ValueError("This function should not be called on a successful run")
     elif job_status == "RUNNING":
         return "Please wait until the pipeline run has completed to download outputs."
     elif job_status == "PREPARING":

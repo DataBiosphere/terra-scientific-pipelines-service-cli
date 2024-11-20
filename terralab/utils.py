@@ -85,6 +85,8 @@ def upload_file_with_signed_url(local_file_path, signed_url):
 
 
 class SignedUrlDownload:
+    """Class to generate and capture all the information needed to perform a download of a file based on a signed url."""
+
     def __init__(self, signed_url, local_destination_dir):
         self.signed_url = signed_url
         # extract file name from signed url; signed url looks like:
@@ -102,7 +104,7 @@ class SignedUrlDownload:
 def download_with_pbar(download: SignedUrlDownload) -> str:
     """Helper function to take a SignedUrlDownload object and perform a download with a progress bar.
     Return the local file path of the downloaded file."""
-    download_block_size = 1024
+    download_block_size = 8192  # https://stackoverflow.com/questions/48719893/why-is-the-block-size-for-python-httplibs-reads-hard-coded-as-8192-bytes
 
     with open(download.local_file_path, "wb") as file:
         with tqdm(

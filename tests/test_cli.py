@@ -13,6 +13,7 @@ def test_cli():
     # expect the following packages
     expected_commands = [
         "submit",
+        "download",
         "pipelines",
         "pipelines list",
         "pipelines get-info",

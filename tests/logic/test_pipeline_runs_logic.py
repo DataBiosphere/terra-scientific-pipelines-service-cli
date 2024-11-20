@@ -326,8 +326,8 @@ def create_mock_pipeline_run_result(
         return mock({"job_report": mock_job_report, "pipeline_run_report": mock()})
 
 
-handle_non_success_testdata = [
-    # input, expected_output
+get_log_message_for_non_success_testdata = [
+    # input, expected_output (None means raises ValueError)
     (create_mock_pipeline_run_result("SUCCEEDED"), None),
     (
         create_mock_pipeline_run_result("RUNNING"),
@@ -345,6 +345,16 @@ handle_non_success_testdata = [
 ]
 
 
-@pytest.mark.parametrize("input,expected_output", handle_non_success_testdata)
-def test_handle_non_success(input, expected_output):
-    assert pipeline_runs_logic.handle_non_success(input) == expected_output
+@pytest.mark.parametrize(
+    "input,expected_output", get_log_message_for_non_success_testdata
+)
+def test_get_log_message_for_non_success(input, expected_output):
+    if expected_output:
+        assert (
+            pipeline_runs_logic.get_log_message_for_non_success(input)
+            == expected_output
+        )
+    else:
+        # None means error response
+        with pytest.raises(ValueError):
+            pipeline_runs_logic.get_log_message_for_non_success(input)
