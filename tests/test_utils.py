@@ -3,6 +3,7 @@
 import os
 import pytest
 import tempfile
+import uuid
 from requests.exceptions import HTTPError
 
 from mockito import mock, when
@@ -92,3 +93,66 @@ def test_upload_file_with_signed_url_failed(capture_logs):
             utils.upload_file_with_signed_url(test_local_file_path, test_signed_url)
 
         assert "Error uploading file: some message" in capture_logs.text
+
+
+def test_download_files_with_signed_urls_success(capture_logs):
+    test_file_name = "filename.ext"
+    test_signed_url = f"signed_url/{test_file_name}?headers"
+
+    test_file_size = 2048
+
+    mock_response = mock({"headers": {"content-length": test_file_size}})
+    when(mock_response).raise_for_status()  # do nothing
+    when(mock_response).iter_content(...).thenReturn([b"chunk1", b"chunk2"])
+
+    with tempfile.TemporaryDirectory() as test_download_dest_dir:
+        when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
+
+        local_file_paths = utils.download_files_with_signed_urls(
+            test_download_dest_dir, [test_signed_url]
+        )
+
+        for local_file_path in local_file_paths:
+            assert os.path.exists(local_file_path)
+
+    assert "All downloads complete" in capture_logs.text
+    assert f"Downloading {test_file_name}: complete" in capture_logs.text
+
+
+def test_download_files_with_signed_urls_failed(capture_logs):
+    test_file_name = "filename.ext"
+    test_signed_url = f"signed_url/{test_file_name}?headers"
+
+    test_file_size = 2048
+
+    mock_response = mock({"headers": {"content-length": test_file_size}})
+    when(mock_response).raise_for_status().thenRaise(
+        HTTPError("some message")
+    )  # raise an error
+
+    with tempfile.TemporaryDirectory() as test_download_dest_dir:
+        when(utils.requests).get(test_signed_url, stream=True).thenReturn(mock_response)
+
+        with pytest.raises(SystemExit):
+            utils.download_files_with_signed_urls(
+                test_download_dest_dir, [test_signed_url]
+            )
+
+    assert "Error downloading files: some message" in capture_logs.text
+
+
+def test_validate_uuid(capture_logs):
+    # valid
+    valid_uuid = uuid.uuid4()
+    assert utils.validate_job_id(str(valid_uuid)) == valid_uuid
+
+    # invalid (uuid conversion raises ValueError)
+    with pytest.raises(SystemExit):
+        utils.validate_job_id("not a uuid")
+    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    capture_logs.clear()
+
+    # empty (uuid conversion raises TypeError)
+    with pytest.raises(SystemExit):
+        utils.validate_job_id(None)
+    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text

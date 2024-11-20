@@ -1,9 +1,10 @@
 # tests/commands/test_pipeline_runs_commands.py
 
 import logging
+import pytest
 import uuid
 from click.testing import CliRunner
-from mockito import when
+from mockito import when, verify
 from terralab.commands import pipeline_runs_commands
 from tests.utils_for_tests import capture_logs
 
@@ -40,3 +41,40 @@ def test_submit(capture_logs):
         f"Successfully started {test_pipeline_name} job {test_job_id}"
         in capture_logs.text
     )
+
+
+def test_download():
+    runner = CliRunner()
+
+    test_pipeline_name = "test_pipeline"
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    when(
+        pipeline_runs_commands.pipeline_runs_logic
+    ).get_result_and_download_pipeline_run_outputs(
+        test_pipeline_name, test_job_id, "."
+    )  # do nothing, assume succeeded
+
+    result = runner.invoke(
+        pipeline_runs_commands.download, [test_pipeline_name, test_job_id_str]
+    )
+
+    assert result.exit_code == 0
+    verify(
+        pipeline_runs_commands.pipeline_runs_logic
+    ).get_result_and_download_pipeline_run_outputs(test_pipeline_name, test_job_id, ".")
+
+
+def test_download_bad_job_id(capture_logs):
+    runner = CliRunner()
+
+    test_pipeline_name = "test_pipeline"
+    test_job_id_str = "not a uuid"
+
+    result = runner.invoke(
+        pipeline_runs_commands.download, [test_pipeline_name, test_job_id_str]
+    )
+
+    assert result.exit_code == 1
+    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text

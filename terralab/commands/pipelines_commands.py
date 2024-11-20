@@ -29,11 +29,11 @@ def list():
         LOGGER.info(indented(pipeline.description))
 
 
-@pipelines.command()
+@pipelines.command(short_help="Get information about a pipeline")
 @click.argument("pipeline_name")
 @handle_api_exceptions
 def get_info(pipeline_name: str):
-    """Get information about a specific pipeline"""
+    """Get information about the PIPELINE_NAME pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
 
     # format the information nicely

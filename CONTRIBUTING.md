@@ -15,25 +15,29 @@ You do not need to re-run these commands each time you update code locally, unle
 If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of 
 your code changes.
 
+If you use an IDE terminal, you can run the following commands from there. To interact with a 
+terminal external to your IDE, first run `poetry shell` and then you'll be able to run the 
+commands as documented here.
+
 ### Tests, linters, and formatting
-To run the tests, execute the following command from the root project (terra-scientific-pipelines-service-cli) directory:
+To run tests:
 ```bash
-poetry run pytest
+pytest
 ```
 
 To run tests with a coverage report printed to the terminal:
 ```bash
-poetry run pytest --cov-report term --cov=terralab
+pytest --cov-report term --cov=terralab
 ```
 
 To run the formatter, execute the following command from the root project directory:
 ```bash
-poetry run black .
+black .
 ```
 
 To run the linter with fixes, execute the following command from the root project directory:
 ```bash
-poetry run ruff check --fix
+ruff check --fix
 ```
 To run the linter as a check without fixes, omit the `--fix` flag.
 

@@ -8,10 +8,12 @@ from teaspoons_client import (
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
+    AsyncPipelineRunResponse,
 )
 
-from terralab.utils import upload_file_with_signed_url
+from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 from terralab.client import ClientWrapper
+from terralab.log import indented
 
 
 LOGGER = logging.getLogger(__name__)
@@ -63,6 +65,16 @@ def start_pipeline_run(pipeline_name: str, job_id: str, description: str) -> uui
         ).job_report.id
 
 
+def get_pipeline_run_status(
+    pipeline_name: str, job_id: uuid.UUID
+) -> AsyncPipelineRunResponse:
+    """Call the getPipelineRunResult Teaspoons endpoint and return the Async Pipeline Run Response."""
+
+    with ClientWrapper() as api_client:
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+        return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
+
+
 ## submit action
 
 
@@ -91,3 +103,31 @@ def prepare_upload_start_pipeline_run(
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
     return start_pipeline_run(pipeline_name, job_id, description)
+
+
+## download action
+
+
+def get_result_and_download_pipeline_run_outputs(
+    pipeline_name: str, job_id: uuid.UUID, local_destination: str
+):
+    """Retrieve pipeline run result, download all output files."""
+    LOGGER.info(
+        f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}"
+    )
+    result: AsyncPipelineRunResponse = get_pipeline_run_status(pipeline_name, job_id)
+    job_status: str = result.job_report.status
+    LOGGER.debug(f"Job {job_id} status is {job_status}")
+    if job_status != "SUCCEEDED":
+        LOGGER.error(f"Results not available for job {job_id} with status {job_status}")
+        exit(1)
+
+    # extract output signed urls and download them all
+    signed_url_list: list[str] = list(result.pipeline_run_report.outputs.values())
+    downloaded_files: list[str] = download_files_with_signed_urls(
+        local_destination, signed_url_list
+    )
+
+    LOGGER.info("All file outputs downloaded:")
+    for local_file_path in downloaded_files:
+        LOGGER.info(indented(local_file_path))
