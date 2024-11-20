@@ -11,7 +11,7 @@ from terralab.utils import handle_api_exceptions
 LOGGER = logging.getLogger(__name__)
 
 
-@click.command(short_help="Get user quota information for a specific pipeline")
+@click.command(short_help="Get quota information")
 @click.argument("pipeline_name")
 @handle_api_exceptions
 def quota(pipeline_name: str):
