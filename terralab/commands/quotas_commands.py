@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 @click.argument("pipeline_name")
 @handle_api_exceptions
 def quota(pipeline_name: str):
-    """Get quota information for a specific pipeline PIPELINE_NAME"""
+    """Get quota information for a specific PIPELINE_NAME pipeline"""
     quota_info = quotas_logic.get_user_quota(pipeline_name)
     quota_limit = quota_info.quota_limit
     quota_consumed = quota_info.quota_consumed
