@@ -24,7 +24,7 @@ SIGNED_URL_KEY = "signedUrl"
 
 
 def prepare_pipeline_run(
-    pipeline_name: str, job_id: uuid.UUID, pipeline_version: int, pipeline_inputs: dict
+    pipeline_name: str, job_id: str, pipeline_version: int, pipeline_inputs: dict
 ) -> dict:
     """Call the preparePipelineRun Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url}."""
@@ -51,9 +51,7 @@ def prepare_pipeline_run(
         }
 
 
-def start_pipeline_run(
-    pipeline_name: str, job_id: uuid.UUID, description: str
-) -> uuid.UUID:
+def start_pipeline_run(pipeline_name: str, job_id: str, description: str) -> uuid.UUID:
     """Call the startPipelineRun Teaspoons endpoint and return the Async Job Response."""
     start_pipeline_run_request_body: StartPipelineRunRequestBody = (
         StartPipelineRunRequestBody(
@@ -81,7 +79,7 @@ def get_pipeline_run_status(
 
 
 def prepare_upload_start_pipeline_run(
-    pipeline_name: str, pipeline_version: str, pipeline_inputs: dict, description: str
+    pipeline_name: str, pipeline_version: int, pipeline_inputs: dict, description: str
 ) -> uuid.UUID:
     """Prepare pipeline run, upload input files, and start pipeline run.
     Returns the uuid of the job."""
