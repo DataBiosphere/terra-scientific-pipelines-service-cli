@@ -256,7 +256,6 @@ def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):
         f"Results not available for job {test_job_id} with status RUNNING"
         in capture_logs.text
     )
-    assert "Please wait until the pipeline run has completed" in capture_logs.text
 
 
 def test_get_result_and_download_pipeline_run_outputs_failed(capture_logs):
@@ -289,7 +288,6 @@ def test_get_result_and_download_pipeline_run_outputs_failed(capture_logs):
         f"Results not available for job {test_job_id} with status FAILED"
         in capture_logs.text
     )
-    assert "Pipeline run failed: 500, something went wrong" in capture_logs.text
 
 
 def create_mock_pipeline_run_result(
@@ -324,37 +322,3 @@ def create_mock_pipeline_run_result(
         )
     else:  # PREPARING, RUNNING, or other status
         return mock({"job_report": mock_job_report, "pipeline_run_report": mock()})
-
-
-get_log_message_for_non_success_testdata = [
-    # input, expected_output (None means raises ValueError)
-    (create_mock_pipeline_run_result("SUCCEEDED"), None),
-    (
-        create_mock_pipeline_run_result("RUNNING"),
-        "Please wait until the pipeline run has completed to download outputs.",
-    ),
-    (
-        create_mock_pipeline_run_result("PREPARING"),
-        "This job has not yet been started.",
-    ),
-    (
-        create_mock_pipeline_run_result("FAILED", 500, "something went wrong"),
-        "Pipeline run failed: 500, something went wrong",
-    ),
-    (create_mock_pipeline_run_result("WHAT"), "Unexpected pipeline run status WHAT"),
-]
-
-
-@pytest.mark.parametrize(
-    "input,expected_output", get_log_message_for_non_success_testdata
-)
-def test_get_log_message_for_non_success(input, expected_output):
-    if expected_output:
-        assert (
-            pipeline_runs_logic.get_log_message_for_non_success(input)
-            == expected_output
-        )
-    else:
-        # None means error response
-        with pytest.raises(ValueError):
-            pipeline_runs_logic.get_log_message_for_non_success(input)

@@ -22,9 +22,7 @@ LOGGER = logging.getLogger(__name__)
 )
 @handle_api_exceptions
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
-    """Submit a pipeline run
-
-    PIPELINE_NAME is the name of the pipeline to run"""
+    """Submit a pipeline run for a PIPELINE_NAME pipeline"""
     inputs_dict = process_json_to_dict(inputs)
 
     # validate inputs
@@ -49,12 +47,7 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
 )
 @handle_api_exceptions
 def download(pipeline_name: str, job_id: str, local_destination: str):
-    """Download all output files from a pipeline run
-
-    \b
-    Arguments:
-    PIPELINE_NAME       the name of the pipeline that was run
-    JOB_ID              the uuid identifier for the pipeline run"""
+    """Download all output files from a PIPELINE_NAME pipeline run with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
