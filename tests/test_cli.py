@@ -16,7 +16,7 @@ def test_cli():
         "pipelines",
         "pipelines list",
         "pipelines get-info",
-        "quotas",
+        "quota",
         "logout",
     ]
     for command in expected_commands:

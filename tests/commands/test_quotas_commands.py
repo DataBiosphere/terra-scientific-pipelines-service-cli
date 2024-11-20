@@ -19,17 +19,17 @@ def test_get_info_success(capture_logs, unstub):
     )
 
     runner = CliRunner()
-    result = runner.invoke(quotas_commands.quotas, ["get-info", test_pipeline_name])
+    result = runner.invoke(quotas_commands.quota, [test_pipeline_name])
 
     assert result.exit_code == 0
     verify(quotas_commands.quotas_logic).get_user_quota(test_pipeline_name)
     assert test_pipeline_name in capture_logs.text
     # quota limit
-    assert "1000" in capture_logs.text
+    assert "Quota Limit: 1000" in capture_logs.text
     # quota consumed
-    assert "300" in capture_logs.text
+    assert "Quota Used: 300" in capture_logs.text
     # quota left
-    assert "700" in capture_logs.text
+    assert "Quota Available: 700" in capture_logs.text
 
     unstub()
 
@@ -37,7 +37,7 @@ def test_get_info_success(capture_logs, unstub):
 def test_get_info_missing_argument():
     runner = CliRunner()
 
-    result = runner.invoke(quotas_commands.quotas, ["get-info"])
+    result = runner.invoke(quotas_commands.quota, [])
 
     assert result.exit_code != 0
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
@@ -54,7 +54,7 @@ def test_get_info_api_exception(capture_logs, unstub):
         )
     )
 
-    result = runner.invoke(quotas_commands.quotas, ["get-info", "bad_pipeline_name"])
+    result = runner.invoke(quotas_commands.quota, ["bad_pipeline_name"])
 
     assert result.exit_code != 0
     verify(quotas_commands.quotas_logic).get_user_quota("bad_pipeline_name")
