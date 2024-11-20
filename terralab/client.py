@@ -27,10 +27,13 @@ class ClientWrapper:
     by subsequent commands
     """
 
-    def __enter__(self, authenticated=True):
+    def __init__(self, authenticated: bool = True):
+        self.authenticated = authenticated
+
+    def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
 
-        if authenticated:
+        if self.authenticated:
             access_token = get_or_refresh_access_token(cli_config)
             return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
         
