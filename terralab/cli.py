@@ -8,7 +8,7 @@ from typing import Optional, Mapping
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
-from terralab.commands.pipeline_runs_commands import submit, download
+from terralab.commands.pipeline_runs_commands import submit, download, status, list_jobs
 from terralab.commands.quotas_commands import quota
 from terralab.commands.service_commands import service
 
@@ -57,6 +57,9 @@ cli.add_command(submit)
 
 # download
 cli.add_command(download)
+
+cli.add_command(status)
+cli.add_command(list_jobs)
 
 # pipelines
 cli.add_command(pipelines)

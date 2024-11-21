@@ -15,6 +15,7 @@ terralab = "terralab.cli:cli"
 [tool.poetry.dependencies]
 python = "^3.12"
 terra-scientific-pipelines-service-api-client = "0.1.7"
+# teaspoons-client = {path = "/Users/marymorg/workbench/terra-scientific-pipelines-service/python-client/generated"}
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 colorlog = "^6.9.0"
@@ -22,6 +23,7 @@ oauth2-cli-auth = "^1.5.0"
 PyJWT = "^2.9.0"
 requests = "^2.32.3"
 tqdm = "^4.67.0"
+tzlocal = "^5.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"

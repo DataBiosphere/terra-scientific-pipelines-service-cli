@@ -9,6 +9,7 @@ from teaspoons_client import (
     StartPipelineRunRequestBody,
     JobControl,
     AsyncPipelineRunResponse,
+    GetPipelineRunsResponse,
 )
 
 from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
@@ -73,6 +74,15 @@ def get_pipeline_run_status(
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
+
+
+def get_pipeline_runs() -> GetPipelineRunsResponse:
+    """Get all the pipeline runs a user has submitted"""
+
+    with ClientWrapper() as api_client:
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+        return pipeline_runs_client.get_all_pipeline_runs()
+
 
 
 ## submit action

@@ -157,3 +157,14 @@ def validate_job_id(job_id: str) -> uuid.UUID:
     except (TypeError, ValueError):
         LOGGER.error("Input error: JOB_ID must be a valid uuid.")
         exit(1)
+
+
+import datetime
+import tzlocal
+
+def format_timestamp(timestamp_string: str) -> str:
+    """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string in the caller's timezone"""
+
+    local_timezone = tzlocal.get_localzone()
+    datetime_obj = datetime.datetime.fromisoformat(timestamp_string).astimezone(local_timezone)
+    return datetime_obj.strftime("%Y-%m-%d %H:%M:%S %Z")

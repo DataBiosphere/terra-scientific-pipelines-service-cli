@@ -1,4 +1,4 @@
-# tests/commands/pipelines_tests.py
+# tests/commands/test_pipelines_commands.py
 
 import logging
 from click.testing import CliRunner
