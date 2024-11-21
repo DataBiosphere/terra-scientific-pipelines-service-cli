@@ -34,3 +34,5 @@ def status():
     """Get the current health status of the Teaspoons service"""
     status_string = service_logic.get_status()
     LOGGER.info(status_string)
+
+    # TODO deal with service being totally down and make that work for all calls, and remove this

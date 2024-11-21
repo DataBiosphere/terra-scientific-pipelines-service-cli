@@ -17,6 +17,7 @@ def mock_cli_config(unstub):
     yield config
     unstub()
 
+
 @pytest.fixture
 def mock_client_wrapper(unstub):
     client = mock()
@@ -46,19 +47,13 @@ def test_get_version(mock_service_api):
 
 def test_get_status(mock_service_api):
     # 200 / running
-    status_ok = mock({
-        "status_code": 200,
-        "data": None
-    })
+    status_ok = mock({"status_code": 200, "data": None})
     when(mock_service_api).get_status_with_http_info().thenReturn(status_ok)
 
     assert service_logic.get_status() == "Running"
 
     # 500 / internal error
-    status_500 = mock({
-        "status_code": 500,
-        "data": "error message"
-    })
+    status_500 = mock({"status_code": 500, "data": "error message"})
     when(mock_service_api).get_status_with_http_info().thenReturn(status_500)
 
     assert service_logic.get_status() == "error message"

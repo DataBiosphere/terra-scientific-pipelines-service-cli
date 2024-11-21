@@ -8,9 +8,13 @@ from typing import Optional, Mapping
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout
 from terralab.commands.pipelines_commands import pipelines, list, get_info
-from terralab.commands.pipeline_runs_commands import submit, download, status, list_jobs
+from terralab.commands.pipeline_runs_commands import (
+    submit,
+    download,
+    details,
+    list_jobs,
+)
 from terralab.commands.quotas_commands import quota
-from terralab.commands.service_commands import service
 
 
 # Context settings for commands, for overwriting some click defaults
@@ -52,13 +56,9 @@ def cli(debug):
 
 
 # the order in which these are added determines the order in which they show up in the --help output
-# submit
 cli.add_command(submit)
-
-# download
 cli.add_command(download)
-
-cli.add_command(status)
+cli.add_command(details)
 cli.add_command(list_jobs)
 
 # pipelines
@@ -68,12 +68,7 @@ cli.add_command(list, name="  pipelines list")
 cli.add_command(get_info, name="  pipelines get-info")
 
 cli.add_command(quota)
-
-# logout
 cli.add_command(logout)
-
-# service utils
-cli.add_command(service)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 
 import colorlog
 import logging
+from tabulate import tabulate
 
 
 def configure_logging(debug: bool):
@@ -13,7 +14,7 @@ def configure_logging(debug: bool):
             "%(log_color)s%(message)s",
             log_colors={
                 "DEBUG": "cyan",
-                "INFO": "green",
+                "INFO": "white",
                 "WARNING": "yellow",
                 "ERROR": "red",
                 "CRITICAL": "red,bg_white",
@@ -38,3 +39,42 @@ def pad_column(first_string: str, column_width: int = 20):
 
 def add_blankline_after(string: str):
     return f"{string}\n"
+
+
+def format_table_with_status(
+    rows_list: list[list[str]], status_key: str = "Status"
+) -> str:
+    all_table_rows = []
+    headers = rows_list[0]
+    # find status column index
+    status_column_index = headers.index(status_key) if status_key in headers else -1
+    for single_table_row in rows_list:
+        all_table_rows.append(
+            format_status_in_table_row(
+                single_table_row, status_column_index
+            )  # if color else single_table_row
+        )
+
+    return tabulate(all_table_rows, headers="firstrow", numalign="left")
+
+
+COLORFUL_STATUS = {
+    "FAILED": "\033[1;37;41mFailed\033[0m",
+    # "DOOMED": "\033[1;31;47mDOOMED\033[0m",
+    "SUCCEEDED": "\033[1;37;42mSucceeded\033[0m",
+    "RUNNING": "\033[0;30;46mRunning\033[0m",
+    "PREPARING": "\033[0;30;43mPreparing\033[0m",
+}
+
+
+def format_status_in_table_row(
+    table_row: list[str], status_column_index: int
+) -> list[str]:
+    if table_row[status_column_index] in COLORFUL_STATUS:
+        table_row[status_column_index] = COLORFUL_STATUS[table_row[status_column_index]]
+
+    return table_row
+
+
+def format_status(status_str: str) -> str:
+    return COLORFUL_STATUS[status_str]

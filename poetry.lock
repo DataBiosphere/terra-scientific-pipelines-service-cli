@@ -696,6 +696,20 @@ files = [
 ]
 
 [[package]]
+name = "tabulate"
+version = "0.9.0"
+description = "Pretty-print tabular data"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[package.extras]
+widechars = ["wcwidth"]
+
+[[package]]
 name = "terra-scientific-pipelines-service-api-client"
 version = "0.1.7"
 description = "Terra Scientific Pipelines Service"
@@ -792,4 +806,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "31985c460f9fa471074609b132c63fc815766066fd3c58aeec00170575fa5098"
+content-hash = "9579a7a753ca029ace47de52803ddcb44e055526f77ce40384968f666fc20fa5"

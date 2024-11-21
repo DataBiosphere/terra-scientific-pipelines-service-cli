@@ -4,10 +4,7 @@ import logging
 from click.testing import CliRunner
 from mockito import when, verify
 from terralab.commands import service_commands
-from teaspoons_client import (
-    ApiException,
-    VersionProperties
-)
+from teaspoons_client import ApiException, VersionProperties
 from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)
@@ -20,9 +17,7 @@ def test_service_version(capture_logs, unstub):
     test_git_hash = "12345"
     test_build = "0.0.0-SNAPSHOT"
     test_version_info = VersionProperties(
-        gitTag=test_git_tag,
-        gitHash=test_git_hash,
-        build=test_build
+        gitTag=test_git_tag, gitHash=test_git_hash, build=test_build
     )
 
     when(service_commands.service_logic).get_version().thenReturn(test_version_info)
@@ -41,12 +36,14 @@ def test_service_version(capture_logs, unstub):
 
 def test_service_version_api_exception(capture_logs, unstub):
     runner = CliRunner()
-    
-    when(service_commands.service_logic).get_version().thenRaise(ApiException(
+
+    when(service_commands.service_logic).get_version().thenRaise(
+        ApiException(
             status=400,
             reason="Error Reason",
             body='{"message": "this is the body message"}',
-        ))
+        )
+    )
 
     result = runner.invoke(service_commands.service, ["version"])
 
@@ -75,14 +72,17 @@ def test_service_status(capture_logs, unstub):
 
     unstub()
 
+
 def test_service_status_api_exception(capture_logs, unstub):
     runner = CliRunner()
-    
-    when(service_commands.service_logic).get_status().thenRaise(ApiException(
+
+    when(service_commands.service_logic).get_status().thenRaise(
+        ApiException(
             status=400,
             reason="Error Reason",
             body='{"message": "this is the body message"}',
-        ))
+        )
+    )
 
     result = runner.invoke(service_commands.service, ["status"])
 

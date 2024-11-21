@@ -9,7 +9,7 @@ from teaspoons_client import (
     StartPipelineRunRequestBody,
     JobControl,
     AsyncPipelineRunResponse,
-    GetPipelineRunsResponse,
+    PipelineRun,
 )
 
 from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
@@ -76,13 +76,38 @@ def get_pipeline_run_status(
         return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
 
 
-def get_pipeline_runs() -> GetPipelineRunsResponse:
+def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
     """Get all the pipeline runs a user has submitted"""
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_all_pipeline_runs()
 
+        n_results_chunk = 10  # in case they request a ton
+
+        # fetch the first set of n_results_chunk
+        response = pipeline_runs_client.get_all_pipeline_runs(
+            limit=n_results_chunk, page_token=None
+        )
+        LOGGER.debug(f"Retrieved {len(response.results)} PipelineRun results")
+        results = response.results
+        page_token = response.page_token
+
+        while len(results) < n_results_requested and page_token:
+            response = pipeline_runs_client.get_all_pipeline_runs(
+                limit=n_results_chunk, page_token=page_token
+            )
+            results.extend(response.results)
+            LOGGER.debug(
+                f"Retrieved {len(response.results)} PipelineRun more results, totaling {len(results)}"
+            )
+            page_token = response.page_token
+            if not (page_token):
+                LOGGER.debug("Reached end of available PipelineRun results")
+
+        # if we retrieved more results than requested, trim down
+        if len(results) > n_results_requested:
+            return results[:n_results_requested]
+        return results
 
 
 ## submit action

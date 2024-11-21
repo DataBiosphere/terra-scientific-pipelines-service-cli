@@ -188,6 +188,71 @@ def test_get_pipeline_run_status(mock_pipeline_runs_api):
     )
 
 
+def test_get_pipeline_runs(mock_pipeline_runs_api):
+    test_n_results_requested = 15
+    test_pipeline_runs_10 = [mock() for _ in range(10)]
+    test_page_token = "next_page_token"
+
+    # Mock first response with page token
+    mock_first_response = mock(
+        {"results": test_pipeline_runs_10, "page_token": test_page_token}
+    )
+
+    # Mock second response with remaining results and no page token
+    mock_second_response = mock(
+        {"results": test_pipeline_runs_10[:5], "page_token": None}
+    )
+
+    when(mock_pipeline_runs_api).get_all_pipeline_runs(
+        limit=10, page_token=None
+    ).thenReturn(mock_first_response)
+
+    when(mock_pipeline_runs_api).get_all_pipeline_runs(
+        limit=10, page_token=test_page_token
+    ).thenReturn(mock_second_response)
+
+    results = pipeline_runs_logic.get_pipeline_runs(test_n_results_requested)
+
+    assert len(results) == test_n_results_requested
+    verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=10, page_token=None)
+    verify(mock_pipeline_runs_api).get_all_pipeline_runs(
+        limit=10, page_token=test_page_token
+    )
+
+
+def test_get_pipeline_runs_single_page(mock_pipeline_runs_api):
+    test_n_results_requested = 5
+    test_pipeline_runs_10 = [mock() for _ in range(10)]
+
+    # Mock response with no page token
+    mock_response = mock({"results": test_pipeline_runs_10, "page_token": None})
+
+    when(mock_pipeline_runs_api).get_all_pipeline_runs(
+        limit=10, page_token=None
+    ).thenReturn(mock_response)
+
+    results = pipeline_runs_logic.get_pipeline_runs(test_n_results_requested)
+
+    assert len(results) == test_n_results_requested
+    verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=10, page_token=None)
+
+
+def test_get_pipeline_runs_empty(mock_pipeline_runs_api):
+    test_n_results_requested = 10
+
+    # Mock empty response
+    mock_response = mock({"results": [], "page_token": None})
+
+    when(mock_pipeline_runs_api).get_all_pipeline_runs(
+        limit=10, page_token=None
+    ).thenReturn(mock_response)
+
+    results = pipeline_runs_logic.get_pipeline_runs(test_n_results_requested)
+
+    assert len(results) == 0
+    verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=10, page_token=None)
+
+
 def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     test_pipeline_name = "foobar"
     test_job_id = uuid.uuid4()

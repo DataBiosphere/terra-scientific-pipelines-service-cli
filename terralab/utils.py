@@ -1,9 +1,11 @@
 # utils.py
 
+import datetime
 import json
 import logging
 import os
 import requests
+import tzlocal
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
@@ -159,12 +161,13 @@ def validate_job_id(job_id: str) -> uuid.UUID:
         exit(1)
 
 
-import datetime
-import tzlocal
-
 def format_timestamp(timestamp_string: str) -> str:
-    """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string in the caller's timezone"""
-
+    """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string in the caller's timezone.
+    If timestamp_str is None or empty, return an empty string."""
+    if not (timestamp_string):
+        return ""
     local_timezone = tzlocal.get_localzone()
-    datetime_obj = datetime.datetime.fromisoformat(timestamp_string).astimezone(local_timezone)
+    datetime_obj = datetime.datetime.fromisoformat(timestamp_string).astimezone(
+        local_timezone
+    )
     return datetime_obj.strftime("%Y-%m-%d %H:%M:%S %Z")
