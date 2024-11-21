@@ -30,6 +30,9 @@ def handle_api_exceptions(func):
             formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
             LOGGER.error(add_blankline_after(formatted_message))
             exit(1)
+        except ConnectionRefusedError as e:
+            LOGGER.error("Connection refused:", e)
+            exit(1)
         except Exception as e:
             LOGGER.error(add_blankline_after(str(e)))
             exit(1)
