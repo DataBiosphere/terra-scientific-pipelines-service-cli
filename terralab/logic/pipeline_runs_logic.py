@@ -81,12 +81,10 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
 
     with ClientWrapper() as api_client:
 
-        LOGGER.info("gathering client")
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
 
         n_results_chunk = 10  # in case they request a ton
 
-        LOGGER.info("making call")
         # fetch the first set of n_results_chunk
         response = pipeline_runs_client.get_all_pipeline_runs(
             limit=n_results_chunk, page_token=None

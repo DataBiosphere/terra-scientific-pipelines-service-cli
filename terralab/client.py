@@ -34,7 +34,6 @@ class ClientWrapper:
 
     def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
-        LOGGER.info("getting client")
         if self.authenticated:
             access_token = get_or_refresh_access_token(cli_config)
             return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
