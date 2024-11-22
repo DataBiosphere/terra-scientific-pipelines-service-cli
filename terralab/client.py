@@ -17,28 +17,17 @@ def _get_api_client(token: str, api_url: str) -> ApiClient:
     return ApiClient(configuration=api_config)
 
 
-def _get_api_client_unauthenticated(api_url: str) -> ApiClient:
-    api_config = Configuration()
-    api_config.host = api_url
-    return ApiClient(configuration=api_config)
-
-
 class ClientWrapper:
     """
     Wrapper to ensure that the user is authenticated before running the callback and that provides the low level api client to be used
     by subsequent commands
     """
 
-    def __init__(self, authenticated: bool = True):
-        self.authenticated = authenticated
-
     def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
-        if self.authenticated:
-            access_token = get_or_refresh_access_token(cli_config)
-            return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
 
-        return _get_api_client_unauthenticated(cli_config.config["TEASPOONS_API_URL"])
+        access_token = get_or_refresh_access_token(cli_config)
+        return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # no action needed

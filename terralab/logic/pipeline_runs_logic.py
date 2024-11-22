@@ -77,7 +77,7 @@ def get_pipeline_run_status(
 
 
 def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
-    """Get all the pipeline runs a user has submitted"""
+    """Get the latest n_results_requested pipeline runs a user has submitted (most recent first)"""
 
     with ClientWrapper() as api_client:
 

@@ -121,18 +121,18 @@ def details(pipeline_name: str, job_id: str):
 
 @click.command(short_help="List all jobs")
 @click.option(
-    "--n_results",
+    "--num_results",
     "-n",
     type=int,
     default=10,
     help="Number of results to display. Defaults to 10.",
 )
 @handle_api_exceptions
-def list_jobs(n_results: int):
-    results: list[PipelineRun] = pipeline_runs_logic.get_pipeline_runs(n_results)
+def list_jobs(num_results: int):
+    results: list[PipelineRun] = pipeline_runs_logic.get_pipeline_runs(num_results)
     if results:
         # create list of list of strings; first list is headers
-        row_list = [["Job id", "Status", "Submitted", "Completed", "Description"]]
+        row_list = [["Job ID", "Status", "Submitted", "Completed", "Description"]]
         for pipeline_run in results:
             row_list.append(
                 [

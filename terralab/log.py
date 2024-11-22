@@ -11,7 +11,7 @@ def configure_logging(debug: bool):
     handler = colorlog.StreamHandler()
     handler.setFormatter(
         colorlog.ColoredFormatter(
-            "%(log_color)s%(levelname)s:%(name)s:%(message)s",
+            "%(log_color)s%(message)s",
             log_colors={
                 "DEBUG": "cyan",
                 "INFO": "white",
@@ -60,7 +60,6 @@ def format_table_with_status(
 
 COLORFUL_STATUS = {
     "FAILED": "\033[1;37;41mFailed\033[0m",
-    # "DOOMED": "\033[1;31;47mDOOMED\033[0m",
     "SUCCEEDED": "\033[1;37;42mSucceeded\033[0m",
     "RUNNING": "\033[0;30;46mRunning\033[0m",
     "PREPARING": "\033[0;30;43mPreparing\033[0m",
@@ -70,8 +69,10 @@ COLORFUL_STATUS = {
 def format_status_in_table_row(
     table_row: list[str], status_column_index: int
 ) -> list[str]:
-    if table_row[status_column_index] in COLORFUL_STATUS:
-        table_row[status_column_index] = COLORFUL_STATUS[table_row[status_column_index]]
+    if table_row[status_column_index].upper() in COLORFUL_STATUS:
+        table_row[status_column_index] = COLORFUL_STATUS[
+            table_row[status_column_index].upper()
+        ]
 
     return table_row
 
