@@ -101,9 +101,9 @@ format_status_in_table_row_testdata = [
         2,
         ["job1", "10:00", "\033[0;30;46mRunning\033[0m"],
     ),
-    (  # invalid status index (-1) returns row untouched
+    (  # invalid status index (None) returns row untouched
         ["job1", "FAILED", "10:00"],
-        -1,
+        None,
         ["job1", "FAILED", "10:00"],
     ),
 ]

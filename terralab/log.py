@@ -44,15 +44,16 @@ def add_blankline_after(string: str):
 def format_table_with_status(
     rows_list: list[list[str]], status_key: str = "Status"
 ) -> str:
+    """Provided a list of list of strings representing rows to be formatted into a table,
+    with the headers as the first list of strings, color-format a Status column's values
+    and return the formatted (via tabulate package) string to be logged as a table."""
     all_table_rows = []
     headers = rows_list[0]
     # find status column index
-    status_column_index = headers.index(status_key) if status_key in headers else -1
+    status_column_index = headers.index(status_key) if status_key in headers else None
     for single_table_row in rows_list:
         all_table_rows.append(
-            format_status_in_table_row(
-                single_table_row, status_column_index
-            )  # if color else single_table_row
+            format_status_in_table_row(single_table_row, status_column_index)
         )
 
     return tabulate(all_table_rows, headers="firstrow", numalign="left")
@@ -69,7 +70,13 @@ COLORFUL_STATUS = {
 def format_status_in_table_row(
     table_row: list[str], status_column_index: int
 ) -> list[str]:
-    if table_row[status_column_index].upper() in COLORFUL_STATUS:
+    """Look for a value in the status_column_index index of table_row that matches the keys in COLORFUL_STATUS.
+    If present, replace with the colored value and return the row.
+    Otherwise (or if index is None), return the row unchanged."""
+    if (
+        status_column_index is not None
+        and table_row[status_column_index].upper() in COLORFUL_STATUS
+    ):
         table_row[status_column_index] = COLORFUL_STATUS[
             table_row[status_column_index].upper()
         ]
