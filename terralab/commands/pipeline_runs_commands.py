@@ -53,7 +53,6 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
 @click.argument("job_id", type=str)
 @click.option(
     "--local_destination",
-    "-d",
     type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
     default=".",
     help="optional location to download results to. defaults to the current directory.",
