@@ -239,7 +239,9 @@ def test_list_jobs_custom_limit(capture_logs):
         test_n_results
     ).thenReturn(test_pipeline_runs)
 
-    result = runner.invoke(pipeline_runs_commands.list_jobs, ["-n", test_n_results])
+    result = runner.invoke(
+        pipeline_runs_commands.list_jobs, ["--num_results", test_n_results]
+    )
 
     assert result.exit_code == 0
     assert test_pipeline_runs[0].job_id in capture_logs.text

@@ -123,7 +123,6 @@ def details(pipeline_name: str, job_id: str):
 @click.command(short_help="List all jobs")
 @click.option(
     "--num_results",
-    "-n",
     type=int,
     default=10,
     help="Number of results to display. Defaults to 10.",

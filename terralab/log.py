@@ -34,6 +34,7 @@ def join_lines(list_of_strings: list[str]):
 
 
 def pad_column(first_string: str, column_width: int = 20):
+    column_width = max(column_width, len(first_string) + 1)
     return first_string.ljust(column_width)
 
 

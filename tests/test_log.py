@@ -20,7 +20,9 @@ def test_pad_column():
     # default column_width is 20
     assert log.pad_column("foo") == "foo                 "  # 17 spaces
     assert log.pad_column("foo", 5) == "foo  "
-    assert log.pad_column("foo", 1) == "foo"  # doesn't truncate string
+    assert (
+        log.pad_column("foo", 1) == "foo "
+    )  # if padding is less than len(str), adds a space after
     assert log.pad_column("", 2) == "  "
 
 
