@@ -30,11 +30,11 @@ def test_add_blankline_after():
 
 
 format_table_with_status_testdata = [
-    # rows, status_key, expected_substrings
+    # rows, status_key, expected_substrings or None if error
     (  # no status in headers
         [["Name", "Age"], ["Alice", "25"]],
         "Status",
-        ["Name    Age", "Alice   25"],
+        None,
     ),
     (  # status in header
         [["Name", "Status", "Age"], ["Alice", "SUCCEEDED", "25"]],
@@ -69,9 +69,13 @@ format_table_with_status_testdata = [
     "rows,status_key,expected_substrings", format_table_with_status_testdata
 )
 def test_format_table_with_status(rows, status_key, expected_substrings):
-    formatted = log.format_table_with_status(rows, status_key=status_key)
-    for expected in expected_substrings:
-        assert expected in formatted
+    if expected_substrings:
+        formatted = log.format_table_with_status(rows, status_key=status_key)
+        for expected in expected_substrings:
+            assert expected in formatted
+    else:
+        with pytest.raises(ValueError):
+            log.format_table_with_status(rows, status_key=status_key)
 
 
 format_status_in_table_row_testdata = [

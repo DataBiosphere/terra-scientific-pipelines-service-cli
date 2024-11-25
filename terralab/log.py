@@ -46,11 +46,14 @@ def format_table_with_status(
 ) -> str:
     """Provided a list of list of strings representing rows to be formatted into a table,
     with the headers as the first list of strings, color-format a Status column's values
-    and return the formatted (via tabulate package) string to be logged as a table."""
+    and return the formatted (via tabulate package) string to be logged as a table.
+
+    Raises a ValueError if the status_key is not found in the first row (headers) of the table.
+    """
     all_table_rows = []
     headers = rows_list[0]
-    # find status column index
-    status_column_index = headers.index(status_key) if status_key in headers else None
+    # find status column index; this raises a ValueError if the status_key is not found
+    status_column_index = headers.index(status_key)
     for single_table_row in rows_list:
         all_table_rows.append(
             format_status_in_table_row(single_table_row, status_column_index)
