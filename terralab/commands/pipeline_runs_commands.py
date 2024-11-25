@@ -18,7 +18,6 @@ from terralab.log import (
     add_blankline_after,
     format_table_with_status,
     format_status,
-    pad_column,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +66,15 @@ def download(pipeline_name: str, job_id: str, local_destination: str):
     )
 
 
-@click.command(short_help="Get the status and details of a job")
+# JOBS group
+
+
+@click.group()
+def jobs():
+    """Get information about your jobs"""
+
+
+@jobs.command(short_help="Get the status and details of a job")
 @click.argument("pipeline_name", type=str)
 @click.argument("job_id", type=str)
 @handle_api_exceptions
@@ -89,37 +96,23 @@ def details(pipeline_name: str, job_id: str):
         )
 
     LOGGER.info("Details:")
-    col_size = 19
     LOGGER.info(
-        indented(
-            f'{pad_column("Pipeline name:", col_size)}{response.pipeline_run_report.pipeline_name}'
-        )
+        indented(f"Pipeline Name: {response.pipeline_run_report.pipeline_name}")
     )
     LOGGER.info(
-        indented(
-            f'{pad_column("Pipeline version:", col_size)}{response.pipeline_run_report.pipeline_version}'
-        )
+        indented(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
     )
     LOGGER.info(
-        indented(
-            f'{pad_column("Submitted:", col_size)}{format_timestamp(response.job_report.submitted)}'
-        )
+        indented(f"Submitted: {format_timestamp(response.job_report.submitted)}")
     )
     if response.job_report.completed:
-        LOGGER.debug(response.job_report.completed)
         LOGGER.info(
-            indented(
-                f'{pad_column("Completed:", col_size)}{format_timestamp(response.job_report.completed)}'
-            )
+            indented(f"Completed: {format_timestamp(response.job_report.completed)}")
         )
-    LOGGER.info(
-        indented(
-            f'{pad_column("Description:", col_size)}{response.job_report.description}'
-        )
-    )
+    LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
-@click.command(short_help="List all jobs")
+@jobs.command(short_help="List your jobs")
 @click.option(
     "--num_results",
     type=int,
@@ -127,7 +120,7 @@ def details(pipeline_name: str, job_id: str):
     help="Number of results to display. Defaults to 10.",
 )
 @handle_api_exceptions
-def list_jobs(num_results: int):
+def list(num_results: int):
     results: list[PipelineRun] = pipeline_runs_logic.get_pipeline_runs(num_results)
     if results:
         # create list of list of strings; first list is headers

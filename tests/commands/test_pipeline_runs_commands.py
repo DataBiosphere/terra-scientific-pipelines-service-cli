@@ -103,7 +103,7 @@ def test_details_running_job(capture_logs):
     ).thenReturn(test_response)
 
     result = runner.invoke(
-        pipeline_runs_commands.details, [test_pipeline_name, test_job_id_str]
+        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
     )
 
     assert result.exit_code == 0
@@ -130,7 +130,7 @@ def test_details_succeeded_job(capture_logs):
     ).thenReturn(test_response)
 
     result = runner.invoke(
-        pipeline_runs_commands.details, [test_pipeline_name, test_job_id_str]
+        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
     )
 
     assert result.exit_code == 0
@@ -158,7 +158,7 @@ def test_details_failed_job(capture_logs):
     ).thenReturn(test_response)
 
     result = runner.invoke(
-        pipeline_runs_commands.details, [test_pipeline_name, test_job_id_str]
+        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
     )
 
     assert result.exit_code == 0
@@ -174,7 +174,7 @@ def test_details_bad_job_id(capture_logs):
     test_job_id_str = "not a uuid"
 
     result = runner.invoke(
-        pipeline_runs_commands.details, [test_pipeline_name, test_job_id_str]
+        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
     )
 
     assert result.exit_code == 1
@@ -209,7 +209,7 @@ def test_list_jobs(capture_logs):
         test_pipeline_runs
     )
 
-    result = runner.invoke(pipeline_runs_commands.list_jobs)
+    result = runner.invoke(pipeline_runs_commands.jobs, ["list"])
 
     assert result.exit_code == 0
     # Check that job details are in output
@@ -240,7 +240,7 @@ def test_list_jobs_custom_limit(capture_logs):
     ).thenReturn(test_pipeline_runs)
 
     result = runner.invoke(
-        pipeline_runs_commands.list_jobs, ["--num_results", test_n_results]
+        pipeline_runs_commands.jobs, ["list", "--num_results", test_n_results]
     )
 
     assert result.exit_code == 0
@@ -254,7 +254,7 @@ def test_list_jobs_no_results(capture_logs):
         []
     )
 
-    result = runner.invoke(pipeline_runs_commands.list_jobs)
+    result = runner.invoke(pipeline_runs_commands.jobs, ["list"])
 
     assert result.exit_code == 0
 
@@ -262,6 +262,7 @@ def test_list_jobs_no_results(capture_logs):
 def create_test_pipeline_run_response(
     pipeline_name: str, job_id: str, status: str, error_message: str = None
 ):
+    """Helper function for creating AsyncPipelineRunResponse objects used in tests"""
     status_code = 200
     if status == "RUNNING":
         status_code = 202
