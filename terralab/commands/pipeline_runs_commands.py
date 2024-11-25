@@ -73,7 +73,7 @@ def download(pipeline_name: str, job_id: str, local_destination: str):
 @click.argument("job_id", type=str)
 @handle_api_exceptions
 def details(pipeline_name: str, job_id: str):
-    """Get the status and details of a PIPELINE_NAME job with JOB_ID identifier"""
+    """Get the status and details of a PIPELINE_NAME pipeline job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
     response: AsyncPipelineRunResponse = pipeline_runs_logic.get_pipeline_run_status(
@@ -107,6 +107,7 @@ def details(pipeline_name: str, job_id: str):
         )
     )
     if response.job_report.completed:
+        LOGGER.debug(response.job_report.completed)
         LOGGER.info(
             indented(
                 f'{pad_column("Completed:", col_size)}{format_timestamp(response.job_report.completed)}'

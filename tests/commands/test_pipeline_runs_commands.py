@@ -5,6 +5,13 @@ import pytest
 import uuid
 from click.testing import CliRunner
 from mockito import when, verify, mock
+
+from teaspoons_client import (
+    AsyncPipelineRunResponse,
+    JobReport,
+    ErrorReport,
+    PipelineRunReport,
+)
 from terralab.commands import pipeline_runs_commands
 from tests.utils_for_tests import capture_logs
 
@@ -80,32 +87,15 @@ def test_download_bad_job_id(capture_logs):
     assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
-def test_details(capture_logs):
+def test_details_running_job(capture_logs):
     runner = CliRunner()
 
     test_pipeline_name = "test_pipeline"
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
 
-    test_response = mock(
-        {
-            "job_report": mock(
-                {
-                    "status": "SUCCEEDED",
-                    "submitted": "2024-01-01T12:00:00Z",
-                    "completed": "2024-01-01T12:30:00Z",
-                    "description": "test description",
-                }
-            ),
-            "pipeline_run_report": mock(
-                {
-                    "pipeline_name": test_pipeline_name,
-                    "pipeline_version": 1,
-                    "wdl_method_version": "1.0.0",
-                }
-            ),
-            "error_report": None,
-        }
+    test_response = create_test_pipeline_run_response(
+        test_pipeline_name, test_job_id_str, "RUNNING"
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
@@ -121,6 +111,34 @@ def test_details(capture_logs):
         test_pipeline_name, test_job_id
     )
     assert "Status:" in capture_logs.text
+    assert "Completed:" not in capture_logs.text
+
+
+def test_details_succeeded_job(capture_logs):
+    runner = CliRunner()
+
+    test_pipeline_name = "test_pipeline"
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    test_response = create_test_pipeline_run_response(
+        test_pipeline_name, test_job_id_str, "SUCCEEDED"
+    )
+
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        test_pipeline_name, test_job_id
+    ).thenReturn(test_response)
+
+    result = runner.invoke(
+        pipeline_runs_commands.details, [test_pipeline_name, test_job_id_str]
+    )
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        test_pipeline_name, test_job_id
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" in capture_logs.text
 
 
 def test_details_failed_job(capture_logs):
@@ -131,25 +149,8 @@ def test_details_failed_job(capture_logs):
     test_job_id_str = str(test_job_id)
     test_error_message = "Something went wrong"
 
-    test_response = mock(
-        {
-            "job_report": mock(
-                {
-                    "status": "FAILED",
-                    "submitted": "2024-01-01T12:00:00Z",
-                    "completed": "2024-01-01T12:30:00Z",
-                    "description": "test description",
-                }
-            ),
-            "pipeline_run_report": mock(
-                {
-                    "pipeline_name": test_pipeline_name,
-                    "pipeline_version": 1,
-                    "wdl_method_version": "1.0.0",
-                }
-            ),
-            "error_report": mock({"message": test_error_message}),
-        }
+    test_response = create_test_pipeline_run_response(
+        test_pipeline_name, test_job_id_str, "FAILED", error_message=test_error_message
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
@@ -163,6 +164,7 @@ def test_details_failed_job(capture_logs):
     assert result.exit_code == 0
     assert "Status:" in capture_logs.text
     assert test_error_message in capture_logs.text
+    assert "Completed:" in capture_logs.text
 
 
 def test_details_bad_job_id(capture_logs):
@@ -253,3 +255,31 @@ def test_list_jobs_no_results(capture_logs):
     result = runner.invoke(pipeline_runs_commands.list_jobs)
 
     assert result.exit_code == 0
+
+
+def create_test_pipeline_run_response(
+    pipeline_name: str, job_id: str, status: str, error_message: str = None
+):
+    status_code = 200
+    if status == "RUNNING":
+        status_code = 202
+    error_report = None
+    if error_message:
+        error_report = ErrorReport(message=error_message, statusCode=500, causes=[])
+    job_report = JobReport(
+        id=job_id,
+        statusCode=status_code,
+        resultURL="foobar",
+        status=status,
+        submitted="2024-01-01T12:00:00Z",
+        description="test description",
+    )
+    if status in ["SUCCEEDED", "FAILED"]:
+        job_report.completed = "2024-01-01T15:00:00Z"
+    return AsyncPipelineRunResponse(
+        jobReport=job_report,
+        pipelineRunReport=PipelineRunReport(
+            pipelineName=pipeline_name, pipelineVersion=1, wdlMethodVersion="1.0.0"
+        ),
+        errorReport=error_report,
+    )

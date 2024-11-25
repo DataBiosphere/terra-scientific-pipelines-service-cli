@@ -83,11 +83,11 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
 
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
 
-        n_results_chunk = 10  # in case they request a ton
+        api_chunk_default = 10
 
-        # fetch the first set of n_results_chunk
+        # fetch the first set of results
         response = pipeline_runs_client.get_all_pipeline_runs(
-            limit=n_results_chunk, page_token=None
+            limit=min(api_chunk_default, n_results_requested), page_token=None
         )
         LOGGER.debug(f"Retrieved {len(response.results)} PipelineRun results")
         results = response.results
@@ -95,7 +95,8 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
 
         while len(results) < n_results_requested and page_token:
             response = pipeline_runs_client.get_all_pipeline_runs(
-                limit=n_results_chunk, page_token=page_token
+                limit=min(api_chunk_default, n_results_requested - len(results)),
+                page_token=page_token,
             )
             results.extend(response.results)
             LOGGER.debug(
@@ -105,9 +106,6 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
             if not (page_token):
                 LOGGER.debug("Reached end of available PipelineRun results")
 
-        # if we retrieved more results than requested, trim down
-        if len(results) > n_results_requested:
-            return results[:n_results_requested]
         return results
 
 

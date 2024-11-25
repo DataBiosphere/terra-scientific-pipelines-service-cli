@@ -207,8 +207,9 @@ def test_get_pipeline_runs(mock_pipeline_runs_api):
         limit=10, page_token=None
     ).thenReturn(mock_first_response)
 
+    # second request should only ask for 5, since the user requested 15 and we've returned 10 so far
     when(mock_pipeline_runs_api).get_all_pipeline_runs(
-        limit=10, page_token=test_page_token
+        limit=5, page_token=test_page_token
     ).thenReturn(mock_second_response)
 
     results = pipeline_runs_logic.get_pipeline_runs(test_n_results_requested)
@@ -216,25 +217,25 @@ def test_get_pipeline_runs(mock_pipeline_runs_api):
     assert len(results) == test_n_results_requested
     verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=10, page_token=None)
     verify(mock_pipeline_runs_api).get_all_pipeline_runs(
-        limit=10, page_token=test_page_token
+        limit=5, page_token=test_page_token
     )
 
 
 def test_get_pipeline_runs_single_page(mock_pipeline_runs_api):
     test_n_results_requested = 5
-    test_pipeline_runs_10 = [mock() for _ in range(10)]
+    test_pipeline_runs_5 = [mock() for _ in range(5)]
 
     # Mock response with no page token
-    mock_response = mock({"results": test_pipeline_runs_10, "page_token": None})
+    mock_response = mock({"results": test_pipeline_runs_5, "page_token": None})
 
     when(mock_pipeline_runs_api).get_all_pipeline_runs(
-        limit=10, page_token=None
+        limit=5, page_token=None
     ).thenReturn(mock_response)
 
     results = pipeline_runs_logic.get_pipeline_runs(test_n_results_requested)
 
     assert len(results) == test_n_results_requested
-    verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=10, page_token=None)
+    verify(mock_pipeline_runs_api).get_all_pipeline_runs(limit=5, page_token=None)
 
 
 def test_get_pipeline_runs_empty(mock_pipeline_runs_api):
