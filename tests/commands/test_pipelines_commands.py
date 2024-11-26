@@ -20,11 +20,13 @@ def test_list_pipelines(capture_logs):
     test_pipelines = [
         Pipeline(
             pipeline_name="test_pipeline_1",
+            pipeline_version=1,
             display_name="test_display_name_1",
             description="test_description_1",
         ),
         Pipeline(
             pipeline_name="test_pipeline_2",
+            pipeline_version=2,
             display_name="test_display_name_2",
             description="test_description_2",
         ),
@@ -37,17 +39,20 @@ def test_list_pipelines(capture_logs):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).list_pipelines()
     assert "Found 2 available pipelines:" in capture_logs.text
+    assert "Version: 1" in capture_logs.text
+    assert "Version: 2" in capture_logs.text
     assert "test_pipeline_1" in capture_logs.text
     assert "test_pipeline_2" in capture_logs.text
 
 
-def test_get_info_success(capture_logs, unstub):
+def test_get_info_success_no_version(capture_logs, unstub):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
         name="test_input", type="test_type"
     )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
+        pipeline_version=1,
         description="test_description",
         display_name="test_display_name",
         type="test_type",
@@ -55,7 +60,7 @@ def test_get_info_success(capture_logs, unstub):
     )
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
-        test_pipeline_name
+        test_pipeline_name, None
     ).thenReturn(test_pipeline)
 
     runner = CliRunner()
@@ -64,8 +69,41 @@ def test_get_info_success(capture_logs, unstub):
     )
 
     assert result.exit_code == 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name)
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, None)
     assert test_pipeline_name in capture_logs.text
+    assert "Pipeline Version: 1" in capture_logs.text
+    assert "test_description" in capture_logs.text
+    assert "test_input" in capture_logs.text
+
+    unstub()
+
+def test_get_info_success_version(capture_logs, unstub):
+    test_pipeline_name = "test_pipeline"
+    test_input_definition = PipelineUserProvidedInputDefinition(
+        name="test_input", type="test_type"
+    )
+    test_pipeline = PipelineWithDetails(
+        pipeline_name=test_pipeline_name,
+        pipeline_version=1,
+        description="test_description",
+        display_name="test_display_name",
+        type="test_type",
+        inputs=[test_input_definition],
+    )
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        test_pipeline_name, 1
+    ).thenReturn(test_pipeline)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["details", test_pipeline_name, "--version", 1]
+    )
+
+    assert result.exit_code == 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, 1)
+    assert test_pipeline_name in capture_logs.text
+    assert "Pipeline Version: 1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
 
@@ -85,7 +123,7 @@ def test_get_info_api_exception(capture_logs, unstub):
     runner = CliRunner()
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
-        "bad_pipeline_name"
+        "bad_pipeline_name", None
     ).thenRaise(
         ApiException(
             status=400,
@@ -99,7 +137,7 @@ def test_get_info_api_exception(capture_logs, unstub):
     )
 
     assert result.exit_code != 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name")
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name", None)
     assert (
         "API call failed with status code 400 (Error Reason): this is the body message"
         in capture_logs.text

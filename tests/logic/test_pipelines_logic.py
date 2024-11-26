@@ -3,7 +3,7 @@
 import pytest
 from mockito import when, mock, verify
 
-from teaspoons_client import ApiException
+from teaspoons_client import ApiException, GetPipelineDetailsRequestBody
 
 from terralab.logic import pipelines_logic
 
@@ -58,31 +58,38 @@ def test_get_pipeline_info(mock_pipelines_api):
     mock_pipeline = mock(
         {
             "pipeline_name": pipeline_name,
+            "pipeline_version": 1,
             "description": "Test Description",
             "display_name": "Test Display Name",
             "type": "Test Type",
             "inputs": [],
         }
     )
+    test_get_info_request = GetPipelineDetailsRequestBody(
+        pipelineVersion=1
+    )
     when(mock_pipelines_api).get_pipeline_details(
-        pipeline_name=pipeline_name
+        pipeline_name, test_get_info_request
     ).thenReturn(mock_pipeline)
 
-    result = pipelines_logic.get_pipeline_info(pipeline_name)
+    result = pipelines_logic.get_pipeline_info(pipeline_name, 1)
 
     assert result == mock_pipeline
 
 
 def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
     pipeline_name = "Bad Pipeline Name"
+    test_get_info_request = GetPipelineDetailsRequestBody(
+        pipelineVersion=None
+    )
     when(mock_pipelines_api).get_pipeline_details(
-        pipeline_name=pipeline_name
+        pipeline_name, test_get_info_request
     ).thenRaise(ApiException(404, reason="Pipeline not found"))
 
     with pytest.raises(ApiException):
-        pipelines_logic.get_pipeline_info(pipeline_name)
+        pipelines_logic.get_pipeline_info(pipeline_name, None)
 
-    verify(mock_pipelines_api).get_pipeline_details(pipeline_name=pipeline_name)
+    verify(mock_pipelines_api).get_pipeline_details(pipeline_name, test_get_info_request)
 
 
 def test_validate_pipeline_inputs_success():
@@ -98,12 +105,12 @@ def test_validate_pipeline_inputs_success():
     mock_input2.type = "STRING"
     mock_pipeline_info.inputs = [mock_input1, mock_input2]
 
-    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name, 1).thenReturn(
         mock_pipeline_info
     )
 
     # Should succeed with valid inputs
-    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
+    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, 1, test_inputs_dict)
 
 
 def test_validate_pipeline_inputs_extra_input_warning(capture_logs):
@@ -116,11 +123,11 @@ def test_validate_pipeline_inputs_extra_input_warning(capture_logs):
     mock_pipeline_info = mock()
     mock_pipeline_info.inputs = []
 
-    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name, None).thenReturn(
         mock_pipeline_info
     )
 
-    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, test_inputs_dict)
+    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, None, test_inputs_dict)
 
     assert "Ignoring unexpected input `extra_key`" in capture_logs.text
 
@@ -137,13 +144,13 @@ def test_validate_pipeline_inputs_missing_input(capture_logs):
     mock_input2.type = "STRING"
     mock_pipeline_info.inputs = [mock_input1, mock_input2]
 
-    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name, None).thenReturn(
         mock_pipeline_info
     )
 
     with pytest.raises(SystemExit):
         pipelines_logic.validate_pipeline_inputs(
-            test_pipeline_name, {"input1": "value1"}
+            test_pipeline_name, None,{"input1": "value1"}
         )
 
     assert "Missing or invalid inputs provided" in capture_logs.text
@@ -158,13 +165,13 @@ def test_validate_pipeline_inputs_missing_file(capture_logs):
     mock_file_input.type = "FILE"
     mock_pipeline_info.inputs = [mock_file_input]
 
-    when(pipelines_logic).get_pipeline_info(test_pipeline_name).thenReturn(
+    when(pipelines_logic).get_pipeline_info(test_pipeline_name, 0).thenReturn(
         mock_pipeline_info
     )
 
     with pytest.raises(SystemExit):
         pipelines_logic.validate_pipeline_inputs(
-            test_pipeline_name, {"file_input": "nonexistent_file.txt"}
+            test_pipeline_name, 0,{"file_input": "nonexistent_file.txt"}
         )
 
     assert "Missing or invalid inputs provided" in capture_logs.text

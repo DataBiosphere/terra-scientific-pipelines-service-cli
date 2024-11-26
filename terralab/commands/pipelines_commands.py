@@ -26,21 +26,26 @@ def list():
 
     for pipeline in pipelines_list:
         LOGGER.info(pipeline.pipeline_name)
+        LOGGER.info(indented("Version: " + str(pipeline.pipeline_version)))
         LOGGER.info(indented(pipeline.description))
 
 
 @pipelines.command(short_help="Get information about a pipeline")
 @click.argument("pipeline_name")
+@click.option("--version", type=int, help="pipeline version")
 @handle_api_exceptions
-def details(pipeline_name: str):
+def details(pipeline_name: str, version: int):
     """Get information about the PIPELINE_NAME pipeline"""
-    pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
+    pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name, version)
 
     # format the information nicely
     col_width = 16
 
     LOGGER.info(
         f"{pad_column("Pipeline Name:", col_width)}{pipeline_info.pipeline_name}"
+    )
+    LOGGER.info(
+        f"{pad_column("Pipeline Version:", col_width)}{pipeline_info.pipeline_version}"
     )
     LOGGER.info(f"{pad_column("Description:", col_width)}{pipeline_info.description}")
     LOGGER.info("Inputs:")

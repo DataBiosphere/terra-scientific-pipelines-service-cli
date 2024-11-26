@@ -2,7 +2,7 @@
 
 import logging
 
-from teaspoons_client import PipelinesApi, PipelineWithDetails, Pipeline
+from teaspoons_client import PipelinesApi, PipelineWithDetails, Pipeline, GetPipelineDetailsRequestBody
 
 from terralab.client import ClientWrapper
 from terralab.utils import is_valid_local_file
@@ -24,17 +24,20 @@ def list_pipelines() -> list[Pipeline]:
         return result
 
 
-def get_pipeline_info(pipeline_name: str) -> PipelineWithDetails:
+def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:
     """Get the details of a pipeline, returning a dictionary."""
+    get_pipeline_details_request_body : GetPipelineDetailsRequestBody = GetPipelineDetailsRequestBody(
+        pipelineVersion=version
+    )
     with ClientWrapper() as api_client:
         pipeline_client = PipelinesApi(api_client=api_client)
-        return pipeline_client.get_pipeline_details(pipeline_name=pipeline_name)
+        return pipeline_client.get_pipeline_details(pipeline_name, get_pipeline_details_request_body)
 
 
-def validate_pipeline_inputs(pipeline_name: str, inputs_dict: dict):
+def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
     """Check that all required user inputs are present, and that all file inputs are valid."""
     # retrieve required pipeline inputs; note currently this endpoint only returns required inputs
-    pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name)
+    pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name, version)
 
     input_error_messages = []
     expected_input_keys = []
