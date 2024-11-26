@@ -32,6 +32,7 @@ def prepare_pipeline_run(
     prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
         PreparePipelineRunRequestBody(
             jobId=job_id,
+            pipeline_name=pipeline_name,
             pipelineVersion=pipeline_version,
             pipelineInputs=pipeline_inputs,
         )
@@ -40,9 +41,7 @@ def prepare_pipeline_run(
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         response: PreparePipelineRunResponse = (
-            pipeline_runs_client.prepare_pipeline_run(
-                pipeline_name, prepare_pipeline_run_request_body
-            )
+            pipeline_runs_client.prepare_pipeline_run(prepare_pipeline_run_request_body)
         )
 
         result = response.file_input_upload_urls
@@ -52,7 +51,7 @@ def prepare_pipeline_run(
         }
 
 
-def start_pipeline_run(pipeline_name: str, job_id: str, description: str) -> uuid.UUID:
+def start_pipeline_run(job_id: str, description: str) -> uuid.UUID:
     """Call the startPipelineRun Teaspoons endpoint and return the Async Job Response."""
     start_pipeline_run_request_body: StartPipelineRunRequestBody = (
         StartPipelineRunRequestBody(
@@ -62,18 +61,16 @@ def start_pipeline_run(pipeline_name: str, job_id: str, description: str) -> uui
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         return pipeline_runs_client.start_pipeline_run(
-            pipeline_name, start_pipeline_run_request_body
+            start_pipeline_run_request_body
         ).job_report.id
 
 
-def get_pipeline_run_status(
-    pipeline_name: str, job_id: uuid.UUID
-) -> AsyncPipelineRunResponse:
+def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponse:
     """Call the getPipelineRunResult Teaspoons endpoint and return the Async Pipeline Run Response."""
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
+        return pipeline_runs_client.get_pipeline_run_result(str(job_id))
 
 
 def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
@@ -136,20 +133,20 @@ def prepare_upload_start_pipeline_run(
 
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
-    return start_pipeline_run(pipeline_name, job_id, description)
+    return start_pipeline_run(job_id, description)
 
 
 ## download action
 
 
 def get_result_and_download_pipeline_run_outputs(
-    pipeline_name: str, job_id: uuid.UUID, local_destination: str
+    job_id: uuid.UUID, local_destination: str
 ):
     """Retrieve pipeline run result, download all output files."""
     LOGGER.info(
-        f"Getting results for {pipeline_name} run {job_id} and downloading to {local_destination}"
+        f"Getting results for job {job_id} and downloading to {local_destination}"
     )
-    result: AsyncPipelineRunResponse = get_pipeline_run_status(pipeline_name, job_id)
+    result: AsyncPipelineRunResponse = get_pipeline_run_status(job_id)
     job_status: str = result.job_report.status
     LOGGER.debug(f"Job {job_id} status is {job_status}")
     if job_status != "SUCCEEDED":

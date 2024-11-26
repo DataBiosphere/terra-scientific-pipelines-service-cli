@@ -7,5 +7,5 @@ from terralab.logic import auth_logic
 
 @click.command()
 def logout():
-    """Clear the local authentication token"""
+    """Remove access credentials"""
     auth_logic.clear_local_token()

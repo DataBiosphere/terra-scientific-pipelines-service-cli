@@ -49,6 +49,7 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     test_pipeline_inputs = {}
     test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
         jobId=test_job_id,
+        pipelineName=test_pipeline_name,
         pipelineVersion=test_pipeline_version,
         pipelineInputs=test_pipeline_inputs,
     )
@@ -65,7 +66,7 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
         }
     )
     when(mock_pipeline_runs_api).prepare_pipeline_run(
-        test_pipeline_name, test_prepare_pipeline_run_request_body
+        test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
     result = pipeline_runs_logic.prepare_pipeline_run(
@@ -74,13 +75,12 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
 
     assert result == {test_input_name: test_signed_url}
     verify(mock_pipeline_runs_api).prepare_pipeline_run(
-        test_pipeline_name, test_prepare_pipeline_run_request_body
+        test_prepare_pipeline_run_request_body
     )
 
 
 def test_start_pipeline_run_running(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
-    test_pipeline_name = "foobar"
     test_description = "user-provided description"
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
@@ -91,22 +91,19 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
     )  # successful (running) status code
     mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
     when(mock_pipeline_runs_api).start_pipeline_run(
-        test_pipeline_name, test_start_pipeline_run_request_body
+        test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    result = pipeline_runs_logic.start_pipeline_run(
-        test_pipeline_name, test_job_id, test_description
-    )
+    result = pipeline_runs_logic.start_pipeline_run(test_job_id, test_description)
 
     assert result == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
-        test_pipeline_name, test_start_pipeline_run_request_body
+        test_start_pipeline_run_request_body
     )
 
 
 def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
-    test_pipeline_name = "foobar"
     test_description = "user-provided description"
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
@@ -120,16 +117,14 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
         {"job_report": mock_job_report, "error_report": mock_error_report}
     )
     when(mock_pipeline_runs_api).start_pipeline_run(
-        test_pipeline_name, test_start_pipeline_run_request_body
+        test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    response = pipeline_runs_logic.start_pipeline_run(
-        test_pipeline_name, test_job_id, test_description
-    )
+    response = pipeline_runs_logic.start_pipeline_run(test_job_id, test_description)
 
     assert response == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
-        test_pipeline_name, test_start_pipeline_run_request_body
+        test_start_pipeline_run_request_body
     )
 
 
@@ -156,7 +151,7 @@ def test_prepare_upload_start_pipeline_run():
     )  # do nothing
 
     when(pipeline_runs_logic).start_pipeline_run(
-        test_pipeline_name, test_job_id_str, test_description
+        test_job_id_str, test_description
     ).thenReturn(test_job_id)
 
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
@@ -167,25 +162,20 @@ def test_prepare_upload_start_pipeline_run():
 
 
 def test_get_pipeline_run_status(mock_pipeline_runs_api):
-    test_pipeline_name = "foobar"
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
 
     mock_job_report = mock({"id": test_job_id})
     mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
 
-    when(mock_pipeline_runs_api).get_pipeline_run_result(
-        test_pipeline_name, test_job_id_str
-    ).thenReturn(mock_async_pipeline_run_response)
-
-    response = pipeline_runs_logic.get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+    when(mock_pipeline_runs_api).get_pipeline_run_result(test_job_id_str).thenReturn(
+        mock_async_pipeline_run_response
     )
+
+    response = pipeline_runs_logic.get_pipeline_run_status(test_job_id)
 
     assert response == mock_async_pipeline_run_response
-    verify(mock_pipeline_runs_api).get_pipeline_run_result(
-        test_pipeline_name, test_job_id_str
-    )
+    verify(mock_pipeline_runs_api).get_pipeline_run_result(test_job_id_str)
 
 
 def test_get_pipeline_runs(mock_pipeline_runs_api):
@@ -255,7 +245,6 @@ def test_get_pipeline_runs_empty(mock_pipeline_runs_api):
 
 
 def test_get_result_and_download_pipeline_run_outputs(capture_logs):
-    test_pipeline_name = "foobar"
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
@@ -268,9 +257,9 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
         {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
     )
 
-    when(pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
-    ).thenReturn(mock_async_pipeline_run_response)
+    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
+        mock_async_pipeline_run_response
+    )
 
     expected_downloaded_file_paths = ["i am a file path"]
     when(pipeline_runs_logic).download_files_with_signed_urls(
@@ -280,23 +269,18 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     )  # do nothing
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-        test_pipeline_name, test_job_id, test_local_destination
+        test_job_id, test_local_destination
     )
-
-    assert (
-        f"Getting results for {test_pipeline_name} run {test_job_id}"
-        in capture_logs.text
-    )
+    assert f"Getting results for job {test_job_id}" in capture_logs.text
     assert "All file outputs downloaded" in capture_logs.text
 
-    verify(pipeline_runs_logic).get_pipeline_run_status(test_pipeline_name, test_job_id)
+    verify(pipeline_runs_logic).get_pipeline_run_status(test_job_id)
     verify(pipeline_runs_logic).download_files_with_signed_urls(
         test_local_destination, [test_signed_url]
     )
 
 
 def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):
-    test_pipeline_name = "foobar"
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
@@ -309,13 +293,13 @@ def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):
         {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
     )
 
-    when(pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
-    ).thenReturn(mock_async_pipeline_run_response)
+    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
+        mock_async_pipeline_run_response
+    )
 
     with pytest.raises(SystemExit):
         pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-            test_pipeline_name, test_job_id, test_local_destination
+            test_job_id, test_local_destination
         )
 
     assert (
@@ -325,7 +309,6 @@ def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):
 
 
 def test_get_result_and_download_pipeline_run_outputs_failed(capture_logs):
-    test_pipeline_name = "foobar"
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
@@ -341,13 +324,13 @@ def test_get_result_and_download_pipeline_run_outputs_failed(capture_logs):
         }
     )
 
-    when(pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
-    ).thenReturn(mock_async_pipeline_run_response)
+    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
+        mock_async_pipeline_run_response
+    )
 
     with pytest.raises(SystemExit):
         pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-            test_pipeline_name, test_job_id, test_local_destination
+            test_job_id, test_local_destination
         )
 
     assert (
