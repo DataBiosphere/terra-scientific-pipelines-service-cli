@@ -43,7 +43,7 @@ def add_blankline_after(string: str):
 
 
 def format_table_with_status(
-    rows_list: list[list[str]], status_key: str = "Status"
+    rows_list: list[list[str]], status_key: str = "Status", max_col_size: int = 60
 ) -> str:
     """Provided a list of list of strings representing rows to be formatted into a table,
     with the headers as the first list of strings, color-format a Status column's values
@@ -60,7 +60,9 @@ def format_table_with_status(
             format_status_in_table_row(single_table_row, status_column_index)
         )
 
-    return tabulate(all_table_rows, headers="firstrow", numalign="left")
+    return tabulate(
+        all_table_rows, headers="firstrow", numalign="left", maxcolwidths=max_col_size
+    )
 
 
 COLORFUL_STATUS = {

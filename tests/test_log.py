@@ -1,5 +1,6 @@
 # tests/test_log.py
 
+from math import ceil
 import pytest
 from terralab import log
 
@@ -78,6 +79,17 @@ def test_format_table_with_status(rows, status_key, expected_substrings):
     else:
         with pytest.raises(ValueError):
             log.format_table_with_status(rows, status_key=status_key)
+
+
+def test_format_table_with_status_line_wrapping():
+    long_field_value = "this is a field that we expect to get wrapped"
+    max_col_size = len(long_field_value) - 5
+    rows = [["Name", "Status", "Long field"], ["Alice", "SUCCEEDED", long_field_value]]
+    formatted = log.format_table_with_status(rows, max_col_size=max_col_size)
+
+    # the long field should have been wrapped into two rows, so expect 4 (header + ---- + 2 data lines)
+    formatted_rows = formatted.split("\n")
+    assert len(formatted_rows) == 4
 
 
 format_status_in_table_row_testdata = [
