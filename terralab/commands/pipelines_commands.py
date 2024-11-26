@@ -32,7 +32,7 @@ def list():
 @pipelines.command(short_help="Get information about a pipeline")
 @click.argument("pipeline_name")
 @handle_api_exceptions
-def get_info(pipeline_name: str):
+def details(pipeline_name: str):
     """Get information about the PIPELINE_NAME pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name)
 
@@ -40,7 +40,7 @@ def get_info(pipeline_name: str):
     col_width = 16
 
     LOGGER.info(
-        f"{pad_column("Pipeline name:", col_width)}{pipeline_info.pipeline_name}"
+        f"{pad_column("Pipeline Name:", col_width)}{pipeline_info.pipeline_name}"
     )
     LOGGER.info(f"{pad_column("Description:", col_width)}{pipeline_info.description}")
     LOGGER.info("Inputs:")

@@ -14,9 +14,12 @@ def test_cli():
     expected_commands = [
         "submit",
         "download",
+        "jobs",
+        "jobs list",
+        "jobs details",
         "pipelines",
         "pipelines list",
-        "pipelines get-info",
+        "pipelines details",
         "quota",
         "logout",
     ]

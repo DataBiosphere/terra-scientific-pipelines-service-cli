@@ -7,9 +7,20 @@ from typing import Optional, Mapping
 
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout
-from terralab.commands.pipelines_commands import pipelines, list, get_info
-from terralab.commands.pipeline_runs_commands import submit, download
+from terralab.commands.pipelines_commands import (
+    pipelines,
+    list as list_pipelines,
+    details as details_pipelines,
+)
+from terralab.commands.pipeline_runs_commands import (
+    submit,
+    download,
+    jobs,
+    details as details_jobs,
+    list as list_jobs,
+)
 from terralab.commands.quotas_commands import quota
+
 
 # Context settings for commands, for overwriting some click defaults
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -50,21 +61,21 @@ def cli(debug):
 
 
 # the order in which these are added determines the order in which they show up in the --help output
-# submit
 cli.add_command(submit)
-
-# download
 cli.add_command(download)
+
+# jobs
+cli.add_command(jobs)
+cli.add_command(list_jobs, name="  jobs list")
+cli.add_command(details_jobs, name="  jobs details")
 
 # pipelines
 cli.add_command(pipelines)
 # pipelines sub-commands - still need to be called with the pipelines command
-cli.add_command(list, name="  pipelines list")
-cli.add_command(get_info, name="  pipelines get-info")
+cli.add_command(list_pipelines, name="  pipelines list")
+cli.add_command(details_pipelines, name="  pipelines details")
 
 cli.add_command(quota)
-
-# logout
 cli.add_command(logout)
 
 

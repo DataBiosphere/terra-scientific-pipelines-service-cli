@@ -1,4 +1,4 @@
-# tests/commands/pipelines_tests.py
+# tests/commands/test_pipelines_commands.py
 
 import logging
 from click.testing import CliRunner
@@ -60,7 +60,7 @@ def test_get_info_success(capture_logs, unstub):
 
     runner = CliRunner()
     result = runner.invoke(
-        pipelines_commands.pipelines, ["get-info", test_pipeline_name]
+        pipelines_commands.pipelines, ["details", test_pipeline_name]
     )
 
     assert result.exit_code == 0
@@ -75,7 +75,7 @@ def test_get_info_success(capture_logs, unstub):
 def test_get_info_missing_argument():
     runner = CliRunner()
 
-    result = runner.invoke(pipelines_commands.pipelines, ["get-info"])
+    result = runner.invoke(pipelines_commands.pipelines, ["details"])
 
     assert result.exit_code != 0
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
@@ -95,7 +95,7 @@ def test_get_info_api_exception(capture_logs, unstub):
     )
 
     result = runner.invoke(
-        pipelines_commands.pipelines, ["get-info", "bad_pipeline_name"]
+        pipelines_commands.pipelines, ["details", "bad_pipeline_name"]
     )
 
     assert result.exit_code != 0

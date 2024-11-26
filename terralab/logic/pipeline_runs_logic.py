@@ -9,6 +9,7 @@ from teaspoons_client import (
     StartPipelineRunRequestBody,
     JobControl,
     AsyncPipelineRunResponse,
+    PipelineRun,
 )
 
 from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
@@ -73,6 +74,39 @@ def get_pipeline_run_status(
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         return pipeline_runs_client.get_pipeline_run_result(pipeline_name, str(job_id))
+
+
+def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
+    """Get the latest n_results_requested pipeline runs a user has submitted (most recent first)"""
+
+    with ClientWrapper() as api_client:
+
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+
+        api_chunk_default = 10
+
+        # fetch the first set of results
+        response = pipeline_runs_client.get_all_pipeline_runs(
+            limit=min(api_chunk_default, n_results_requested), page_token=None
+        )
+        LOGGER.debug(f"Retrieved {len(response.results)} PipelineRun results")
+        results = response.results
+        page_token = response.page_token
+
+        while len(results) < n_results_requested and page_token:
+            response = pipeline_runs_client.get_all_pipeline_runs(
+                limit=min(api_chunk_default, n_results_requested - len(results)),
+                page_token=page_token,
+            )
+            results.extend(response.results)
+            LOGGER.debug(
+                f"Retrieved {len(response.results)} PipelineRun more results, totaling {len(results)}"
+            )
+            page_token = response.page_token
+            if not (page_token):
+                LOGGER.debug("Reached end of available PipelineRun results")
+
+        return results
 
 
 ## submit action

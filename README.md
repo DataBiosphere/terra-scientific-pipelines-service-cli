@@ -2,6 +2,7 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DataBiosphere_terra-scientific-pipelines-service-cli&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DataBiosphere_terra-scientific-pipelines-service-cli)
 
+*PLEASE NOTE: This CLI and service are still in development. This CLI can not yet be used to run imputation as described here.*
 
 ## Overview
 The Terralab CLI provides a command-line interface with which to interact with the [Terra Scientific Pipelines Service](https://github.com/DataBiosphere/terra-scientific-pipelines-service/blob/main/README.md), or Teaspoons.
