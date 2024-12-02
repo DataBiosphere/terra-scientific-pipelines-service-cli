@@ -25,9 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 @click.command(short_help="Submit a job")
 @click.argument("pipeline_name", type=str)
-@click.option(
-    "--version", type=int, default=0, help="pipeline version; default: 0"
-)  # once TSPS-370 is done, remove default
+@click.option("--version", type=int, help="pipeline version")
 @click.option("--inputs", type=str, required=True, help="JSON string input")
 @click.option(
     "--description", type=str, default="", help="optional description for the job"
@@ -38,7 +36,7 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
     inputs_dict = process_json_to_dict(inputs)
 
     # validate inputs
-    pipelines_logic.validate_pipeline_inputs(pipeline_name, inputs_dict)
+    pipelines_logic.validate_pipeline_inputs(pipeline_name, version, inputs_dict)
 
     submitted_job_id = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         pipeline_name, version, inputs_dict, description
