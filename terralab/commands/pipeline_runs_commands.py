@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 @click.command(short_help="Submit a job")
 @click.argument("pipeline_name", type=str)
-@click.option("--version", type=int, help="pipeline version")
+@click.option("--version", type=int, help="pipeline version, defaults to latest")
 @click.option("--inputs", type=str, required=True, help="JSON string input")
 @click.option(
     "--description", type=str, default="", help="optional description for the job"

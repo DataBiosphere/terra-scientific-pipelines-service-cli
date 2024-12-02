@@ -32,14 +32,14 @@ def list():
 
 @pipelines.command(short_help="Get information about a pipeline")
 @click.argument("pipeline_name")
-@click.option("--version", type=int, help="pipeline version")
+@click.option("--version", type=int, help="pipeline version, defaults to latest")
 @handle_api_exceptions
 def details(pipeline_name: str, version: int):
     """Get information about the PIPELINE_NAME pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name, version)
 
     # format the information nicely
-    col_width = 16
+    col_width = 18
 
     LOGGER.info(
         f"{pad_column("Pipeline Name:", col_width)}{pipeline_info.pipeline_name}"
