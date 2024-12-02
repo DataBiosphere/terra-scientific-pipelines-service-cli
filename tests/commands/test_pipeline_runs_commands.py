@@ -53,35 +53,29 @@ def test_submit(capture_logs):
 def test_download():
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
 
     when(
         pipeline_runs_commands.pipeline_runs_logic
     ).get_result_and_download_pipeline_run_outputs(
-        test_pipeline_name, test_job_id, "."
+        test_job_id, "."
     )  # do nothing, assume succeeded
 
-    result = runner.invoke(
-        pipeline_runs_commands.download, [test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
 
     assert result.exit_code == 0
     verify(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(test_pipeline_name, test_job_id, ".")
+    ).get_result_and_download_pipeline_run_outputs(test_job_id, ".")
 
 
 def test_download_bad_job_id(capture_logs):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
     test_job_id_str = "not a uuid"
 
-    result = runner.invoke(
-        pipeline_runs_commands.download, [test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
 
     assert result.exit_code == 1
     assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
@@ -99,16 +93,14 @@ def test_details_running_job(capture_logs):
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+        test_job_id
     ).thenReturn(test_response)
 
-    result = runner.invoke(
-        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 0
     verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+        test_job_id
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" not in capture_logs.text
@@ -126,16 +118,14 @@ def test_details_succeeded_job(capture_logs):
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+        test_job_id
     ).thenReturn(test_response)
 
-    result = runner.invoke(
-        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 0
     verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+        test_job_id
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" in capture_logs.text
@@ -154,12 +144,10 @@ def test_details_failed_job(capture_logs):
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_pipeline_name, test_job_id
+        test_job_id
     ).thenReturn(test_response)
 
-    result = runner.invoke(
-        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 0
     assert "Status:" in capture_logs.text
@@ -170,12 +158,9 @@ def test_details_failed_job(capture_logs):
 def test_details_bad_job_id(capture_logs):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
     test_job_id_str = "not a uuid"
 
-    result = runner.invoke(
-        pipeline_runs_commands.jobs, ["details", test_pipeline_name, test_job_id_str]
-    )
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 1
     assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
@@ -188,6 +173,7 @@ def test_list_jobs(capture_logs):
         mock(
             {
                 "job_id": str(uuid.uuid4()),
+                "pipeline_name": "test_pipeline1",
                 "status": "SUCCEEDED",
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
@@ -197,6 +183,7 @@ def test_list_jobs(capture_logs):
         mock(
             {
                 "job_id": str(uuid.uuid4()),
+                "pipeline_name": "test_pipeline2",
                 "status": "FAILED",
                 "time_submitted": "2024-01-02T12:00:00Z",
                 "time_completed": "2024-01-02T12:30:00Z",
@@ -214,8 +201,10 @@ def test_list_jobs(capture_logs):
     assert result.exit_code == 0
     # Check that job details are in output
     assert test_pipeline_runs[0].job_id in capture_logs.text
+    assert test_pipeline_runs[0].pipeline_name in capture_logs.text
     assert "Succeeded" in capture_logs.text
     assert test_pipeline_runs[1].job_id in capture_logs.text
+    assert test_pipeline_runs[1].pipeline_name in capture_logs.text
     assert "Failed" in capture_logs.text
 
 
@@ -228,6 +217,7 @@ def test_list_jobs_custom_limit(capture_logs):
             {
                 "job_id": str(uuid.uuid4()),
                 "status": "SUCCEEDED",
+                "pipeline_name": "test_pipeline",
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description",

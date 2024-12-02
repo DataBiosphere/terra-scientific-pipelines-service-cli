@@ -48,7 +48,6 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
 
 
 @click.command(short_help="Download all output files from a job")
-@click.argument("pipeline_name", type=str)
 @click.argument("job_id", type=str)
 @click.option(
     "--local_destination",
@@ -57,12 +56,12 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
     help="optional location to download results to. defaults to the current directory.",
 )
 @handle_api_exceptions
-def download(pipeline_name: str, job_id: str, local_destination: str):
-    """Download all output files from a PIPELINE_NAME job with JOB_ID identifier"""
+def download(job_id: str, local_destination: str):
+    """Download all output files from a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
     pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-        pipeline_name, job_id_uuid, local_destination
+        job_id_uuid, local_destination
     )
 
 
@@ -75,15 +74,14 @@ def jobs():
 
 
 @jobs.command(short_help="Get the status and details of a job")
-@click.argument("pipeline_name", type=str)
 @click.argument("job_id", type=str)
 @handle_api_exceptions
-def details(pipeline_name: str, job_id: str):
-    """Get the status and details of a PIPELINE_NAME pipeline job with JOB_ID identifier"""
+def details(job_id: str):
+    """Get the status and details of a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
     response: AsyncPipelineRunResponse = pipeline_runs_logic.get_pipeline_run_status(
-        pipeline_name, job_id_uuid
+        job_id_uuid
     )
 
     LOGGER.info(
@@ -124,11 +122,21 @@ def list(num_results: int):
     results: list[PipelineRun] = pipeline_runs_logic.get_pipeline_runs(num_results)
     if results:
         # create list of list of strings; first list is headers
-        row_list = [["Job ID", "Status", "Submitted", "Completed", "Description"]]
+        row_list = [
+            [
+                "Job ID",
+                "Pipeline Name",
+                "Status",
+                "Submitted",
+                "Completed",
+                "Description",
+            ]
+        ]
         for pipeline_run in results:
             row_list.append(
                 [
                     pipeline_run.job_id,
+                    pipeline_run.pipeline_name,
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
