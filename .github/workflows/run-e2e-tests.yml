@@ -60,8 +60,9 @@ jobs:
           echo "project_name=${project_name}" >> $GITHUB_OUTPUT
           if [ -z ${{ inputs.teaspoons-version }} ]; then
             echo "trying to get latest teaspoons version..."
-            echo "found latest teaspoons git tag: $(curl \"https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags\" | jq -r '.[0].name')"
-            echo "teaspoons-version=$(curl \"https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags\" | jq -r '.[0].name')" >> $GITHUB_OUTPUT
+            TEASPOONS_GIT_TAG=$(curl "https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags" | jq -r '.[0].name')
+            echo "found latest teaspoons git tag: $TEASPOONS_GIT_TAG"
+            echo "teaspoons-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
           else
             echo "teaspoons-version=${{ inputs.wdl-method-version }}" >> $GITHUB_OUTPUT
           fi
