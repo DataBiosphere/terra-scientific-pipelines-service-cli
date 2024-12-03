@@ -1,6 +1,7 @@
 name: Bump version, Build, and Publish the CLI to PyPI
 
 on:
+  pull_request:
   push:
     branches:
       - main
