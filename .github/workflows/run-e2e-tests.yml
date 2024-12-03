@@ -1,9 +1,9 @@
 name: Run Terralab CLI e2e tests with BEE using GCP workspace
 on:
-  pull_request:
   push:
     branches:
       - main
+      - TSPS-331_cli_e2e_test
     paths-ignore:
       - '*.md'
   workflow_dispatch:
