@@ -69,9 +69,9 @@ jobs:
           if [ -z ${{ inputs.cli-version }} ]; then
             echo "trying to get latest cli version..."
             echo "found latest cli version: $(git describe --tags $(git rev-list --tags --max-count=1))"
-            echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> GITHUB_OUTPUT
+            echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
           else
-            echo "cli-version=${{ inputs.cli-version }}" >> GITHUB_OUTPUT
+            echo "cli-version=${{ inputs.cli-version }}" >> $GITHUB_OUTPUT
 
   create-bee-workflow:
     runs-on: ubuntu-latest
