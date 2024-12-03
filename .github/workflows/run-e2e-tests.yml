@@ -1,5 +1,6 @@
 name: Run Terralab CLI e2e tests with BEE using GCP workspace
 on:
+  pull_request:
   push:
     branches:
       - main
