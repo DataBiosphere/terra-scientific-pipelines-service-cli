@@ -1,4 +1,5 @@
 # Teaspoons service API URL
+# TEASPOONS_API_URL=http://localhost:8080
 TEASPOONS_API_URL=https://teaspoons.dsde-dev.broadinstitute.org
 
 # Port to use for local server (for auth)
