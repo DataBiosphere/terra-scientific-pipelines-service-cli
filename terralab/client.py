@@ -4,7 +4,7 @@ import logging
 
 from teaspoons_client import Configuration, ApiClient
 from terralab.config import CliConfig
-from terralab.auth_helper import get_or_refresh_access_token
+from terralab.auth_helper import get_or_refresh_access_token, _load_local_token
 
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +26,11 @@ class ClientWrapper:
     def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
 
-        access_token = get_or_refresh_access_token(cli_config)
+        access_token = _load_local_token(cli_config.oauth_token_file, validate=False)
+        if access_token:
+            LOGGER.debug("Found oauth access token")
+        else:
+            access_token = get_or_refresh_access_token(cli_config)
         return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
 
     def __exit__(self, exc_type, exc_val, exc_tb):

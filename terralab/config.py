@@ -39,3 +39,7 @@ class CliConfig:
         self.refresh_token_file = (
             f'{Path.home()}/{self.config["LOCAL_STORAGE_PATH"]}/refresh_token'
         )
+
+        self.oauth_token_file = (
+            f'{Path.home()}/{self.config["LOCAL_STORAGE_PATH"]}/oauth_token'
+        )
