@@ -41,7 +41,7 @@ jobs:
       custom-app-version-formatted: '${{ steps.extract-inputs-and-generate-params.outputs.custom-app-version-formatted }}'
       project-name: '${{ steps.extract-inputs-and-generate-params.outputs.project_name }}'
       bee-name: '${{ env.BEE_NAME }}'
-      teaspoons-version: '${{ steps.extract-inputs-and-generate-params.outputs.wdl-method-version }}'
+      teaspoons-version: '${{ steps.extract-inputs-and-generate-params.outputs.teaspoons-version }}'
       cli-version: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version }}'
     steps:
       - uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/run_teaspoons_e2e_tests.yaml@main
+    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/run_teaspoons_e2e_cli_tests.yaml@TSPS-331_cli_e2e_test
     with:
       billing-project-name: '${{ needs.init-github-context-and-params-gen.outputs.project-name }}'
       bee-name: '${{ needs.init-github-context-and-params-gen.outputs.bee-name }}'
