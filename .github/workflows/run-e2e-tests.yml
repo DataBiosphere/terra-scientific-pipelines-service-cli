@@ -43,6 +43,7 @@ jobs:
       bee-name: '${{ env.BEE_NAME }}'
       teaspoons-version: '${{ steps.extract-inputs-and-generate-params.outputs.teaspoons-version }}'
       cli-version: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version }}'
+      e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,7 +65,7 @@ jobs:
             echo "found latest teaspoons git tag: $TEASPOONS_GIT_TAG"
             echo "teaspoons-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
           else
-            echo "teaspoons-version=${{ inputs.wdl-method-version }}" >> $GITHUB_OUTPUT
+            echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version }} ]; then
             echo "trying to get latest cli version..."
@@ -72,6 +73,12 @@ jobs:
             echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
           else
             echo "cli-version=${{ inputs.cli-version }}" >> $GITHUB_OUTPUT
+          fi
+          if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
+            echo "setting e2e test version ref to TSPS-331_cli_e2e_test (later will revert to main)"
+            echo "e2e-test-version-ref=TSPS-331_cli_e2e_test" >> $GITHUB_OUTPUT
+          else
+            echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
           fi
 
   create-bee-workflow:
