@@ -15,7 +15,7 @@ on:
       e2e-test-version-ref:
         description: 'Name of branch or commit hash in the dsp-reusable-workflows repo to use. defaults to main'
         required: true
-        default: 'main'
+        default: 'TSPS-331_cli_e2e_test' # revert later
         type: string
       wdl-method-version:
         description: 'Name of branch or release tag in the terra-scientific-pipelines-service repo to use for the test WDL. defaults to latest git release tag if not specified.'
