@@ -5,7 +5,7 @@ import collections
 import logging
 from typing import Optional, Mapping
 
-from terralab import __version__, log, auth_helper
+from terralab import __version__, log
 from terralab.commands.auth_commands import logout, login_with_oauth
 from terralab.commands.pipelines_commands import (
     pipelines,
