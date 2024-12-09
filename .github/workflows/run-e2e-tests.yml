@@ -113,7 +113,7 @@ jobs:
     with:
       billing-project-name: '${{ needs.init-github-context-and-params-gen.outputs.project-name }}'
       bee-name: '${{ needs.init-github-context-and-params-gen.outputs.bee-name }}'
-      e2e-test-version-ref: '${{ github.event.inputs.e2e-test-version-ref }}'
+      e2e-test-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.e2e-test-version-ref }}'
       wdl-method-version: '${{ needs.init-github-context-and-params-gen.outputs.teaspoons-version }}'
       cli-version: '${{ needs.init-github-context-and-params-gen.outputs.cli-version }}'
 
