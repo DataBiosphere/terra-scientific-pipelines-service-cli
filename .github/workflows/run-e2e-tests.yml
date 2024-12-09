@@ -78,6 +78,7 @@ jobs:
             echo "setting e2e test version ref to TSPS-331_cli_e2e_test (later will revert to main)"
             echo "e2e-test-version-ref=TSPS-331_cli_e2e_test" >> $GITHUB_OUTPUT
           else
+            echo "setting e2e test version ref to inputs.e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
             echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
           fi
 
