@@ -26,7 +26,7 @@ on:
         required: false
         type: string
       cli-version:
-        description: 'Semantic version (git tag) of CLI to use. defaults to latest'
+        description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
         required: false
         type: string
 env:
@@ -68,9 +68,12 @@ jobs:
             echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version }} ]; then
-            echo "trying to get latest cli version..."
-            echo "found latest cli version: $(git describe --tags $(git rev-list --tags --max-count=1))"
-            echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
+            #echo "trying to get latest cli version..."
+            #echo "found latest cli version: $(git describe --tags $(git rev-list --tags --max-count=1))"
+            #echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
+
+            echo "using custom cli version: $GITHUB_REF"
+            echo "cli-version=$GITHUB_REF" >> $GITHUB_OUTPUT
           else
             echo "cli-version=${{ inputs.cli-version }}" >> $GITHUB_OUTPUT
           fi
