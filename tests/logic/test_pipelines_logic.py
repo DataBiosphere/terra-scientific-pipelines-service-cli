@@ -65,9 +65,7 @@ def test_get_pipeline_info(mock_pipelines_api):
             "inputs": [],
         }
     )
-    test_get_info_request = GetPipelineDetailsRequestBody(
-        pipelineVersion=1
-    )
+    test_get_info_request = GetPipelineDetailsRequestBody(pipelineVersion=1)
     when(mock_pipelines_api).get_pipeline_details(
         pipeline_name, test_get_info_request
     ).thenReturn(mock_pipeline)
@@ -79,9 +77,7 @@ def test_get_pipeline_info(mock_pipelines_api):
 
 def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
     pipeline_name = "Bad Pipeline Name"
-    test_get_info_request = GetPipelineDetailsRequestBody(
-        pipelineVersion=None
-    )
+    test_get_info_request = GetPipelineDetailsRequestBody(pipelineVersion=None)
     when(mock_pipelines_api).get_pipeline_details(
         pipeline_name, test_get_info_request
     ).thenRaise(ApiException(404, reason="Pipeline not found"))
@@ -89,7 +85,9 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
     with pytest.raises(ApiException):
         pipelines_logic.get_pipeline_info(pipeline_name, None)
 
-    verify(mock_pipelines_api).get_pipeline_details(pipeline_name, test_get_info_request)
+    verify(mock_pipelines_api).get_pipeline_details(
+        pipeline_name, test_get_info_request
+    )
 
 
 def test_validate_pipeline_inputs_success():
@@ -150,7 +148,7 @@ def test_validate_pipeline_inputs_missing_input(capture_logs):
 
     with pytest.raises(SystemExit):
         pipelines_logic.validate_pipeline_inputs(
-            test_pipeline_name, None,{"input1": "value1"}
+            test_pipeline_name, None, {"input1": "value1"}
         )
 
     assert "Missing or invalid inputs provided" in capture_logs.text
@@ -171,7 +169,7 @@ def test_validate_pipeline_inputs_missing_file(capture_logs):
 
     with pytest.raises(SystemExit):
         pipelines_logic.validate_pipeline_inputs(
-            test_pipeline_name, 0,{"file_input": "nonexistent_file.txt"}
+            test_pipeline_name, 0, {"file_input": "nonexistent_file.txt"}
         )
 
     assert "Missing or invalid inputs provided" in capture_logs.text

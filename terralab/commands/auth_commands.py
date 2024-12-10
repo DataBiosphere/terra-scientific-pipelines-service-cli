@@ -12,10 +12,7 @@ def logout():
 
 
 @click.command(hidden=True)
-@click.argument(
-    "token",
-    required=True
-)
+@click.argument("token", required=True)
 def login_with_oauth(token):
     """Login using oauth bearer token from gcloud"""
     auth_logic.login_with_oauth(token)

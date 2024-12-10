@@ -12,6 +12,7 @@ def mock_cli_config(unstub):
         {
             "access_token_file": "mock_access_token_file",
             "refresh_token_file": "mock_refresh_token_file",
+            "oauth_token_file": "mock_oauth_token_file",
             "client_info": "mock_client_info",
         }
     )
@@ -27,3 +28,13 @@ def test_clear_local_token(mock_cli_config, unstub):
 
     verify(auth_logic)._clear_local_token("mock_access_token_file")
     verify(auth_logic)._clear_local_token("mock_refresh_token_file")
+    verify(auth_logic)._clear_local_token("mock_oauth_token_file")
+
+
+def test_login_with_oauth(mock_cli_config, unstub):
+    test_token = "fake token"
+    when(auth_logic)._save_local_token(...)
+
+    auth_logic.login_with_oauth(test_token)
+
+    verify(auth_logic)._save_local_token("mock_oauth_token_file", test_token)
