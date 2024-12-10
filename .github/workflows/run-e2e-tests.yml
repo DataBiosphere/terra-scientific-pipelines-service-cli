@@ -25,7 +25,7 @@ on:
         description: 'Semantic version (git tag) of Teaspoons to use. defaults to latest'
         required: false
         type: string
-      cli-version:
+      cli-version-ref:
         description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
         required: false
         type: string
@@ -42,7 +42,7 @@ jobs:
       project-name: '${{ steps.extract-inputs-and-generate-params.outputs.project_name }}'
       bee-name: '${{ env.BEE_NAME }}'
       teaspoons-version: '${{ steps.extract-inputs-and-generate-params.outputs.teaspoons-version }}'
-      cli-version: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version }}'
+      cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
       e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
     steps:
       - uses: actions/checkout@v4
@@ -67,15 +67,15 @@ jobs:
           else
             echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
           fi
-          if [ -z ${{ inputs.cli-version }} ]; then
+          if [ -z ${{ inputs.cli-version-ref }} ]; then
             #echo "trying to get latest cli version..."
             #echo "found latest cli version: $(git describe --tags $(git rev-list --tags --max-count=1))"
-            #echo "cli-version=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
+            #echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
 
             echo "using custom cli version: $GITHUB_REF"
-            echo "cli-version=$GITHUB_REF" >> $GITHUB_OUTPUT
+            echo "cli-version-ref=$GITHUB_REF" >> $GITHUB_OUTPUT
           else
-            echo "cli-version=${{ inputs.cli-version }}" >> $GITHUB_OUTPUT
+            echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
             echo "setting e2e test version ref to TSPS-331_cli_e2e_test (later will revert to main)"
@@ -118,7 +118,7 @@ jobs:
       bee-name: '${{ needs.init-github-context-and-params-gen.outputs.bee-name }}'
       e2e-test-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.e2e-test-version-ref }}'
       wdl-method-version: '${{ needs.init-github-context-and-params-gen.outputs.teaspoons-version }}'
-      cli-version: '${{ needs.init-github-context-and-params-gen.outputs.cli-version }}'
+      cli-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}'
 
   destroy-bee-workflow:
     runs-on: ubuntu-latest
