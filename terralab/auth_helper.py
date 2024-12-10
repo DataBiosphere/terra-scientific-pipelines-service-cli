@@ -36,6 +36,14 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     Returns a valid access token"""
     """Get a valid access token, refreshing or obtaining a new one if necessary."""
 
+    # check for an oauth token file first
+    access_token = _load_local_token(
+        cli_config.oauth_token_file, validate=False
+    )  # oauth tokens can't be validated against b2c
+    if access_token:
+        LOGGER.debug("Found oauth access token")
+        return access_token
+
     access_token = _load_local_token(
         cli_config.access_token_file
     )  # note that this load function by default only returns valid tokens
