@@ -26,6 +26,7 @@ class ClientWrapper:
     def __enter__(self):
         cli_config = CliConfig()  # initialize the config from environment variables
 
+        # check for an oauth token file, otherwise get/refresh b2c access token
         access_token = _load_local_token(cli_config.oauth_token_file, validate=False)
         if access_token:
             LOGGER.debug("Found oauth access token")

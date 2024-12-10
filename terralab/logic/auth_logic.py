@@ -1,10 +1,7 @@
 # logic/auth_logic.py
 
 import logging
-from terralab.auth_helper import (
-    _clear_local_token,
-    _save_local_token
-)
+from terralab.auth_helper import _clear_local_token, _save_local_token
 from terralab.config import CliConfig
 
 LOGGER = logging.getLogger(__name__)

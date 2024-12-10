@@ -14,3 +14,25 @@ def test_logout():
 
     assert result.exit_code == 0
     verify(auth_commands.auth_logic).clear_local_token()
+
+
+def test_login_with_oauth():
+    runner = CliRunner()
+
+    test_token = "fake token"
+
+    when(auth_commands.auth_logic).login_with_oauth(test_token)
+
+    result = runner.invoke(auth_commands.login_with_oauth, [test_token])
+
+    assert result.exit_code == 0
+    verify(auth_commands.auth_logic).login_with_oauth(test_token)
+
+
+def test_login_with_oauth_no_token():
+    runner = CliRunner()
+
+    result = runner.invoke(auth_commands.login_with_oauth)
+
+    assert result.exit_code != 0
+    assert "Error: Missing argument 'TOKEN'" in result.output

@@ -78,7 +78,7 @@ cli.add_command(details_pipelines, name="  pipelines details")
 cli.add_command(quota)
 cli.add_command(logout)
 
-cli.add_command(login_with_oauth)
+cli.add_command(login_with_oauth)  # this is hidden from the help menu
 
 
 if __name__ == "__main__":
