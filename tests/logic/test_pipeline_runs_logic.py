@@ -47,11 +47,13 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     test_pipeline_name = "foobar"
     test_pipeline_version = 1
     test_pipeline_inputs = {}
+    test_description = "i am a description"
     test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
         jobId=test_job_id,
         pipelineName=test_pipeline_name,
         pipelineVersion=test_pipeline_version,
         pipelineInputs=test_pipeline_inputs,
+        description=test_description,
     )
 
     test_input_name = "test_input"
@@ -70,7 +72,46 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     ).thenReturn(mock_pipeline_run_response)
 
     result = pipeline_runs_logic.prepare_pipeline_run(
-        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs
+        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs, test_description
+    )
+
+    assert result == {test_input_name: test_signed_url}
+    verify(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_prepare_pipeline_run_request_body
+    )
+
+
+def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_pipeline_version = 1
+    test_pipeline_inputs = {}
+    test_description = ""  # if no description is provided to command, it gets passed here as an empty string
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+        jobId=test_job_id,
+        pipelineName=test_pipeline_name,
+        pipelineVersion=test_pipeline_version,
+        pipelineInputs=test_pipeline_inputs,
+        description=test_description,
+    )
+
+    test_input_name = "test_input"
+    test_signed_url = "signed_url"
+    test_file_input_upload_urls_dict = {
+        test_input_name: {pipeline_runs_logic.SIGNED_URL_KEY: test_signed_url}
+    }
+    mock_pipeline_run_response = mock(
+        {
+            "job_id": test_job_id,
+            "file_input_upload_urls": test_file_input_upload_urls_dict,
+        }
+    )
+    when(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_prepare_pipeline_run_request_body
+    ).thenReturn(mock_pipeline_run_response)
+
+    result = pipeline_runs_logic.prepare_pipeline_run(
+        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs, test_description
     )
 
     assert result == {test_input_name: test_signed_url}
@@ -81,10 +122,9 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
 
 def test_start_pipeline_run_running(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
-    test_description = "user-provided description"
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
-        description=test_description, jobControl=JobControl(id=test_job_id)
+        jobControl=JobControl(id=test_job_id)
     )
     mock_job_report = mock(
         {"id": test_job_id, "status_code": 202}
@@ -94,7 +134,7 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
         test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    result = pipeline_runs_logic.start_pipeline_run(test_job_id, test_description)
+    result = pipeline_runs_logic.start_pipeline_run(test_job_id)
 
     assert result == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
@@ -104,10 +144,9 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
 
 def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
-    test_description = "user-provided description"
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
-        description=test_description, jobControl=JobControl(id=test_job_id)
+        jobControl=JobControl(id=test_job_id)
     )
     mock_job_report = mock(
         {"id": test_job_id, "status_code": 500}
@@ -120,7 +159,7 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
         test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    response = pipeline_runs_logic.start_pipeline_run(test_job_id, test_description)
+    response = pipeline_runs_logic.start_pipeline_run(test_job_id)
 
     assert response == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
@@ -143,7 +182,7 @@ def test_prepare_upload_start_pipeline_run():
     test_signed_url = "signed_url"
     test_upload_url_dict = {test_input_name: test_signed_url}
     when(pipeline_runs_logic).prepare_pipeline_run(
-        test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs
+        test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs, test_description
     ).thenReturn(test_upload_url_dict)
 
     when(pipeline_runs_logic).upload_file_with_signed_url(
@@ -151,7 +190,7 @@ def test_prepare_upload_start_pipeline_run():
     )  # do nothing
 
     when(pipeline_runs_logic).start_pipeline_run(
-        test_job_id_str, test_description
+        test_job_id_str
     ).thenReturn(test_job_id)
 
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
