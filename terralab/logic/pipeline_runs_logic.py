@@ -25,7 +25,7 @@ SIGNED_URL_KEY = "signedUrl"
 
 
 def prepare_pipeline_run(
-    pipeline_name: str, job_id: str, pipeline_version: int, pipeline_inputs: dict
+    pipeline_name: str, job_id: str, pipeline_version: int, pipeline_inputs: dict, description: str
 ) -> dict:
     """Call the preparePipelineRun Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url}."""
@@ -35,6 +35,7 @@ def prepare_pipeline_run(
             pipeline_name=pipeline_name,
             pipelineVersion=pipeline_version,
             pipelineInputs=pipeline_inputs,
+            description=description
         )
     )
 
@@ -51,11 +52,11 @@ def prepare_pipeline_run(
         }
 
 
-def start_pipeline_run(job_id: str, description: str) -> uuid.UUID:
+def start_pipeline_run(job_id: str) -> uuid.UUID:
     """Call the startPipelineRun Teaspoons endpoint and return the Async Job Response."""
     start_pipeline_run_request_body: StartPipelineRunRequestBody = (
         StartPipelineRunRequestBody(
-            description=description, jobControl=JobControl(id=job_id)
+            jobControl=JobControl(id=job_id)
         )
     )
     with ClientWrapper() as api_client:
@@ -119,7 +120,7 @@ def prepare_upload_start_pipeline_run(
     LOGGER.info(f"Generated job_id {job_id}")
 
     file_input_upload_urls: dict = prepare_pipeline_run(
-        pipeline_name, job_id, pipeline_version, pipeline_inputs
+        pipeline_name, job_id, pipeline_version, pipeline_inputs, description
     )
 
     for input_name, signed_url in file_input_upload_urls.items():
@@ -133,7 +134,7 @@ def prepare_upload_start_pipeline_run(
 
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
-    return start_pipeline_run(job_id, description)
+    return start_pipeline_run(job_id)
 
 
 ## download action
