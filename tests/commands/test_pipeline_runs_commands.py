@@ -24,6 +24,38 @@ def test_submit(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_inputs_dict = {}
     test_inputs_dict_str = str(test_inputs_dict)
+    test_description = "user description"
+
+    test_job_id = uuid.uuid4()
+
+    when(pipeline_runs_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
+        test_inputs_dict
+    )
+    when(pipeline_runs_commands.pipelines_logic).validate_pipeline_inputs(
+        test_pipeline_name, None, test_inputs_dict
+    )  # do nothing
+
+    when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
+        test_pipeline_name, None, test_inputs_dict, test_description
+    ).thenReturn(test_job_id)
+
+    result = runner.invoke(
+        pipeline_runs_commands.submit,
+        [test_pipeline_name, "--inputs", test_inputs_dict_str, "--description", test_description],
+    )
+
+    assert result.exit_code == 0
+    assert (
+        f"Successfully started {test_pipeline_name} job {test_job_id}"
+        in capture_logs.text
+    )
+
+def test_submit_no_description(capture_logs):
+    runner = CliRunner()
+
+    test_pipeline_name = "test_pipeline"
+    test_inputs_dict = {}
+    test_inputs_dict_str = str(test_inputs_dict)
 
     test_job_id = uuid.uuid4()
 
