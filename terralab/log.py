@@ -56,8 +56,11 @@ def format_table_with_status(
     # find status column index; this raises a ValueError if the status_key is not found
     status_column_index = headers.index(status_key)
     for single_table_row in rows_list:
+        row_without_none = [
+            "" if x is None else x for x in single_table_row
+        ]  # workaround for https://github.com/astanin/python-tabulate/issues/323
         all_table_rows.append(
-            format_status_in_table_row(single_table_row, status_column_index)
+            format_status_in_table_row(row_without_none, status_column_index)
         )
 
     return tabulate(
