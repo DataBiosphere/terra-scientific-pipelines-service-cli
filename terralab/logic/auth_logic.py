@@ -18,6 +18,5 @@ def clear_local_token():
 
 def login_with_oauth(token: str):
     cli_config = CliConfig()
-    LOGGER.debug("attempting to save token to file")
     _save_local_token(cli_config.oauth_token_file, token)
     LOGGER.debug("Saved local oauth token")
