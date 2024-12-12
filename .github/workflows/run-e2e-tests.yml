@@ -53,14 +53,14 @@ jobs:
         run: |
           echo "delete-bee=${{ inputs.delete-bee || true }}" >> $GITHUB_OUTPUT
           if [ -z ${{ inputs.custom-app-version }} ]; then
-            echo "using input custom-app-version-formatted: `{}`"
+            echo "using input custom-app-version-formatted: {}"
             echo "custom-app-version-formatted={}" >> $GITHUB_OUTPUT
           else
-            echo "using custom custom-app-version-formatted: `{\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }`"
+            echo "using custom custom-app-version-formatted: {\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }"
             echo "custom-app-version-formatted={\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }" >> $GITHUB_OUTPUT
           fi
           project_name=$(echo "tmp-billing-project-$(uuidgen)" | cut -c -30)
-          echo "using project_name: `${project_name}`"
+          echo "using project_name: ${project_name}"
           echo "project_name=${project_name}" >> $GITHUB_OUTPUT
           if [ -z ${{ inputs.teaspoons-version }} ]; then
             echo "trying to get latest teaspoons version..."
@@ -68,7 +68,7 @@ jobs:
             echo "found latest teaspoons git tag: $TEASPOONS_GIT_TAG"
             echo "teaspoons-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
           else
-            echo "using custom teaspoons-version: `${{ inputs.teaspoons-version }}`"
+            echo "using custom teaspoons-version: ${{ inputs.teaspoons-version }}"
             echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version-ref }} ]; then
@@ -79,14 +79,14 @@ jobs:
             echo "using custom cli-version-ref: $GITHUB_REF"
             echo "cli-version-ref=$GITHUB_REF" >> $GITHUB_OUTPUT
           else
-            echo "using custom cli version: `${{ inputs.cli-version-ref }}`"
+            echo "using custom cli version: ${{ inputs.cli-version-ref }}"
             echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
             echo "setting e2e test version ref to TSPS-331_cli_e2e_test (later will revert to main)"
             echo "e2e-test-version-ref=TSPS-331_cli_e2e_test" >> $GITHUB_OUTPUT
           else
-            echo "using custom e2e-test-version-ref: `${{ inputs.e2e-test-version-ref }}`"
+            echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
             echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
           fi
 
