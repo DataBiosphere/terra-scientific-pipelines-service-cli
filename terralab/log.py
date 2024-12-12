@@ -22,7 +22,7 @@ def configure_logging(debug: bool):
         )
     )
 
-    logging.basicConfig(level=log_level, format="%(message)s", handlers=[handler])
+    logging.basicConfig(level=log_level, handlers=[handler])
 
 
 def indented(string_to_indent: str, n_spaces: int = 2):
