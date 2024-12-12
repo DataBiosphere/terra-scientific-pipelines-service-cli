@@ -14,8 +14,7 @@ on:
         type: string
       e2e-test-version-ref:
         description: 'Name of branch or commit hash in the dsp-reusable-workflows repo to use. defaults to main'
-        required: true
-        default: 'TSPS-331_cli_e2e_test' # revert later
+        required: false
         type: string
       wdl-method-version:
         description: 'Name of branch or release tag in the terra-scientific-pipelines-service repo to use for the test WDL. defaults to latest git release tag if not specified.'
@@ -53,7 +52,7 @@ jobs:
         run: |
           echo "delete-bee=${{ inputs.delete-bee || true }}" >> $GITHUB_OUTPUT
           if [ -z ${{ inputs.custom-app-version }} ]; then
-            echo "using input custom-app-version-formatted: {}"
+            echo "using input custom-app-version-formatted: {} (to default to dev template)"
             echo "custom-app-version-formatted={}" >> $GITHUB_OUTPUT
           else
             echo "using custom custom-app-version-formatted: {\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }"
@@ -65,17 +64,16 @@ jobs:
           if [ -z ${{ inputs.teaspoons-version }} ]; then
             echo "trying to get latest teaspoons version..."
             TEASPOONS_GIT_TAG=$(curl "https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags" | jq -r '.[0].name')
-            echo "found latest teaspoons git tag: $TEASPOONS_GIT_TAG"
+            echo "using latest teaspoons git tag for teaspoons-version: $TEASPOONS_GIT_TAG"
             echo "teaspoons-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
           else
             echo "using custom teaspoons-version: ${{ inputs.teaspoons-version }}"
             echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version-ref }} ]; then
-            #echo "trying to get latest cli version..."
-            #echo "found latest cli version: $(git describe --tags $(git rev-list --tags --max-count=1))"
+            #echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
             #echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
-
+            # TODO before merging, use above, not the following
             echo "using custom cli-version-ref: $GITHUB_REF"
             echo "cli-version-ref=$GITHUB_REF" >> $GITHUB_OUTPUT
           else
@@ -83,7 +81,8 @@ jobs:
             echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
-            echo "setting e2e test version ref to TSPS-331_cli_e2e_test (later will revert to main)"
+            # TODO change this to main in future
+            echo "using e2e-test-version-ref: TSPS-331_cli_e2e_test (later will revert to main)"
             echo "e2e-test-version-ref=TSPS-331_cli_e2e_test" >> $GITHUB_OUTPUT
           else
             echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
