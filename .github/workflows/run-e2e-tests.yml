@@ -6,8 +6,8 @@ on:
     paths-ignore:
       - '*.md'
   schedule:
-    # run once a day at 00:25 UTC every day of the work week (this is currently 1 hour after the service e2e test)
-    - cron: "25 00 * * 2-6"
+    # run once a day at 00:25 UTC every Sunday night
+    - cron: "25 00 * * 1"
   workflow_dispatch:
     inputs:
       custom-app-version:
