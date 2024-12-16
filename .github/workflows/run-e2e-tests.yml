@@ -20,10 +20,6 @@ on:
         description: 'Name of branch or release tag in the terra-scientific-pipelines-service repo to use for the test WDL. defaults to latest git release tag if not specified.'
         required: false
         type: string
-      teaspoons-version:
-        description: 'Semantic version (git tag) of Teaspoons to use. defaults to latest'
-        required: false
-        type: string
       cli-version-ref:
         description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
         required: false
@@ -40,7 +36,7 @@ jobs:
       custom-app-version-formatted: '${{ steps.extract-inputs-and-generate-params.outputs.custom-app-version-formatted }}'
       project-name: '${{ steps.extract-inputs-and-generate-params.outputs.project_name }}'
       bee-name: '${{ env.BEE_NAME }}'
-      teaspoons-version: '${{ steps.extract-inputs-and-generate-params.outputs.teaspoons-version }}'
+      wdl-method-version: '${{ steps.extract-inputs-and-generate-params.outputs.wdl-method-version }}'
       cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
       e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
     steps:
@@ -61,14 +57,14 @@ jobs:
           project_name=$(echo "tmp-billing-project-$(uuidgen)" | cut -c -30)
           echo "using project_name: ${project_name}"
           echo "project_name=${project_name}" >> $GITHUB_OUTPUT
-          if [ -z ${{ inputs.teaspoons-version }} ]; then
-            echo "trying to get latest teaspoons version..."
+          if [ -z ${{ inputs.wdl-method-version }} ]; then
+            echo "fetching latest teaspoons tag to determine wdl-method-version..."
             TEASPOONS_GIT_TAG=$(curl "https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags" | jq -r '.[0].name')
-            echo "using latest teaspoons git tag for teaspoons-version: $TEASPOONS_GIT_TAG"
-            echo "teaspoons-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
+            echo "using latest teaspoons git tag for wdl-method-version: $TEASPOONS_GIT_TAG"
+            echo "wdl-method-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
           else
-            echo "using custom teaspoons-version: ${{ inputs.teaspoons-version }}"
-            echo "teaspoons-version=${{ inputs.teaspoons-version }}" >> $GITHUB_OUTPUT
+            echo "using custom wdl-method-version: ${{ inputs.wdl-method-version }}"
+            echo "wdl-method-version=${{ inputs.wdl-method-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version-ref }} ]; then
             #echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
@@ -121,7 +117,7 @@ jobs:
       billing-project-name: '${{ needs.init-github-context-and-params-gen.outputs.project-name }}'
       bee-name: '${{ needs.init-github-context-and-params-gen.outputs.bee-name }}'
       e2e-test-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.e2e-test-version-ref }}'
-      wdl-method-version: '${{ needs.init-github-context-and-params-gen.outputs.teaspoons-version }}'
+      wdl-method-version: '${{ needs.init-github-context-and-params-gen.outputs.wdl-method-version }}'
       cli-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}'
 
   destroy-bee-workflow:
