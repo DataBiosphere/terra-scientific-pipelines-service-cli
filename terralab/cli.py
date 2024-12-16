@@ -6,7 +6,7 @@ import logging
 from typing import Optional, Mapping
 
 from terralab import __version__, log
-from terralab.commands.auth_commands import logout
+from terralab.commands.auth_commands import logout, login_with_oauth
 from terralab.commands.pipelines_commands import (
     pipelines,
     list as list_pipelines,
@@ -77,6 +77,8 @@ cli.add_command(details_pipelines, name="  pipelines details")
 
 cli.add_command(quota)
 cli.add_command(logout)
+
+cli.add_command(login_with_oauth)  # this is hidden from the help menu
 
 
 if __name__ == "__main__":

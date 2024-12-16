@@ -1,0 +1,154 @@
+name: Run Terralab CLI e2e tests with BEE using GCP workspace
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+  schedule:
+    # run once a day at 00:25 UTC every day of the work week (this is currently 1 hour after the service e2e test)
+    - cron: "25 00 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      custom-app-version:
+        description: 'custom image tag to specify which version of teaspoons to deploy, e.g. `0.0.81-66ceced`. defaults to dev template if not specified.'
+        required: false
+        type: string
+      e2e-test-version-ref:
+        description: 'Name of branch or commit hash in the dsp-reusable-workflows repo to use. defaults to main'
+        required: false
+        type: string
+      wdl-method-version:
+        description: 'Name of branch or release tag in the terra-scientific-pipelines-service repo to use for the test WDL. defaults to latest git release tag if not specified.'
+        required: false
+        type: string
+      cli-version-ref:
+        description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
+        required: false
+        type: string
+env:
+  BEE_NAME: 'teaspoons-${{ github.run_id }}-${{ github.run_attempt}}-dev'
+  TOKEN: '${{ secrets.BROADBOT_TOKEN }}'
+  RUN_NAME_SUFFIX: ${{ github.event.repository.name }}-${{ github.run_id }}-${{github.run_attempt }}
+jobs:
+  bump-check:
+    runs-on: ubuntu-latest
+    outputs:
+        is-bump: ${{ steps.skiptest.outputs.is-bump }}
+    steps:
+        - uses: actions/checkout@v2
+        - name: Skip version bump merges
+          id: skiptest
+          uses: ./.github/actions/bump-skip
+          with:
+            event-name: ${{ github.event_name }}
+
+  init-github-context-and-params-gen:
+    needs: [ bump-check ]
+    runs-on: ubuntu-latest
+    if: needs.bump-check.outputs.is-bump == 'no'
+    outputs:
+      custom-app-version-formatted: '${{ steps.extract-inputs-and-generate-params.outputs.custom-app-version-formatted }}'
+      project-name: '${{ steps.extract-inputs-and-generate-params.outputs.project_name }}'
+      bee-name: '${{ env.BEE_NAME }}'
+      wdl-method-version: '${{ steps.extract-inputs-and-generate-params.outputs.wdl-method-version }}'
+      cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
+      e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get inputs or use defaults, generate other parameters
+        id: extract-inputs-and-generate-params
+        run: |
+          if [ -z ${{ inputs.custom-app-version }} ]; then
+            echo "using input custom-app-version-formatted: {} (to default to dev template)"
+            echo "custom-app-version-formatted={}" >> $GITHUB_OUTPUT
+          else
+            echo "using custom custom-app-version-formatted: {\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }"
+            echo "custom-app-version-formatted={\\\"teaspoons\\\": {\\\"appVersion\\\":\\\"${{ inputs.custom-app-version }}\\\"} }" >> $GITHUB_OUTPUT
+          fi
+          project_name=$(echo "tmp-billing-project-$(uuidgen)" | cut -c -30)
+          echo "using project_name: ${project_name}"
+          echo "project_name=${project_name}" >> $GITHUB_OUTPUT
+          if [ -z ${{ inputs.wdl-method-version }} ]; then
+            echo "fetching latest teaspoons tag to determine wdl-method-version..."
+            TEASPOONS_GIT_TAG=$(curl "https://api.github.com/repos/DataBiosphere/terra-scientific-pipelines-service/tags" | jq -r '.[0].name')
+            echo "using latest teaspoons git tag for wdl-method-version: $TEASPOONS_GIT_TAG"
+            echo "wdl-method-version=$TEASPOONS_GIT_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "using custom wdl-method-version: ${{ inputs.wdl-method-version }}"
+            echo "wdl-method-version=${{ inputs.wdl-method-version }}" >> $GITHUB_OUTPUT
+          fi
+          if [ -z ${{ inputs.cli-version-ref }} ]; then
+            echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
+            echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
+          else
+            echo "using custom cli version: ${{ inputs.cli-version-ref }}"
+            echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
+          fi
+          if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
+            echo "using e2e-test-version-ref: main"
+            echo "e2e-test-version-ref=main" >> $GITHUB_OUTPUT
+          else
+            echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
+            echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
+          fi
+
+  create-bee-workflow:
+    runs-on: ubuntu-latest
+    needs: [ bump-check, init-github-context-and-params-gen ]
+    if: needs.bump-check.outputs.is-bump == 'no'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Get actions
+        uses: actions/checkout@v4
+
+      - name: dispatch to terra-github-workflows
+        id: FirstAttemptCreateBee
+        continue-on-error: true
+        uses: ./.github/actions/create-bee
+        with:
+          run_name: "bee-create-${{ env.BEE_NAME }}"
+          bee_name: ${{ env.BEE_NAME }}
+          token: '${{ env.TOKEN }}'
+          custom_version_json: ${{ needs.init-github-context-and-params-gen.outputs.custom-app-version-formatted }}
+
+  run-e2e-test-job:
+    needs: [ bump-check, create-bee-workflow, init-github-context-and-params-gen ]
+    if: needs.bump-check.outputs.is-bump == 'no'
+    permissions:
+      contents: read
+      id-token: write
+    uses: broadinstitute/dsp-reusable-workflows/.github/workflows/run_teaspoons_e2e_cli_tests.yaml@TSPS-331_cli_e2e_test
+    with:
+      billing-project-name: '${{ needs.init-github-context-and-params-gen.outputs.project-name }}'
+      bee-name: '${{ needs.init-github-context-and-params-gen.outputs.bee-name }}'
+      e2e-test-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.e2e-test-version-ref }}'
+      wdl-method-version: '${{ needs.init-github-context-and-params-gen.outputs.wdl-method-version }}'
+      cli-version-ref: '${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}'
+
+  destroy-bee-workflow:
+    runs-on: ubuntu-latest
+    needs: [ bump-check, run-e2e-test-job ]
+    if: always()
+    steps:
+      - name: dispatch to terra-github-workflows
+        uses: broadinstitute/workflow-dispatch@v3
+        with:
+          workflow: bee-destroy
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/main
+          wait-for-completion: false
+          token: '${{ env.TOKEN }}'
+          inputs: '{ "bee-name": "${{ env.BEE_NAME }}" }'
+
+  report-workflow:
+    uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
+    if: github.ref == 'refs/heads/main'
+    with:
+      notify-slack-channels-upon-workflow-completion: "#terra-teaspoons-alerts"
+    permissions:
+      id-token: write

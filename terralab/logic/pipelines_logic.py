@@ -2,7 +2,12 @@
 
 import logging
 
-from teaspoons_client import PipelinesApi, PipelineWithDetails, Pipeline, GetPipelineDetailsRequestBody
+from teaspoons_client import (
+    PipelinesApi,
+    PipelineWithDetails,
+    Pipeline,
+    GetPipelineDetailsRequestBody,
+)
 
 from terralab.client import ClientWrapper
 from terralab.utils import is_valid_local_file
@@ -26,12 +31,14 @@ def list_pipelines() -> list[Pipeline]:
 
 def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:
     """Get the details of a pipeline, returning a dictionary."""
-    get_pipeline_details_request_body : GetPipelineDetailsRequestBody = GetPipelineDetailsRequestBody(
-        pipelineVersion=version
+    get_pipeline_details_request_body: GetPipelineDetailsRequestBody = (
+        GetPipelineDetailsRequestBody(pipelineVersion=version)
     )
     with ClientWrapper() as api_client:
         pipeline_client = PipelinesApi(api_client=api_client)
-        return pipeline_client.get_pipeline_details(pipeline_name, get_pipeline_details_request_body)
+        return pipeline_client.get_pipeline_details(
+            pipeline_name, get_pipeline_details_request_body
+        )
 
 
 def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):

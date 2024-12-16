@@ -69,13 +69,16 @@ def test_get_info_success_no_version(capture_logs, unstub):
     )
 
     assert result.exit_code == 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, None)
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(
+        test_pipeline_name, None
+    )
     assert test_pipeline_name in capture_logs.text
     assert "Pipeline Version: 1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
 
     unstub()
+
 
 def test_get_info_success_version(capture_logs, unstub):
     test_pipeline_name = "test_pipeline"
@@ -137,7 +140,9 @@ def test_get_info_api_exception(capture_logs, unstub):
     )
 
     assert result.exit_code != 0
-    verify(pipelines_commands.pipelines_logic).get_pipeline_info("bad_pipeline_name", None)
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(
+        "bad_pipeline_name", None
+    )
     assert (
         "API call failed with status code 400 (Error Reason): this is the body message"
         in capture_logs.text

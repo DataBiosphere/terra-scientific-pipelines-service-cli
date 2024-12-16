@@ -81,6 +81,7 @@ def test_submit_no_description(capture_logs):
         in capture_logs.text
     )
 
+
 def test_submit_with_version(capture_logs):
     runner = CliRunner()
 
