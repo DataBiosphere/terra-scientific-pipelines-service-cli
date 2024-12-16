@@ -3,12 +3,11 @@ on:
   push:
     branches:
       - main
-      - TSPS-331_cli_e2e_test
     paths-ignore:
       - '*.md'
   schedule:
     # run once a day at 00:25 UTC every day of the work week (this is currently 1 hour after the service e2e test)
-    - cron: "00 23 * * 2-6"
+    - cron: "25 00 * * 2-6"
   workflow_dispatch:
     inputs:
       custom-app-version:
@@ -82,19 +81,15 @@ jobs:
             echo "wdl-method-version=${{ inputs.wdl-method-version }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.cli-version-ref }} ]; then
-            #echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
-            #echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
-            # TODO before merging, use above, not the following
-            echo "using custom cli-version-ref: $GITHUB_REF"
-            echo "cli-version-ref=$GITHUB_REF" >> $GITHUB_OUTPUT
+            echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
+            echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
           else
             echo "using custom cli version: ${{ inputs.cli-version-ref }}"
             echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
           fi
           if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
-            # TODO change this to main in future
-            echo "using e2e-test-version-ref: TSPS-331_cli_e2e_test (later will revert to main)"
-            echo "e2e-test-version-ref=TSPS-331_cli_e2e_test" >> $GITHUB_OUTPUT
+            echo "using e2e-test-version-ref: main"
+            echo "e2e-test-version-ref=main" >> $GITHUB_OUTPUT
           else
             echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
             echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
