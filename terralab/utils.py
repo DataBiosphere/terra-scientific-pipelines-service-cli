@@ -40,6 +40,48 @@ def handle_api_exceptions(func):
     return wrapper
 
 
+def process_inputs_to_dict(inputs: tuple) -> dict:
+    """Process the given tuple of gathered input arguments into a dictionary.
+    Note that the way click processes these UNPROCESSED inputs, they are all converted to strings,
+    so you won't ever see a raw integer or float here."""
+    inputs_dict = {}
+    processed_idxs = []
+    for i in range(len(inputs)):
+        if i not in processed_idxs:
+            raw_value = inputs[i]
+            LOGGER.debug(f"processing idx {i}: raw_value {raw_value}")
+            processed_idxs.append(i)         
+            if raw_value.startswith('--'):
+                clean_value = raw_value.lstrip('--')
+                # this is a key, or key=value pair
+                if "=" in clean_value:
+                    # this is a key=value pair
+                    split_value = clean_value.split("=")
+                    key = split_value[0]
+                    value = split_value[1]
+                else:
+                    key = clean_value
+                    if i+1 >= len(inputs):
+                        raise ValueError(f"Encountered unspecified input: '{key}' in provided inputs: {inputs}")
+                    raw_next_value = inputs[i+1]
+                    if not raw_next_value.startswith('--'):
+                        # process arrays
+                        if "," in raw_next_value:
+                            value = raw_next_value.split(",")
+                        else:
+                            value = raw_next_value
+                    else:
+                        raise ValueError(f"Encountered unspecified input: '{key}' in provided inputs: {inputs}")
+                    processed_idxs.append(i+1)
+                LOGGER.debug(f"processed key: {key}, value: {value}")
+                inputs_dict[key] = value
+            else:
+                raise ValueError(f"Encountered improperly formatted inputs: {inputs}. Are you missing a '--' before the input key?")
+
+        LOGGER.debug(f"idx {i} already processed")
+    return inputs_dict
+
+
 def process_json_to_dict(json_data) -> dict:
     """Process the given JSON string and return a dictionary.
     Returns None if the input string is not able to be parsed to a dictionary."""
