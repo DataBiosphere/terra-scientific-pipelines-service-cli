@@ -41,9 +41,22 @@ def pad_column(first_string: str, column_width: int = 20):
 def add_blankline_after(string: str):
     return f"{string}\n"
 
+DEFAULT_MAX_COL_SIZE = 60
+
+def format_table(rows_list: list[list[str]], max_col_size: int = DEFAULT_MAX_COL_SIZE
+) -> str:
+    """Provided a list of list of strings representing rows to be formatted into a table,
+    with the headers as the first list of strings, return the formatted (via tabulate package) 
+    string to be logged as a table.
+    """
+
+    return tabulate(
+        rows_list, headers="firstrow", numalign="left", maxcolwidths=max_col_size
+    )
+
 
 def format_table_with_status(
-    rows_list: list[list[str]], status_key: str = "Status", max_col_size: int = 60
+    rows_list: list[list[str]], status_key: str = "Status", max_col_size: int = DEFAULT_MAX_COL_SIZE
 ) -> str:
     """Provided a list of list of strings representing rows to be formatted into a table,
     with the headers as the first list of strings, color-format a Status column's values
