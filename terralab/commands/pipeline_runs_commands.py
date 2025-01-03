@@ -35,7 +35,9 @@ LOGGER = logging.getLogger(__name__)
 @click.argument("inputs", nargs=-1, type=click.UNPROCESSED)
 @handle_api_exceptions
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
-    """Submit a job for a PIPELINE_NAME pipeline"""
+    """Submit a job for a PIPELINE_NAME pipeline
+
+    To see the required inputs for a given pipeline, use the `terralab pipelines details` command."""
     LOGGER.debug(f"inputs: {inputs}")
     inputs_dict = process_inputs_to_dict(inputs)
     LOGGER.debug(f"inputs processed to dict: {inputs_dict}")
