@@ -39,8 +39,9 @@ def test_list_pipelines(capture_logs):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).list_pipelines()
     assert "Found 2 available pipelines:" in capture_logs.text
-    assert "Version: 1" in capture_logs.text
-    assert "Version: 2" in capture_logs.text
+    assert "Name" in capture_logs.text
+    assert "Version" in capture_logs.text
+    assert "Description" in capture_logs.text
     assert "test_pipeline_1" in capture_logs.text
     assert "test_pipeline_2" in capture_logs.text
 

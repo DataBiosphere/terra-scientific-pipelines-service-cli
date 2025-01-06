@@ -5,7 +5,7 @@ import logging
 
 from terralab.logic import pipelines_logic
 from terralab.utils import handle_api_exceptions
-from terralab.log import indented, pad_column
+from terralab.log import pad_column, format_table
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,10 +24,11 @@ def list():
         f"Found {len(pipelines_list)} available pipeline{'' if len(pipelines_list) == 1 else 's'}:"
     )
 
+    pipelines_list_rows = [['Name', 'Version', 'Description']]
     for pipeline in pipelines_list:
-        LOGGER.info(pipeline.pipeline_name)
-        LOGGER.info(indented("Version: " + str(pipeline.pipeline_version)))
-        LOGGER.info(indented(pipeline.description))
+        pipelines_list_rows.append([pipeline.pipeline_name, pipeline.pipeline_version, pipeline.description])
+    
+    LOGGER.info(format_table(pipelines_list_rows))
 
 
 @pipelines.command(short_help="Get information about a pipeline")
