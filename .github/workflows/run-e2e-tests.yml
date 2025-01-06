@@ -146,8 +146,9 @@ jobs:
           inputs: '{ "bee-name": "${{ env.BEE_NAME }}" }'
 
   report-workflow:
+    needs: [ bump-check ]
     uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.bump-check.outputs.is-bump == 'no'
     with:
       notify-slack-channels-upon-workflow-completion: "#terra-teaspoons-alerts"
     permissions:
