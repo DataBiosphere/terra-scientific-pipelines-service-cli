@@ -3,6 +3,7 @@
 import colorlog
 import logging
 from tabulate import tabulate
+from terralab.constants import FAILED_KEY, SUCCEEDED_KEY, RUNNING_KEY, PREPARING_KEY
 
 
 def configure_logging(debug: bool):
@@ -41,12 +42,15 @@ def pad_column(first_string: str, column_width: int = 20):
 def add_blankline_after(string: str):
     return f"{string}\n"
 
+
 DEFAULT_MAX_COL_SIZE = 60
 
-def format_table(rows_list: list[list[str]], max_col_size: int = DEFAULT_MAX_COL_SIZE
+
+def format_table(
+    rows_list: list[list[str]], max_col_size: int = DEFAULT_MAX_COL_SIZE
 ) -> str:
     """Provided a list of list of strings representing rows to be formatted into a table,
-    with the headers as the first list of strings, return the formatted (via tabulate package) 
+    with the headers as the first list of strings, return the formatted (via tabulate package)
     string to be logged as a table.
     """
 
@@ -56,7 +60,9 @@ def format_table(rows_list: list[list[str]], max_col_size: int = DEFAULT_MAX_COL
 
 
 def format_table_with_status(
-    rows_list: list[list[str]], status_key: str = "Status", max_col_size: int = DEFAULT_MAX_COL_SIZE
+    rows_list: list[list[str]],
+    status_key: str = "Status",
+    max_col_size: int = DEFAULT_MAX_COL_SIZE,
 ) -> str:
     """Provided a list of list of strings representing rows to be formatted into a table,
     with the headers as the first list of strings, color-format a Status column's values
@@ -82,10 +88,10 @@ def format_table_with_status(
 
 
 COLORFUL_STATUS = {
-    "FAILED": "\033[1;37;41mFailed\033[0m",
-    "SUCCEEDED": "\033[1;37;42mSucceeded\033[0m",
-    "RUNNING": "\033[0;30;46mRunning\033[0m",
-    "PREPARING": "\033[0;30;43mPreparing\033[0m",
+    FAILED_KEY: "\033[1;37;41mFailed\033[0m",
+    SUCCEEDED_KEY: "\033[1;37;42mSucceeded\033[0m",
+    RUNNING_KEY: "\033[0;30;46mRunning\033[0m",
+    PREPARING_KEY: "\033[0;30;43mPreparing\033[0m",
 }
 
 

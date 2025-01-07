@@ -72,7 +72,11 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     ).thenReturn(mock_pipeline_run_response)
 
     result = pipeline_runs_logic.prepare_pipeline_run(
-        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs, test_description
+        test_pipeline_name,
+        test_job_id,
+        test_pipeline_version,
+        test_pipeline_inputs,
+        test_description,
     )
 
     assert result == {test_input_name: test_signed_url}
@@ -111,7 +115,11 @@ def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
     ).thenReturn(mock_pipeline_run_response)
 
     result = pipeline_runs_logic.prepare_pipeline_run(
-        test_pipeline_name, test_job_id, test_pipeline_version, test_pipeline_inputs, test_description
+        test_pipeline_name,
+        test_job_id,
+        test_pipeline_version,
+        test_pipeline_inputs,
+        test_description,
     )
 
     assert result == {test_input_name: test_signed_url}
@@ -182,16 +190,20 @@ def test_prepare_upload_start_pipeline_run():
     test_signed_url = "signed_url"
     test_upload_url_dict = {test_input_name: test_signed_url}
     when(pipeline_runs_logic).prepare_pipeline_run(
-        test_pipeline_name, test_job_id_str, test_pipeline_version, test_inputs, test_description
+        test_pipeline_name,
+        test_job_id_str,
+        test_pipeline_version,
+        test_inputs,
+        test_description,
     ).thenReturn(test_upload_url_dict)
 
     when(pipeline_runs_logic).upload_file_with_signed_url(
         test_input_value, test_signed_url
     )  # do nothing
 
-    when(pipeline_runs_logic).start_pipeline_run(
-        test_job_id_str
-    ).thenReturn(test_job_id)
+    when(pipeline_runs_logic).start_pipeline_run(test_job_id_str).thenReturn(
+        test_job_id
+    )
 
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         test_pipeline_name, test_pipeline_version, test_inputs, test_description

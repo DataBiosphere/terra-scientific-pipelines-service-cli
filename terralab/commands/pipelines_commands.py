@@ -24,10 +24,12 @@ def list():
         f"Found {len(pipelines_list)} available pipeline{'' if len(pipelines_list) == 1 else 's'}:"
     )
 
-    pipelines_list_rows = [['Name', 'Version', 'Description']]
+    pipelines_list_rows = [["Name", "Version", "Description"]]
     for pipeline in pipelines_list:
-        pipelines_list_rows.append([pipeline.pipeline_name, pipeline.pipeline_version, pipeline.description])
-    
+        pipelines_list_rows.append(
+            [pipeline.pipeline_name, pipeline.pipeline_version, pipeline.description]
+        )
+
     LOGGER.info(format_table(pipelines_list_rows))
 
 

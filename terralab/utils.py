@@ -20,6 +20,9 @@ from terralab.log import add_blankline_after
 
 LOGGER = logging.getLogger(__name__)
 
+# in future make this customizable
+SUPPORT_TEXT = "For further help, email imputation-support@broadinstute.org"
+
 
 def handle_api_exceptions(func):
     @wraps(func)

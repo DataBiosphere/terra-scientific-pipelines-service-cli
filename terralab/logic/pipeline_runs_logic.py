@@ -25,7 +25,11 @@ SIGNED_URL_KEY = "signedUrl"
 
 
 def prepare_pipeline_run(
-    pipeline_name: str, job_id: str, pipeline_version: int, pipeline_inputs: dict, description: str
+    pipeline_name: str,
+    job_id: str,
+    pipeline_version: int,
+    pipeline_inputs: dict,
+    description: str,
 ) -> dict:
     """Call the preparePipelineRun Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url}."""
@@ -35,7 +39,7 @@ def prepare_pipeline_run(
             pipeline_name=pipeline_name,
             pipelineVersion=pipeline_version,
             pipelineInputs=pipeline_inputs,
-            description=description
+            description=description,
         )
     )
 
@@ -55,9 +59,7 @@ def prepare_pipeline_run(
 def start_pipeline_run(job_id: str) -> uuid.UUID:
     """Call the startPipelineRun Teaspoons endpoint and return the Async Job Response."""
     start_pipeline_run_request_body: StartPipelineRunRequestBody = (
-        StartPipelineRunRequestBody(
-            jobControl=JobControl(id=job_id)
-        )
+        StartPipelineRunRequestBody(jobControl=JobControl(id=job_id))
     )
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)

@@ -41,7 +41,13 @@ def test_submit(capture_logs):
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
-        [test_pipeline_name, "--inputs", test_inputs_dict_str, "--description", test_description],
+        [
+            test_pipeline_name,
+            "--inputs",
+            test_inputs_dict_str,
+            "--description",
+            test_description,
+        ],
     )
 
     assert result.exit_code == 0
@@ -49,6 +55,7 @@ def test_submit(capture_logs):
         f"Successfully started {test_pipeline_name} job {test_job_id}"
         in capture_logs.text
     )
+
 
 def test_submit_no_description(capture_logs):
     runner = CliRunner()
