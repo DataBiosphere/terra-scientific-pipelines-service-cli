@@ -12,6 +12,7 @@ from teaspoons_client import (
     ErrorReport,
     PipelineRunReport,
 )
+from terralab.constants import SUPPORT_EMAIL_TEXT
 from terralab.commands import pipeline_runs_commands
 from tests.utils_for_tests import capture_logs
 
@@ -223,6 +224,7 @@ def test_details_failed_job(capture_logs):
     assert result.exit_code == 0
     assert "Status:" in capture_logs.text
     assert test_error_message in capture_logs.text
+    assert SUPPORT_EMAIL_TEXT in capture_logs.text
     assert "Completed:" in capture_logs.text
 
 

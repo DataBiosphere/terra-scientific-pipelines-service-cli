@@ -6,14 +6,13 @@ import uuid
 
 from teaspoons_client import AsyncPipelineRunResponse, PipelineRun
 
-from terralab.constants import FAILED_KEY
+from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT
 from terralab.logic import pipeline_runs_logic, pipelines_logic
 from terralab.utils import (
     handle_api_exceptions,
     process_json_to_dict,
     validate_job_id,
     format_timestamp,
-    SUPPORT_EMAIL_TEXT,
 )
 from terralab.log import (
     indented,
@@ -92,7 +91,7 @@ def details(job_id: str):
         LOGGER.info(
             add_blankline_after(f"Error message: {response.error_report.message}")
         )
-    
+
     if response.job_report.status == FAILED_KEY:
         LOGGER.info(add_blankline_after(SUPPORT_EMAIL_TEXT))
 
