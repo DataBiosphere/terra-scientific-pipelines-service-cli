@@ -13,7 +13,7 @@ from terralab.utils import (
     process_json_to_dict,
     validate_job_id,
     format_timestamp,
-    SUPPORT_TEXT,
+    SUPPORT_EMAIL_TEXT,
 )
 from terralab.log import (
     indented,
@@ -94,7 +94,7 @@ def details(job_id: str):
         )
     
     if response.job_report.status == FAILED_KEY:
-        LOGGER.info(add_blankline_after(SUPPORT_TEXT))
+        LOGGER.info(add_blankline_after(SUPPORT_EMAIL_TEXT))
 
     LOGGER.info("Details:")
     LOGGER.info(

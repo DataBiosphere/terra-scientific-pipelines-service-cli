@@ -15,13 +15,13 @@ from functools import wraps
 
 from teaspoons_client import ApiException
 
+from terralab.constants import SUPPORT_EMAIL
 from terralab.log import add_blankline_after
 
 
 LOGGER = logging.getLogger(__name__)
 
-# in future make this customizable
-SUPPORT_TEXT = "For further help, email imputation-support@broadinstute.org"
+SUPPORT_EMAIL_TEXT = f"For help troubleshooting, email {SUPPORT_EMAIL}"
 
 
 def handle_api_exceptions(func):
@@ -32,9 +32,11 @@ def handle_api_exceptions(func):
         except ApiException as e:
             formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
             LOGGER.error(add_blankline_after(formatted_message))
+            LOGGER.error(add_blankline_after(SUPPORT_EMAIL_TEXT))
             exit(1)
         except Exception as e:
             LOGGER.error(add_blankline_after(str(e)))
+            LOGGER.error(add_blankline_after(SUPPORT_EMAIL_TEXT))
             exit(1)
 
     return wrapper
