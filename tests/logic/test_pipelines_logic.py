@@ -104,6 +104,7 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
 STRING_INPUT_KEY = "string_input"
 FILE_INPUT_KEY = "file_input"
 STRING_ARRAY_INPUT_KEY = "array_input"
+OPTIONAL_INPUT_KEY = "optional_input"
 
 MISSING_INPUT_MSG = "Error: Missing input '{key}'."
 
@@ -112,6 +113,14 @@ TEST_VERSION = 1
 validate_pipeline_inputs_testdata = [
     # input dict, include_file boolean, list(error messages) if failure (None = validates)
     ({STRING_INPUT_KEY: "foo", STRING_ARRAY_INPUT_KEY: ["foo", "bar"]}, None),
+    (
+        {
+            STRING_INPUT_KEY: "foo",
+            STRING_ARRAY_INPUT_KEY: ["foo", "bar"],
+            OPTIONAL_INPUT_KEY: "2",
+        },
+        None,
+    ),
     # failures:
     (
         {
@@ -142,11 +151,12 @@ validate_pipeline_inputs_testdata = [
         [f"Error: Missing value for input '{STRING_ARRAY_INPUT_KEY}'."],
     ),
     (
-        {STRING_INPUT_KEY: ["foo"], STRING_ARRAY_INPUT_KEY: "bar"},
-        [
-            f"Error: Expected {STRING_TYPE_KEY} type value for input '{STRING_INPUT_KEY}'.",
-            f"Error: Expected {STRING_ARRAY_TYPE_KEY} type value for input '{STRING_ARRAY_INPUT_KEY}'.",
-        ],
+        {
+            STRING_INPUT_KEY: "foo",
+            STRING_ARRAY_INPUT_KEY: ["foo", "bar"],
+            OPTIONAL_INPUT_KEY: None,
+        },
+        [f"Error: Missing value for input '{OPTIONAL_INPUT_KEY}'."],
     ),
 ]
 
@@ -158,11 +168,17 @@ def test_validate_pipeline_inputs(input: dict, error_messages: list[str], captur
     mock_input1 = mock()
     mock_input1.name = STRING_INPUT_KEY
     mock_input1.type = STRING_TYPE_KEY
+    mock_input1.is_required = True
     mock_input2 = mock()
     mock_input2.name = STRING_ARRAY_INPUT_KEY
     mock_input2.type = STRING_ARRAY_TYPE_KEY
+    mock_input2.is_required = True
+    mock_input3 = mock()
+    mock_input3.name = OPTIONAL_INPUT_KEY
+    mock_input3.type = INTEGER_TYPE_KEY
+    mock_input3.is_required = False
 
-    mock_pipeline_info.inputs = [mock_input1, mock_input2]
+    mock_pipeline_info.inputs = [mock_input1, mock_input2, mock_input3]
 
     when(pipelines_logic).get_pipeline_info(
         TEST_PIPELINE_NAME, TEST_VERSION
@@ -212,9 +228,11 @@ def test_validate_pipeline_inputs_file(
     mock_input1 = mock()
     mock_input1.name = STRING_INPUT_KEY
     mock_input1.type = STRING_TYPE_KEY
+    mock_input1.is_required = True
     mock_input2 = mock()
     mock_input2.name = FILE_INPUT_KEY
     mock_input2.type = FILE_TYPE_KEY
+    mock_input2.is_required = True
 
     mock_pipeline_info.inputs = [mock_input1, mock_input2]
 
