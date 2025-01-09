@@ -60,25 +60,29 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
     inputs_dict = {}
     i = 0
 
+    # parser keys
+    INPUT_PREFIX = "--"
+    ALTERNATE_INPUT_DELIMITER = "="
+
     while i < len(inputs):
         current_arg = inputs[i]
 
-        if not current_arg.startswith("--"):
+        if not current_arg.startswith(INPUT_PREFIX):
             raise ValueError(
-                f"Error: Invalid input key '{current_arg}'. All input keys must start with '--'."
+                f"Error: Invalid input key '{current_arg}'. All input keys must start with '{INPUT_PREFIX}'."
             )
 
         # strip leading dashes
         arg_without_dashes = current_arg[2:]
 
-        if "=" in arg_without_dashes:
+        if ALTERNATE_INPUT_DELIMITER in arg_without_dashes:
             # Handle --key=value format
-            key, value = arg_without_dashes.split("=", 1)
+            key, value = arg_without_dashes.split(ALTERNATE_INPUT_DELIMITER, 1)
             value = process_value(value)
         else:
             # Handle --key value or --flag format
             key = arg_without_dashes
-            if i + 1 < len(inputs) and not inputs[i + 1].startswith("--"):
+            if i + 1 < len(inputs) and not inputs[i + 1].startswith(INPUT_PREFIX):
                 value = process_value(inputs[i + 1])
                 i += 1
             else:
@@ -97,8 +101,9 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
 def process_value(raw_value: str):
     """Process a raw input value string, splitting to an array if commas are present."""
     # process arrays
-    if "," in raw_value:
-        return raw_value.split(",")
+    ARRAY_INPUT_DELIMITER = ","
+    if ARRAY_INPUT_DELIMITER in raw_value:
+        return raw_value.split(ARRAY_INPUT_DELIMITER)
     else:
         return raw_value
 

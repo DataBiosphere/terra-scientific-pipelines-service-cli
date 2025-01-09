@@ -1,10 +1,19 @@
 # tests/logic/test_pipelines_logic.py
 
+import os
 import pytest
+import tempfile
 from mockito import when, mock, verify
 
 from teaspoons_client import ApiException, GetPipelineDetailsRequestBody
 
+from terralab.constants import (
+    STRING_TYPE_KEY,
+    FILE_TYPE_KEY,
+    INTEGER_TYPE_KEY,
+    STRING_ARRAY_TYPE_KEY,
+    FILE_ARRAY_TYPE_KEY,
+)
 from terralab.logic import pipelines_logic
 
 from tests.utils_for_tests import capture_logs
@@ -92,104 +101,145 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
     )
 
 
-def test_validate_pipeline_inputs_success():
-    test_inputs_dict = {"input1": "value1", "input2": "value2"}
+STRING_INPUT_KEY = "string_input"
+FILE_INPUT_KEY = "file_input"
+STRING_ARRAY_INPUT_KEY = "array_input"
 
+MISSING_INPUT_MSG = "Error: Missing input '{key}'."
+
+TEST_VERSION = 1
+
+validate_pipeline_inputs_testdata = [
+    # input dict, include_file boolean, list(error messages) if failure (None = validates)
+    ({STRING_INPUT_KEY: "foo", STRING_ARRAY_INPUT_KEY: ["foo", "bar"]}, None),
+    # failures:
+    (
+        {
+            STRING_INPUT_KEY: "foo",
+            STRING_ARRAY_INPUT_KEY: ["foo", "bar"],
+            "extra_input": None,
+        },
+        ["Error: Unexpected input 'extra_input'."],
+    ),
+    (
+        {
+            STRING_INPUT_KEY: "foo",
+            STRING_ARRAY_INPUT_KEY: ["foo", "bar"],
+            "extra_input": "with a value",
+        },
+        ["Error: Unexpected input 'extra_input'."],
+    ),
+    (
+        {},
+        [
+            MISSING_INPUT_MSG.format(key=STRING_INPUT_KEY),
+            MISSING_INPUT_MSG.format(key=STRING_ARRAY_INPUT_KEY),
+        ],
+    ),
+    ({STRING_INPUT_KEY: "foo"}, [MISSING_INPUT_MSG.format(key=STRING_ARRAY_INPUT_KEY)]),
+    (
+        {STRING_INPUT_KEY: "foo", STRING_ARRAY_INPUT_KEY: None},
+        [f"Error: Missing value for input '{STRING_ARRAY_INPUT_KEY}'."],
+    ),
+    (
+        {STRING_INPUT_KEY: ["foo"], STRING_ARRAY_INPUT_KEY: "bar"},
+        [
+            f"Error: Expected {STRING_TYPE_KEY} type value for input '{STRING_INPUT_KEY}'.",
+            f"Error: Expected {STRING_ARRAY_TYPE_KEY} type value for input '{STRING_ARRAY_INPUT_KEY}'.",
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize("input,error_messages", validate_pipeline_inputs_testdata)
+def test_validate_pipeline_inputs(input: dict, error_messages: list[str], capture_logs):
+    # define mock input definitions
     mock_pipeline_info = mock()
     mock_input1 = mock()
-    mock_input1.name = "input1"
-    mock_input1.type = "STRING"
+    mock_input1.name = STRING_INPUT_KEY
+    mock_input1.type = STRING_TYPE_KEY
     mock_input2 = mock()
-    mock_input2.name = "input2"
-    mock_input2.type = "STRING"
+    mock_input2.name = STRING_ARRAY_INPUT_KEY
+    mock_input2.type = STRING_ARRAY_TYPE_KEY
+
     mock_pipeline_info.inputs = [mock_input1, mock_input2]
 
-    when(pipelines_logic).get_pipeline_info(TEST_PIPELINE_NAME, 1).thenReturn(
-        mock_pipeline_info
-    )
+    when(pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_VERSION
+    ).thenReturn(mock_pipeline_info)
 
-    # Should succeed with valid inputs
-    pipelines_logic.validate_pipeline_inputs(TEST_PIPELINE_NAME, 1, test_inputs_dict)
-
-
-def test_validate_pipeline_inputs_extra_input_warning(capture_logs):
-    test_inputs_dict = {
-        "extra_key": "extra_value",
-    }
-
-    mock_pipeline_info = mock()
-    mock_pipeline_info.inputs = []
-
-    when(pipelines_logic).get_pipeline_info(TEST_PIPELINE_NAME, None).thenReturn(
-        mock_pipeline_info
-    )
-
-    with pytest.raises(SystemExit):
+    if error_messages:
+        with pytest.raises(SystemExit):
+            pipelines_logic.validate_pipeline_inputs(
+                TEST_PIPELINE_NAME, TEST_VERSION, input
+            )
+        for message in error_messages:
+            assert message in capture_logs.text
+    else:
+        # Should succeed with valid inputs
         pipelines_logic.validate_pipeline_inputs(
-            TEST_PIPELINE_NAME, None, test_inputs_dict
+            TEST_PIPELINE_NAME, TEST_VERSION, input
         )
 
-    assert "Error: Unexpected input 'extra_key'." in capture_logs.text
+
+validate_pipeline_inputs_file_testdata = [
+    # input dict, file_to_create (or None), list(error messages) if failure (None = validates)
+    ({STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: "test_file"}, "test_file", None),
+    # failures:
+    (
+        {STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: "test_file"},
+        None,
+        [
+            f"Error: Could not find provided file for input '{FILE_INPUT_KEY}': 'test_file'."
+        ],
+    ),
+    (
+        {STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: None},
+        None,
+        [f"Error: Missing value for input '{FILE_INPUT_KEY}'."],
+    ),
+]
 
 
-def test_validate_pipeline_inputs_missing_input(capture_logs):
+@pytest.mark.parametrize(
+    "input,file_to_create,error_messages", validate_pipeline_inputs_file_testdata
+)
+def test_validate_pipeline_inputs_file(
+    input: dict, file_to_create: str, error_messages: list[str], capture_logs
+):
+    # define mock input definitions
     mock_pipeline_info = mock()
     mock_input1 = mock()
-    mock_input1.name = "input1"
-    mock_input1.type = "STRING"
+    mock_input1.name = STRING_INPUT_KEY
+    mock_input1.type = STRING_TYPE_KEY
     mock_input2 = mock()
-    mock_input2.name = "input2"
-    mock_input2.type = "STRING"
+    mock_input2.name = FILE_INPUT_KEY
+    mock_input2.type = FILE_TYPE_KEY
+
     mock_pipeline_info.inputs = [mock_input1, mock_input2]
 
-    when(pipelines_logic).get_pipeline_info(TEST_PIPELINE_NAME, None).thenReturn(
-        mock_pipeline_info
-    )
+    when(pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_VERSION
+    ).thenReturn(mock_pipeline_info)
 
-    with pytest.raises(SystemExit):
+    if file_to_create:
+        # write the file locally
+        with open(file=file_to_create, mode="w") as blob_file:
+            blob_file.write("Hello, World!")
+
+    if error_messages:
+        with pytest.raises(SystemExit):
+            pipelines_logic.validate_pipeline_inputs(
+                TEST_PIPELINE_NAME, TEST_VERSION, input
+            )
+        for message in error_messages:
+            assert message in capture_logs.text
+    else:
+        # Should succeed with valid inputs
         pipelines_logic.validate_pipeline_inputs(
-            TEST_PIPELINE_NAME, None, {"input1": "value1"}
+            TEST_PIPELINE_NAME, TEST_VERSION, input
         )
 
-    assert "Error: Missing input 'input2'" in capture_logs.text
-
-
-def test_validate_pipeline_inputs_missing_input_value(capture_logs):
-    mock_pipeline_info = mock()
-    mock_input1 = mock()
-    mock_input1.name = "input1"
-    mock_input1.type = "STRING"
-    mock_pipeline_info.inputs = [mock_input1]
-
-    when(pipelines_logic).get_pipeline_info(TEST_PIPELINE_NAME, None).thenReturn(
-        mock_pipeline_info
-    )
-
-    with pytest.raises(SystemExit):
-        pipelines_logic.validate_pipeline_inputs(
-            TEST_PIPELINE_NAME, None, {"input1": None}
-        )
-
-    assert "Error: Missing value for input 'input1'" in capture_logs.text
-
-
-def test_validate_pipeline_inputs_missing_file(capture_logs):
-    mock_pipeline_info = mock()
-    mock_file_input = mock()
-    mock_file_input.name = "file_input"
-    mock_file_input.type = "FILE"
-    mock_pipeline_info.inputs = [mock_file_input]
-
-    when(pipelines_logic).get_pipeline_info(TEST_PIPELINE_NAME, 0).thenReturn(
-        mock_pipeline_info
-    )
-
-    with pytest.raises(SystemExit):
-        pipelines_logic.validate_pipeline_inputs(
-            TEST_PIPELINE_NAME, 0, {"file_input": "nonexistent_file.txt"}
-        )
-
-    assert (
-        "Error: Could not find provided file for input 'file_input': 'nonexistent_file.txt'"
-        in capture_logs.text
-    )
+    # clean up
+    if file_to_create:
+        os.remove(file_to_create)

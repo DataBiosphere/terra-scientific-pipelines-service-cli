@@ -60,7 +60,6 @@ def test_submit(capture_logs):
     )
 
 
-
 def test_submit_no_description(capture_logs):
     runner = CliRunner()
 
@@ -202,7 +201,10 @@ def test_details_failed_job(capture_logs, unstub):
     test_error_message = "Something went wrong"
 
     test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, FAILED_KEY, error_message=test_error_message
+        TEST_PIPELINE_NAME,
+        test_job_id_str,
+        FAILED_KEY,
+        error_message=test_error_message,
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(

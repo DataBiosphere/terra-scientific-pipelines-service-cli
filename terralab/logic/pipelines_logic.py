@@ -9,6 +9,13 @@ from teaspoons_client import (
     GetPipelineDetailsRequestBody,
 )
 
+from terralab.constants import (
+    STRING_TYPE_KEY,
+    FILE_TYPE_KEY,
+    INTEGER_TYPE_KEY,
+    STRING_ARRAY_TYPE_KEY,
+    FILE_ARRAY_TYPE_KEY,
+)
 from terralab.client import ClientWrapper
 from terralab.utils import is_valid_local_file
 from terralab.log import join_lines, add_blankline_before
@@ -55,18 +62,40 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
         if input_name not in inputs_dict:
             input_error_messages.append(f"Error: Missing input '{input_name}'.")
         else:  # input is present in inputs_dict
+            input_value = inputs_dict[input_name]
             # do not allow missing/None values
-            if inputs_dict[input_name] is None:
+            if input_value is None:
                 input_error_messages.append(
-                    f"Error: Missing value for input '{input_name}'"
+                    f"Error: Missing value for input '{input_name}'."
                 )
                 continue
-            # if it's a file, extract the path and validate
-            if input_info.type == "FILE" and (
-                not is_valid_local_file(inputs_dict[input_name])
+            # type checks
+            if input_info.type == FILE_TYPE_KEY and (
+                not is_valid_local_file(input_value)
+            ):
+                # if it's a file, extract the path and validate
+                input_error_messages.append(
+                    f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
+                )
+            elif input_info.type == STRING_TYPE_KEY and (
+                not isinstance(input_value, str)
             ):
                 input_error_messages.append(
-                    f"Error: Could not find provided file for input '{input_name}': '{inputs_dict[input_name]}'."
+                    f"Error: Expected {input_info.type} type value for input '{input_name}'."
+                )
+            elif (
+                input_info.type == INTEGER_TYPE_KEY
+                and (not isinstance(input_value, str))
+                and (not input_value.isdigit())
+            ):
+                input_error_messages.append(
+                    f"Error: Expected {input_info.type} type value for input '{input_name}'."
+                )
+            elif input_info.type in [FILE_ARRAY_TYPE_KEY, STRING_ARRAY_TYPE_KEY] and (
+                not (isinstance(input_value, list))
+            ):
+                input_error_messages.append(
+                    f"Error: Expected {input_info.type} type value for input '{input_name}'."
                 )
 
     for provided_input_key in inputs_dict.keys():
