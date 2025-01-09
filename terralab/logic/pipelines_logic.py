@@ -55,7 +55,7 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
         if input_name not in inputs_dict:
             input_error_messages.append(f"Error: Missing input '{input_name}'.")
         else:  # input is present in inputs_dict
-            # do not allow missing values
+            # do not allow missing/None values
             if inputs_dict[input_name] is None:
                 input_error_messages.append(
                     f"Error: Missing value for input '{input_name}'"
@@ -69,7 +69,6 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
                     f"Error: Could not find provided file for input '{input_name}': '{inputs_dict[input_name]}'."
                 )
 
-    # TODO don't allow None values
     for provided_input_key in inputs_dict.keys():
         if provided_input_key not in expected_input_keys:
             input_error_messages.append(
