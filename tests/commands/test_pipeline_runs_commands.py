@@ -12,7 +12,7 @@ from teaspoons_client import (
     ErrorReport,
     PipelineRunReport,
 )
-from terralab.constants import SUPPORT_EMAIL_TEXT
+from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
 from terralab.commands import pipeline_runs_commands
 from tests.utils_for_tests import capture_logs
 
@@ -175,9 +175,8 @@ def test_details_succeeded_job(capture_logs, unstub):
 
     test_job_id_str = str(TEST_JOB_ID)
 
-    # TODO rebase and replace string with SUCCEEDED_KEY from terralab.constants
     test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, "SUCCEEDED"
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
@@ -203,7 +202,7 @@ def test_details_failed_job(capture_logs, unstub):
     test_error_message = "Something went wrong"
 
     test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, "FAILED", error_message=test_error_message
+        TEST_PIPELINE_NAME, test_job_id_str, FAILED_KEY, error_message=test_error_message
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
@@ -240,7 +239,7 @@ def test_list_jobs(capture_logs):
             {
                 "job_id": str(uuid.uuid4()),
                 "pipeline_name": "test_pipeline1",
-                "status": "SUCCEEDED",
+                "status": SUCCEEDED_KEY,
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description 1",
@@ -250,7 +249,7 @@ def test_list_jobs(capture_logs):
             {
                 "job_id": str(uuid.uuid4()),
                 "pipeline_name": "test_pipeline2",
-                "status": "FAILED",
+                "status": FAILED_KEY,
                 "time_submitted": "2024-01-02T12:00:00Z",
                 "time_completed": "2024-01-02T12:30:00Z",
                 "description": "test description 2",
@@ -282,7 +281,7 @@ def test_list_jobs_custom_limit(capture_logs):
         mock(
             {
                 "job_id": str(uuid.uuid4()),
-                "status": "SUCCEEDED",
+                "status": SUCCEEDED_KEY,
                 "pipeline_name": "test_pipeline",
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
@@ -333,7 +332,7 @@ def create_test_pipeline_run_response(
         submitted="2024-01-01T12:00:00Z",
         description="test description",
     )
-    if status in ["SUCCEEDED", "FAILED"]:
+    if status in [SUCCEEDED_KEY, FAILED_KEY]:
         job_report.completed = "2024-01-01T15:00:00Z"
     return AsyncPipelineRunResponse(
         jobReport=job_report,
