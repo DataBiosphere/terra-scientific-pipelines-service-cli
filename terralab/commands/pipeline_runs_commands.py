@@ -23,10 +23,13 @@ from terralab.log import (
 
 LOGGER = logging.getLogger(__name__)
 
-@click.command(short_help="Submit a job",
-               context_settings=dict(
-                ignore_unknown_options=True,
-))
+
+@click.command(
+    short_help="Submit a job",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
+)
 @click.argument("pipeline_name", type=str)
 @click.option("--version", type=int, help="pipeline version, defaults to latest")
 @click.option(
@@ -37,7 +40,8 @@ LOGGER = logging.getLogger(__name__)
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
     """Submit a job for a PIPELINE_NAME pipeline
 
-    To see the required inputs for a given pipeline, use the `terralab pipelines details` command."""
+    To see the required inputs for a given pipeline, use the `terralab pipelines details` command.
+    """
     LOGGER.debug(f"inputs: {inputs}")
     inputs_dict = process_inputs_to_dict(inputs)
     LOGGER.debug(f"inputs processed to dict: {inputs_dict}")

@@ -16,20 +16,38 @@ process_inputs_testdata = [
     # input tuple, expected_output (failure = None)
     # note that the inputs will only ever have strings in them, never integers etc
     ((), {}),
-    (('--foo', 'foo_value'), {"foo": "foo_value"}),
-    (('--foo', '3'), {"foo": "3"}),
-    (('--foo', 'foo_value', '--bar', 'bar_value'), {"foo": "foo_value", "bar": "bar_value"}),
-    (('--foo=foo_value', '--bar', 'bar_value'), {"foo": "foo_value", "bar": "bar_value"}),
-    (('--array_input', 'v1,v2,v3', '--bar', 'bar_value'), {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"}),
-    (('--array_input=v1,v2,v3', '--bar', 'bar_value'), {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"}),
-    (('--foo', '--bar'), {"foo": None, "bar": None}), # missing input values are parsed as None
+    (("--foo", "foo_value"), {"foo": "foo_value"}),
+    (("--foo", "3"), {"foo": "3"}),
+    (
+        ("--foo", "foo_value", "--bar", "bar_value"),
+        {"foo": "foo_value", "bar": "bar_value"},
+    ),
+    (
+        ("--foo=foo_value", "--bar", "bar_value"),
+        {"foo": "foo_value", "bar": "bar_value"},
+    ),
+    (
+        ("--array_input", "v1,v2,v3", "--bar", "bar_value"),
+        {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"},
+    ),
+    (
+        ("--array_input=v1,v2,v3", "--bar", "bar_value"),
+        {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"},
+    ),
+    (
+        ("--foo", "--bar"),
+        {"foo": None, "bar": None},
+    ),  # missing input values are parsed as None
     # failures:
-    (('foo'), None), # missing input key
-    (('3'), None), # missing input key, note integers get processed to strings
-    (('--foo', 'foo_value', 'bar'), None), # missing input value
-    (('--foo', 'foo_value_1', '--foo', 'foo_value_2'), None), # duplicate key with second value
-    (('--foo', 'foo_value_1', '--foo'), None), # duplicate key without second value
-    (('--foo=foo_value', 'bar'), None),
+    (("foo"), None),  # missing input key
+    (("3"), None),  # missing input key, note integers get processed to strings
+    (("--foo", "foo_value", "bar"), None),  # missing input value
+    (
+        ("--foo", "foo_value_1", "--foo", "foo_value_2"),
+        None,
+    ),  # duplicate key with second value
+    (("--foo", "foo_value_1", "--foo"), None),  # duplicate key without second value
+    (("--foo=foo_value", "bar"), None),
 ]
 
 
@@ -41,30 +59,6 @@ def test_process_inputs_to_dict(input, expected_output):
             utils.process_inputs_to_dict(input)
     else:
         assert utils.process_inputs_to_dict(input) == expected_output
-
-
-process_json_testdata = [
-    # input, expected_output (failure = None)
-    ("{}", {}),
-    ('{"foo": "bar"}', {"foo": "bar"}),
-    ('{"foo": {"bar": 2}}', {"foo": {"bar": 2}}),
-    ("", None),
-    ("string", None),
-    (0, None),
-    ([], None),
-    ("[]", None),  # this is valid JSON but doesn't parse to a dict
-    ("{[]}", None),
-]
-
-
-@pytest.mark.parametrize("input,expected_output", process_json_testdata)
-def test_process_json_to_dict(input, expected_output):
-    if expected_output is None:
-        # failure
-        with pytest.raises(SystemExit):
-            utils.process_json_to_dict(input)
-    else:
-        assert utils.process_json_to_dict(input) == expected_output
 
 
 def test_is_valid_local_file():

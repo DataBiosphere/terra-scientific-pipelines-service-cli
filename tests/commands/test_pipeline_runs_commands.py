@@ -18,74 +18,73 @@ from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)
 
+# common constants for tests
+TEST_PIPELINE_NAME = "test_pipeline"
+TEST_INPUT_KEY = "--foo_key"
+TEST_INPUT_VALUE = "foo_value"
+TEST_INPUTS_TUPLE = (TEST_INPUT_KEY, TEST_INPUT_VALUE)
+TEST_INPUTS_DICT = {TEST_INPUT_KEY.lstrip("--"): TEST_INPUT_VALUE}
+TEST_DESCRIPTION = "user description"
+TEST_JOB_ID = uuid.uuid4()
+
 
 def test_submit(capture_logs):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_inputs_dict = {}
-    test_inputs_dict_str = str(test_inputs_dict)
-    test_description = "user description"
-
-    test_job_id = uuid.uuid4()
-
-    when(pipeline_runs_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
-        test_inputs_dict
+    when(pipeline_runs_commands).process_inputs_to_dict(TEST_INPUTS_TUPLE).thenReturn(
+        TEST_INPUTS_DICT
     )
     when(pipeline_runs_commands.pipelines_logic).validate_pipeline_inputs(
-        test_pipeline_name, None, test_inputs_dict
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        test_pipeline_name, None, test_inputs_dict, test_description
-    ).thenReturn(test_job_id)
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, TEST_DESCRIPTION
+    ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
         [
-            test_pipeline_name,
-            "--inputs",
-            test_inputs_dict_str,
+            TEST_PIPELINE_NAME,
+            TEST_INPUT_KEY,
+            TEST_INPUT_VALUE,
             "--description",
-            test_description,
+            TEST_DESCRIPTION,
         ],
     )
 
     assert result.exit_code == 0
     assert (
-        f"Successfully started {test_pipeline_name} job {test_job_id}"
+        f"Successfully started {TEST_PIPELINE_NAME} job {TEST_JOB_ID}"
         in capture_logs.text
     )
+
 
 
 def test_submit_no_description(capture_logs):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_inputs_dict = {}
-    test_inputs_dict_str = str(test_inputs_dict)
+    TEST_JOB_ID = uuid.uuid4()
 
-    test_job_id = uuid.uuid4()
-
-    when(pipeline_runs_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
-        test_inputs_dict
+    when(pipeline_runs_commands).process_inputs_to_dict(TEST_INPUTS_TUPLE).thenReturn(
+        TEST_INPUTS_DICT
     )
     when(pipeline_runs_commands.pipelines_logic).validate_pipeline_inputs(
-        test_pipeline_name, None, test_inputs_dict
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        test_pipeline_name, None, test_inputs_dict, ""
-    ).thenReturn(test_job_id)
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, ""
+    ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
-        [test_pipeline_name, "--inputs", test_inputs_dict_str],
+        [TEST_PIPELINE_NAME, TEST_INPUT_KEY, TEST_INPUT_VALUE],
     )
 
     assert result.exit_code == 0
     assert (
-        f"Successfully started {test_pipeline_name} job {test_job_id}"
+        f"Successfully started {TEST_PIPELINE_NAME} job {TEST_JOB_ID}"
         in capture_logs.text
     )
 
@@ -93,31 +92,25 @@ def test_submit_no_description(capture_logs):
 def test_submit_with_version(capture_logs):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_inputs_dict = {}
-    test_inputs_dict_str = str(test_inputs_dict)
-
-    test_job_id = uuid.uuid4()
-
-    when(pipeline_runs_commands).process_json_to_dict(test_inputs_dict_str).thenReturn(
-        test_inputs_dict
+    when(pipeline_runs_commands).process_inputs_to_dict(TEST_INPUTS_TUPLE).thenReturn(
+        TEST_INPUTS_DICT
     )
     when(pipeline_runs_commands.pipelines_logic).validate_pipeline_inputs(
-        test_pipeline_name, 1, test_inputs_dict
+        TEST_PIPELINE_NAME, 1, TEST_INPUTS_DICT
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        test_pipeline_name, 1, test_inputs_dict, ""
-    ).thenReturn(test_job_id)
+        TEST_PIPELINE_NAME, 1, TEST_INPUTS_DICT, ""
+    ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
-        [test_pipeline_name, "--inputs", test_inputs_dict_str, "--version", "1"],
+        [TEST_PIPELINE_NAME, TEST_INPUT_KEY, TEST_INPUT_VALUE, "--version", "1"],
     )
 
     assert result.exit_code == 0
     assert (
-        f"Successfully started {test_pipeline_name} job {test_job_id}"
+        f"Successfully started {TEST_PIPELINE_NAME} job {TEST_JOB_ID}"
         in capture_logs.text
     )
 
@@ -125,13 +118,12 @@ def test_submit_with_version(capture_logs):
 def test_download():
     runner = CliRunner()
 
-    test_job_id = uuid.uuid4()
-    test_job_id_str = str(test_job_id)
+    test_job_id_str = str(TEST_JOB_ID)
 
     when(
         pipeline_runs_commands.pipeline_runs_logic
     ).get_result_and_download_pipeline_run_outputs(
-        test_job_id, "."
+        TEST_JOB_ID, "."
     )  # do nothing, assume succeeded
 
     result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
@@ -139,7 +131,7 @@ def test_download():
     assert result.exit_code == 0
     verify(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(test_job_id, ".")
+    ).get_result_and_download_pipeline_run_outputs(TEST_JOB_ID, ".")
 
 
 def test_download_bad_job_id(capture_logs):
@@ -150,73 +142,72 @@ def test_download_bad_job_id(capture_logs):
     result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
 
     assert result.exit_code == 1
-    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
-def test_details_running_job(capture_logs):
+def test_details_running_job(capture_logs, unstub):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_job_id = uuid.uuid4()
-    test_job_id_str = str(test_job_id)
+    test_job_id_str = str(TEST_JOB_ID)
 
     test_response = create_test_pipeline_run_response(
-        test_pipeline_name, test_job_id_str, "RUNNING"
+        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING"
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_job_id
+        TEST_JOB_ID
     ).thenReturn(test_response)
 
     result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 0
     verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_job_id
+        TEST_JOB_ID
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" not in capture_logs.text
 
+    unstub()
 
-def test_details_succeeded_job(capture_logs):
+
+def test_details_succeeded_job(capture_logs, unstub):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_job_id = uuid.uuid4()
-    test_job_id_str = str(test_job_id)
+    test_job_id_str = str(TEST_JOB_ID)
 
+    # TODO rebase and replace string with SUCCEEDED_KEY from terralab.constants
     test_response = create_test_pipeline_run_response(
-        test_pipeline_name, test_job_id_str, "SUCCEEDED"
+        TEST_PIPELINE_NAME, test_job_id_str, "SUCCEEDED"
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_job_id
+        TEST_JOB_ID
     ).thenReturn(test_response)
 
     result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 0
     verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_job_id
+        TEST_JOB_ID
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" in capture_logs.text
 
+    unstub()
 
-def test_details_failed_job(capture_logs):
+
+def test_details_failed_job(capture_logs, unstub):
     runner = CliRunner()
 
-    test_pipeline_name = "test_pipeline"
-    test_job_id = uuid.uuid4()
-    test_job_id_str = str(test_job_id)
+    test_job_id_str = str(TEST_JOB_ID)
     test_error_message = "Something went wrong"
 
     test_response = create_test_pipeline_run_response(
-        test_pipeline_name, test_job_id_str, "FAILED", error_message=test_error_message
+        TEST_PIPELINE_NAME, test_job_id_str, "FAILED", error_message=test_error_message
     )
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        test_job_id
+        TEST_JOB_ID
     ).thenReturn(test_response)
 
     result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
@@ -226,6 +217,8 @@ def test_details_failed_job(capture_logs):
     assert test_error_message in capture_logs.text
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
     assert "Completed:" in capture_logs.text
+
+    unstub()
 
 
 def test_details_bad_job_id(capture_logs):

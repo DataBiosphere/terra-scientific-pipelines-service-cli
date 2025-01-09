@@ -53,9 +53,7 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
         expected_input_keys.append(input_name)
         LOGGER.debug(f"Validating input {input_name}")
         if input_name not in inputs_dict:
-            input_error_messages.append(
-                f"Error: Missing input '{input_name}'."
-            )
+            input_error_messages.append(f"Error: Missing input '{input_name}'.")
         else:  # input is present in inputs_dict
             # do not allow missing values
             if inputs_dict[input_name] is None:
@@ -68,7 +66,7 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
                 not is_valid_local_file(inputs_dict[input_name])
             ):
                 input_error_messages.append(
-                        f"Error: Could not find provided file for input '{input_name}': '{inputs_dict[input_name]}'."
+                    f"Error: Could not find provided file for input '{input_name}': '{inputs_dict[input_name]}'."
                 )
 
     # TODO don't allow None values
@@ -79,11 +77,5 @@ def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
             )
 
     if input_error_messages:
-        LOGGER.error(
-            add_blankline_before(
-                join_lines(
-                    input_error_messages
-                )
-            )
-        )
+        LOGGER.error(add_blankline_before(join_lines(input_error_messages)))
         exit(1)

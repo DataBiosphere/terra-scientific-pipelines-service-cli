@@ -125,9 +125,12 @@ def test_validate_pipeline_inputs_extra_input_warning(capture_logs):
         mock_pipeline_info
     )
 
-    pipelines_logic.validate_pipeline_inputs(test_pipeline_name, None, test_inputs_dict)
+    with pytest.raises(SystemExit):
+        pipelines_logic.validate_pipeline_inputs(
+            test_pipeline_name, None, test_inputs_dict
+        )
 
-    assert "Ignoring unexpected input `extra_key`" in capture_logs.text
+    assert "Error: Unexpected input 'extra_key'." in capture_logs.text
 
 
 def test_validate_pipeline_inputs_missing_input(capture_logs):
@@ -151,8 +154,7 @@ def test_validate_pipeline_inputs_missing_input(capture_logs):
             test_pipeline_name, None, {"input1": "value1"}
         )
 
-    assert "Missing or invalid inputs provided" in capture_logs.text
-    assert "Missing required input `input2`" in capture_logs.text
+    assert "Error: Missing input 'input2'" in capture_logs.text
 
 
 def test_validate_pipeline_inputs_missing_file(capture_logs):
@@ -172,8 +174,7 @@ def test_validate_pipeline_inputs_missing_file(capture_logs):
             test_pipeline_name, 0, {"file_input": "nonexistent_file.txt"}
         )
 
-    assert "Missing or invalid inputs provided" in capture_logs.text
     assert (
-        "Could not find provided file for input `file_input`: `nonexistent_file.txt`"
+        "Error: Could not find provided file for input 'file_input': 'nonexistent_file.txt'"
         in capture_logs.text
     )

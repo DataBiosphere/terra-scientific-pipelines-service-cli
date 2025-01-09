@@ -52,9 +52,9 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
         # if i not in processed_idxs:
         raw_value = inputs[i]
         LOGGER.debug(f"processing idx {i}: raw_value {raw_value}")
-        # processed_idxs.append(i)         
-        if raw_value.startswith('--'):
-            clean_value = raw_value.lstrip('--')
+        # processed_idxs.append(i)
+        if raw_value.startswith("--"):
+            clean_value = raw_value.lstrip("--")
             # this is a key, or key=value pair
             if "=" in clean_value:
                 # this is a key=value pair
@@ -63,11 +63,11 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
                 value = process_value(split_value[1])
             else:
                 key = clean_value
-                if i+1 >= len(inputs):
+                if i + 1 >= len(inputs):
                     value = None
                 else:
-                    raw_next_value = inputs[i+1]
-                    if raw_next_value.startswith('--'):
+                    raw_next_value = inputs[i + 1]
+                    if raw_next_value.startswith("--"):
                         value = None
                     else:
                         value = process_value(raw_next_value)
@@ -77,7 +77,9 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
                 raise ValueError(f"Error: Duplicate keys found for input '{key}'.")
             inputs_dict[key] = value
         else:
-            raise ValueError(f"Error: Improperly formatted arguments {inputs}. Are you missing a '--' before the input key?")
+            raise ValueError(
+                f"Error: Improperly formatted arguments {inputs}. Are you missing a '--' before the input key?"
+            )
 
         i += 1
     return inputs_dict
@@ -90,20 +92,6 @@ def process_value(raw_value: str):
         return raw_value.split(",")
     else:
         return raw_value
-
-
-def process_json_to_dict(json_data) -> dict:
-    """Process the given JSON string and return a dictionary.
-    Returns None if the input string is not able to be parsed to a dictionary."""
-    try:
-        data = json.loads(json_data)
-        if not (isinstance(data, dict)):
-            raise TypeError
-        LOGGER.debug(f"Processed inputs: {data}")
-        return data
-    except (json.JSONDecodeError, TypeError):
-        LOGGER.error(add_blankline_before("Error: Input string not parsable to a dictionary."))
-        exit(1)
 
 
 def is_valid_local_file(local_file_path: str) -> bool:

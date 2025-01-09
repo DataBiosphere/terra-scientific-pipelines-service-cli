@@ -44,6 +44,7 @@ class OrderedGroup(click.Group):
     def list_commands(self, ctx: click.Context) -> Mapping[str, click.Command]:
         return self.commands
 
+
 @click.group(context_settings=CONTEXT_SETTINGS, cls=OrderedGroup)
 @click.version_option(__version__)
 @click.option(
