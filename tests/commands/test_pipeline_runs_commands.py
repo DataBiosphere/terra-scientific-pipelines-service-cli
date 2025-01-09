@@ -236,7 +236,7 @@ def test_details_bad_job_id(capture_logs):
     result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
 
     assert result.exit_code == 1
-    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
 def test_list_jobs(capture_logs):

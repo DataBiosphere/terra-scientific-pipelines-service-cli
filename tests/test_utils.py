@@ -21,10 +21,14 @@ process_inputs_testdata = [
     (('--foo', 'foo_value', '--bar', 'bar_value'), {"foo": "foo_value", "bar": "bar_value"}),
     (('--foo=foo_value', '--bar', 'bar_value'), {"foo": "foo_value", "bar": "bar_value"}),
     (('--array_input', 'v1,v2,v3', '--bar', 'bar_value'), {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"}),
-    (('--foo', '--bar'), None), # missing input values
+    (('--array_input=v1,v2,v3', '--bar', 'bar_value'), {"array_input": ["v1", "v2", "v3"], "bar": "bar_value"}),
+    (('--foo', '--bar'), {"foo": None, "bar": None}), # missing input values are parsed as None
+    # failures:
     (('foo'), None), # missing input key
     (('3'), None), # missing input key, note integers get processed to strings
     (('--foo', 'foo_value', 'bar'), None), # missing input value
+    (('--foo', 'foo_value_1', '--foo', 'foo_value_2'), None), # duplicate key with second value
+    (('--foo', 'foo_value_1', '--foo'), None), # duplicate key without second value
     (('--foo=foo_value', 'bar'), None),
 ]
 
@@ -97,7 +101,7 @@ def test_upload_file_with_signed_url_success(capture_logs):
 
         utils.upload_file_with_signed_url(test_local_file_path, test_signed_url)
 
-        assert f"File `{test_local_file_path}` upload complete" in capture_logs.text
+        assert f"File '{test_local_file_path}' upload complete" in capture_logs.text
 
 
 def test_upload_file_with_signed_url_failed(capture_logs):
@@ -178,13 +182,13 @@ def test_validate_uuid(capture_logs):
     # invalid (uuid conversion raises ValueError)
     with pytest.raises(SystemExit):
         utils.validate_job_id("not a uuid")
-    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
     capture_logs.clear()
 
     # empty (uuid conversion raises TypeError)
     with pytest.raises(SystemExit):
         utils.validate_job_id(None)
-    assert "Input error: JOB_ID must be a valid uuid." in capture_logs.text
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
 format_timestamp_testdata = [

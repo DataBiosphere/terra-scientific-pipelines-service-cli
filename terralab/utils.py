@@ -16,7 +16,7 @@ from functools import wraps
 from teaspoons_client import ApiException
 
 from terralab.constants import SUPPORT_EMAIL_TEXT
-from terralab.log import add_blankline_after
+from terralab.log import add_blankline_before
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,12 +29,12 @@ def handle_api_exceptions(func):
             return func(*args, **kwargs)
         except ApiException as e:
             formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
-            LOGGER.error(add_blankline_after(formatted_message))
-            LOGGER.error(add_blankline_after(SUPPORT_EMAIL_TEXT))
+            LOGGER.error(add_blankline_before(formatted_message))
+            LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)
         except Exception as e:
-            LOGGER.error(add_blankline_after(str(e)))
-            LOGGER.error(add_blankline_after(SUPPORT_EMAIL_TEXT))
+            LOGGER.error(add_blankline_before(str(e)))
+            LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)
 
     return wrapper
@@ -45,41 +45,51 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
     Note that the way click processes these UNPROCESSED inputs, they are all converted to strings,
     so you won't ever see a raw integer or float here."""
     inputs_dict = {}
-    processed_idxs = []
-    for i in range(len(inputs)):
-        if i not in processed_idxs:
-            raw_value = inputs[i]
-            LOGGER.debug(f"processing idx {i}: raw_value {raw_value}")
-            processed_idxs.append(i)         
-            if raw_value.startswith('--'):
-                clean_value = raw_value.lstrip('--')
-                # this is a key, or key=value pair
-                if "=" in clean_value:
-                    # this is a key=value pair
-                    split_value = clean_value.split("=")
-                    key = split_value[0]
-                    value = split_value[1]
-                else:
-                    key = clean_value
-                    if i+1 >= len(inputs):
-                        raise ValueError(f"Encountered unspecified input: '{key}' in provided inputs: {inputs}")
-                    raw_next_value = inputs[i+1]
-                    if not raw_next_value.startswith('--'):
-                        # process arrays
-                        if "," in raw_next_value:
-                            value = raw_next_value.split(",")
-                        else:
-                            value = raw_next_value
-                    else:
-                        raise ValueError(f"Encountered unspecified input: '{key}' in provided inputs: {inputs}")
-                    processed_idxs.append(i+1)
-                LOGGER.debug(f"processed key: {key}, value: {value}")
-                inputs_dict[key] = value
+    # TODO make sure you don't have duplicate keys
+    # for i in range(len(inputs)):
+    i = 0
+    while i < len(inputs):
+        # if i not in processed_idxs:
+        raw_value = inputs[i]
+        LOGGER.debug(f"processing idx {i}: raw_value {raw_value}")
+        # processed_idxs.append(i)         
+        if raw_value.startswith('--'):
+            clean_value = raw_value.lstrip('--')
+            # this is a key, or key=value pair
+            if "=" in clean_value:
+                # this is a key=value pair
+                split_value = clean_value.split("=")
+                key = split_value[0]
+                value = process_value(split_value[1])
             else:
-                raise ValueError(f"Encountered improperly formatted inputs: {inputs}. Are you missing a '--' before the input key?")
+                key = clean_value
+                if i+1 >= len(inputs):
+                    value = None
+                else:
+                    raw_next_value = inputs[i+1]
+                    if raw_next_value.startswith('--'):
+                        value = None
+                    else:
+                        value = process_value(raw_next_value)
+                        i += 1
+            LOGGER.debug(f"processed key: {key}, value: {value}")
+            if key in inputs_dict.keys():
+                raise ValueError(f"Error: Duplicate keys found for input '{key}'.")
+            inputs_dict[key] = value
+        else:
+            raise ValueError(f"Error: Improperly formatted arguments {inputs}. Are you missing a '--' before the input key?")
 
-        LOGGER.debug(f"idx {i} already processed")
+        i += 1
     return inputs_dict
+
+
+def process_value(raw_value: str):
+    """Process a raw input value string, splitting to an array if commas are present."""
+    # process arrays
+    if "," in raw_value:
+        return raw_value.split(",")
+    else:
+        return raw_value
 
 
 def process_json_to_dict(json_data) -> dict:
@@ -92,7 +102,7 @@ def process_json_to_dict(json_data) -> dict:
         LOGGER.debug(f"Processed inputs: {data}")
         return data
     except (json.JSONDecodeError, TypeError):
-        LOGGER.error(add_blankline_after("Input string not parsable to a dictionary."))
+        LOGGER.error(add_blankline_before("Error: Input string not parsable to a dictionary."))
         exit(1)
 
 
@@ -125,9 +135,9 @@ def upload_file_with_signed_url(local_file_path, signed_url):
                     headers={"Content-Type": "application/octet-stream"},
                 )
                 response.raise_for_status()
-        LOGGER.info(add_blankline_after(f"File `{local_file_path}` upload complete"))
+        LOGGER.info(add_blankline_before(f"File '{local_file_path}' upload complete"))
     except Exception as e:
-        LOGGER.error(add_blankline_after(f"Error uploading file: {e}"))
+        LOGGER.error(add_blankline_before(f"Error uploading file: {e}"))
         exit(1)
 
 
@@ -140,7 +150,7 @@ class SignedUrlDownload:
         # https://storage.googleapis.com/fc-secure-6970c3a9-dc92-436d-af3d-917bcb4cf05a/test_signed_urls/helloworld.txt?x-goog-signature...
         self.file_name = signed_url.split("?")[0].split("/")[-1]
         self.local_file_path = os.path.join(local_destination_dir, self.file_name)
-        LOGGER.debug(f"Will download file to `{self.local_file_path}`")
+        LOGGER.debug(f"Will download file to '{self.local_file_path}'")
         self.response = requests.get(signed_url, stream=True)
 
         self.response.raise_for_status()
@@ -188,10 +198,10 @@ def download_files_with_signed_urls(
         with ThreadPoolExecutor(max_workers=len(downloads)) as ex:
             downloaded_file_paths: list[str] = ex.map(download_with_pbar, downloads)
     except Exception as e:
-        LOGGER.error(add_blankline_after(f"Error downloading files: {e}"))
+        LOGGER.error(add_blankline_before(f"Error downloading files: {e}"))
         exit(1)
 
-    LOGGER.info(add_blankline_after("All downloads complete"))
+    LOGGER.info(add_blankline_before("All downloads complete"))
     return downloaded_file_paths
 
 
@@ -202,7 +212,7 @@ def validate_job_id(job_id: str) -> uuid.UUID:
     try:
         return uuid.UUID(job_id)
     except (TypeError, ValueError):
-        LOGGER.error("Input error: JOB_ID must be a valid uuid.")
+        LOGGER.error("Error: JOB_ID must be a valid uuid.")
         exit(1)
 
 
