@@ -19,7 +19,6 @@ from oauth2_cli_auth import (
 from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
-from terralab.log import add_blankline_after
 
 
 LOGGER = logging.getLogger(__name__)
@@ -112,9 +111,7 @@ def _open_browser(
     """
     if print_open_browser_instruction is not None:
         print_open_browser_instruction(
-            add_blankline_after(
-                f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your browser:\n\n{url}"
-            )
+            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your browser:\n\n{url}\n"
         )
     webbrowser.open(url)
 

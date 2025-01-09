@@ -16,7 +16,7 @@ from terralab.utils import (
 )
 from terralab.log import (
     indented,
-    add_blankline_after,
+    add_blankline_before,
     format_table_with_status,
     format_status,
 )
@@ -93,19 +93,17 @@ def details(job_id: str):
         job_id_uuid
     )
 
-    LOGGER.info(
-        add_blankline_after(f"Status: {format_status(response.job_report.status)}")
-    )
+    LOGGER.info(f"Status: {format_status(response.job_report.status)}")
 
     if response.error_report:
         LOGGER.info(
-            add_blankline_after(f"Error message: {response.error_report.message}")
+            add_blankline_before(f"Error message: {response.error_report.message}")
         )
 
     if response.job_report.status == FAILED_KEY:
-        LOGGER.info(add_blankline_after(SUPPORT_EMAIL_TEXT))
+        LOGGER.info(add_blankline_before(SUPPORT_EMAIL_TEXT))
 
-    LOGGER.info("Details:")
+    LOGGER.info(add_blankline_before("Details:"))
     LOGGER.info(
         indented(f"Pipeline Name: {response.pipeline_run_report.pipeline_name}")
     )
