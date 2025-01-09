@@ -39,8 +39,8 @@ def pad_column(first_string: str, column_width: int = 20):
     return first_string.ljust(column_width)
 
 
-def add_blankline_after(string: str):
-    return f"{string}\n"
+def add_blankline_before(string: str):
+    return f"\n{string}"
 
 
 DEFAULT_MAX_COL_SIZE = 60

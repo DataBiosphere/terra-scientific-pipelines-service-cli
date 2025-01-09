@@ -10,13 +10,13 @@ from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT
 from terralab.logic import pipeline_runs_logic, pipelines_logic
 from terralab.utils import (
     handle_api_exceptions,
-    process_json_to_dict,
+    process_inputs_to_dict,
     validate_job_id,
     format_timestamp,
 )
 from terralab.log import (
     indented,
-    add_blankline_after,
+    add_blankline_before,
     format_table_with_status,
     format_status,
 )
@@ -24,17 +24,27 @@ from terralab.log import (
 LOGGER = logging.getLogger(__name__)
 
 
-@click.command(short_help="Submit a job")
+@click.command(
+    short_help="Submit a job",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
+)
 @click.argument("pipeline_name", type=str)
 @click.option("--version", type=int, help="pipeline version, defaults to latest")
-@click.option("--inputs", type=str, required=True, help="JSON string input")
 @click.option(
     "--description", type=str, default="", help="optional description for the job"
 )
+@click.argument("inputs", nargs=-1, type=click.UNPROCESSED)
 @handle_api_exceptions
 def submit(pipeline_name: str, version: int, inputs: str, description: str):
-    """Submit a job for a PIPELINE_NAME pipeline"""
-    inputs_dict = process_json_to_dict(inputs)
+    """Submit a job for a PIPELINE_NAME pipeline
+
+    To see the required inputs for a given pipeline, use the `terralab pipelines details` command.
+    """
+    LOGGER.debug(f"inputs: {inputs}")
+    inputs_dict = process_inputs_to_dict(inputs)
+    LOGGER.debug(f"inputs processed to dict: {inputs_dict}")
 
     # validate inputs
     pipelines_logic.validate_pipeline_inputs(pipeline_name, version, inputs_dict)
@@ -83,19 +93,17 @@ def details(job_id: str):
         job_id_uuid
     )
 
-    LOGGER.info(
-        add_blankline_after(f"Status: {format_status(response.job_report.status)}")
-    )
+    LOGGER.info(f"Status: {format_status(response.job_report.status)}")
 
     if response.error_report:
         LOGGER.info(
-            add_blankline_after(f"Error message: {response.error_report.message}")
+            add_blankline_before(f"Error message: {response.error_report.message}")
         )
 
     if response.job_report.status == FAILED_KEY:
-        LOGGER.info(add_blankline_after(SUPPORT_EMAIL_TEXT))
+        LOGGER.info(add_blankline_before(SUPPORT_EMAIL_TEXT))
 
-    LOGGER.info("Details:")
+    LOGGER.info(add_blankline_before("Details:"))
     LOGGER.info(
         indented(f"Pipeline Name: {response.pipeline_run_report.pipeline_name}")
     )

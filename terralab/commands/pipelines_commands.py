@@ -58,9 +58,9 @@ def details(pipeline_name: str, version: int):
         LOGGER.info(
             f"{pad_column("", col_width)}{input_definition.name} ({input_definition.type})"
         )
-        inputs_for_usage.append(f'"{input_definition.name}": "YOUR_VALUE_HERE"')
-    inputs_json_for_usage = f"{{{', '.join(inputs_for_usage)}}}"
+        inputs_for_usage.extend([f"--{input_definition.name}", "YOUR_VALUE_HERE"])
+    inputs_string_for_usage = " ".join(inputs_for_usage)
 
     LOGGER.info(
-        f"{pad_column("Example usage:", col_width)}terralab submit {pipeline_info.pipeline_name} --inputs '{inputs_json_for_usage}' --description 'YOUR JOB DESCRIPTION HERE'"
+        f"{pad_column("Example usage:", col_width)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
     )
