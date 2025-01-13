@@ -27,9 +27,9 @@ def test_pad_column():
     assert log.pad_column("", 2) == "  "
 
 
-def test_add_blankline_after():
-    assert log.add_blankline_after("foo") == "foo\n"
-    assert log.add_blankline_after("") == "\n"
+def test_add_blankline_before():
+    assert log.add_blankline_before("foo") == "\nfoo"
+    assert log.add_blankline_before("") == "\n"
 
 
 format_table_with_status_testdata = [

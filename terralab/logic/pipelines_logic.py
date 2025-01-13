@@ -9,9 +9,12 @@ from teaspoons_client import (
     GetPipelineDetailsRequestBody,
 )
 
+from terralab.constants import (
+    FILE_TYPE_KEY,
+)
 from terralab.client import ClientWrapper
 from terralab.utils import is_valid_local_file
-from terralab.log import indented, join_lines, add_blankline_after
+from terralab.log import join_lines, add_blankline_before
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,48 +44,48 @@ def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:
         )
 
 
-def validate_pipeline_inputs(pipeline_name: str, version, inputs_dict: dict):
-    """Check that all required user inputs are present, and that all file inputs are valid."""
-    # retrieve required pipeline inputs; note currently this endpoint only returns required inputs
-    pipeline_info: PipelineWithDetails = get_pipeline_info(pipeline_name, version)
+def validate_pipeline_inputs(
+    pipeline_name: str, version: int, inputs_dict: dict[str, any]
+) -> None:
+    """Validate pipeline inputs against required parameters and file existence.
+    Exits with error if validation fails."""
+    pipeline_info = get_pipeline_info(pipeline_name, version)
+    errors = []
 
-    input_error_messages = []
-    expected_input_keys = []
-    for input_info in pipeline_info.inputs:  # PipelineUserProvidedInputDefinition
-        input_name: str = input_info.name
-        expected_input_keys.append(input_name)
-        LOGGER.debug(f"Validating input {input_name}")
-        if input_name not in inputs_dict:
-            input_error_messages.append(
-                indented(f"Missing required input `{input_name}`")
-            )
-        else:
-            # input is present in inputs_dict; if it's a file, extract the path and validate
-            if input_info.type == "FILE" and (
-                not is_valid_local_file(inputs_dict[input_name])
-            ):
-                input_error_messages.append(
-                    indented(
-                        f"Could not find provided file for input `{input_name}`: `{inputs_dict[input_name]}`"
-                    )
-                )
+    # validate all expected inputs
+    for input_def in pipeline_info.inputs:
+        if error := _validate_single_input(input_def, inputs_dict):
+            errors.append(error)
 
-    input_warning_messages = []
-    for provided_input_key in inputs_dict.keys():
-        if provided_input_key not in expected_input_keys:
-            input_warning_messages.append(
-                f"Ignoring unexpected input `{provided_input_key}`"
-            )
-
-    if input_warning_messages:
-        LOGGER.warning(add_blankline_after(join_lines(input_warning_messages)))
-
-    if input_error_messages:
-        LOGGER.error(
-            add_blankline_after(
-                join_lines(
-                    ["Missing or invalid inputs provided:"] + input_error_messages
-                )
-            )
+    # check for unexpected inputs
+    expected_inputs = {input_def.name for input_def in pipeline_info.inputs}
+    unexpected_inputs = set(inputs_dict.keys()) - expected_inputs
+    if unexpected_inputs:
+        errors.extend(
+            f"Error: Unexpected input '{input_name}'."
+            for input_name in unexpected_inputs
         )
+
+    if errors:
+        LOGGER.error(add_blankline_before(join_lines(errors)))
         exit(1)
+
+
+def _validate_single_input(input_def, inputs_dict: dict) -> str | None:
+    """Validate a single input definition against provided inputs.
+    Returns error message if validation fails, None otherwise."""
+    input_name = input_def.name
+
+    if input_name not in inputs_dict:
+        if input_def.is_required:
+            return f"Error: Missing input '{input_name}'."
+        return None
+
+    input_value = inputs_dict[input_name]
+    if input_value is None:
+        return f"Error: Missing value for input '{input_name}'."
+
+    if input_def.type == FILE_TYPE_KEY and not is_valid_local_file(input_value):
+        return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
+
+    return None
