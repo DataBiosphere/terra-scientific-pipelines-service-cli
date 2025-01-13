@@ -240,24 +240,25 @@ def test_validate_pipeline_inputs_file(
         TEST_PIPELINE_NAME, TEST_VERSION
     ).thenReturn(mock_pipeline_info)
 
-    if file_to_create:
-        # write the file locally
-        with open(file=file_to_create, mode="w") as blob_file:
-            blob_file.write("Hello, World!")
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        if file_to_create:
+            # write the file locally
+            test_local_file_path = os.path.join(tmpdirname, file_to_create)
+            with open(file=test_local_file_path, mode="w") as f:
+                f.write("Hello, World!")
 
-    if error_messages:
-        with pytest.raises(SystemExit):
+            # update inputs with this file path (including the temp directory path)
+            input[FILE_INPUT_KEY] = test_local_file_path
+
+        if error_messages:
+            with pytest.raises(SystemExit):
+                pipelines_logic.validate_pipeline_inputs(
+                    TEST_PIPELINE_NAME, TEST_VERSION, input
+                )
+            for message in error_messages:
+                assert message in capture_logs.text
+        else:
+            # Should succeed with valid inputs
             pipelines_logic.validate_pipeline_inputs(
                 TEST_PIPELINE_NAME, TEST_VERSION, input
             )
-        for message in error_messages:
-            assert message in capture_logs.text
-    else:
-        # Should succeed with valid inputs
-        pipelines_logic.validate_pipeline_inputs(
-            TEST_PIPELINE_NAME, TEST_VERSION, input
-        )
-
-    # clean up
-    if file_to_create:
-        os.remove(file_to_create)

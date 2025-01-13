@@ -59,7 +59,7 @@ def validate_pipeline_inputs(
 
     # check for unexpected inputs
     expected_inputs = {input_def.name for input_def in pipeline_info.inputs}
-    unexpected_inputs = set(inputs_dict) - expected_inputs
+    unexpected_inputs = set(inputs_dict.keys()) - expected_inputs
     if unexpected_inputs:
         errors.extend(
             f"Error: Unexpected input '{input_name}'."
