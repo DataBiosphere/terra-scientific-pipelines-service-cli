@@ -190,6 +190,7 @@ def test_details_succeeded_job(capture_logs, unstub):
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" in capture_logs.text
+    assert "File Download Expiration:" in capture_logs.text
 
     unstub()
 
