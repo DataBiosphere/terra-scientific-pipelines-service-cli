@@ -118,7 +118,11 @@ def details(job_id: str):
             indented(f"Completed: {format_timestamp(response.job_report.completed)}")
         )
     if response.job_report.status == SUCCEEDED_KEY:
-        LOGGER.info(indented(f"File Download Expiration Date: {format_timestamp(response.pipeline_run_report.output_expiration_date)}"))
+        LOGGER.info(
+            indented(
+                f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date)}"
+            )
+        )
     LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
