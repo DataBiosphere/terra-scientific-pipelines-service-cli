@@ -5,9 +5,6 @@ on:
       - main
     paths-ignore:
       - '*.md'
-  schedule:
-    # run once a day at 00:25 UTC every Sunday night
-    - cron: "25 00 * * 1"
   workflow_dispatch:
     inputs:
       custom-app-version:
@@ -26,8 +23,18 @@ on:
         description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
         required: false
         type: string
+      version-template:
+        description: 'version template to copy. defaults to dev'
+        default: 'dev'
+        required: true
+        type: choice
+        options:
+          - dev
+          - alpha
+          - staging
+          - prod
 env:
-  BEE_NAME: 'teaspoons-${{ github.run_id }}-${{ github.run_attempt}}-dev'
+  BEE_NAME: 'teaspoons-cli-${{ github.run_id }}-${{ github.run_attempt}}-dev'
   TOKEN: '${{ secrets.BROADBOT_TOKEN }}'
   RUN_NAME_SUFFIX: ${{ github.event.repository.name }}-${{ github.run_id }}-${{github.run_attempt }}
 jobs:
@@ -115,6 +122,7 @@ jobs:
           bee_name: ${{ env.BEE_NAME }}
           token: '${{ env.TOKEN }}'
           custom_version_json: ${{ needs.init-github-context-and-params-gen.outputs.custom-app-version-formatted }}
+          version-template: '${{ github.event.inputs.version-template }}'
 
   run-e2e-test-job:
     needs: [ bump-check, create-bee-workflow, init-github-context-and-params-gen ]
@@ -151,5 +159,15 @@ jobs:
     if: github.ref == 'refs/heads/main' && needs.bump-check.outputs.is-bump == 'no'
     with:
       notify-slack-channels-upon-workflow-completion: "#terra-teaspoons-alerts"
+    permissions:
+      id-token: write
+
+  report-workflow-against-staging-to-qa:
+    needs: [ bump-check ]
+    uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
+    if: github.ref == 'refs/heads/main' && needs.bump-check.outputs.is-bump == 'no' && github.event.inputs.version-template == 'staging'
+    with:
+      notify-slack-channels-upon-workflow-completion: "#dsde-qa"
+      relates-to-environments: '${{ github.event.inputs.version-template }}'
     permissions:
       id-token: write
