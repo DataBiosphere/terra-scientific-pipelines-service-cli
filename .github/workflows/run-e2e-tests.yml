@@ -30,7 +30,6 @@ on:
         type: choice
         options:
           - dev
-          - alpha
           - staging
           - prod
 env:
@@ -61,6 +60,7 @@ jobs:
       wdl-method-version: '${{ steps.extract-inputs-and-generate-params.outputs.wdl-method-version }}'
       cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
       e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
+      version-template: '${{ steps.extract-inputs-and-generate-params.outputs.version-template }}'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,6 +101,11 @@ jobs:
             echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
             echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
           fi
+          if [ -z ${{ inputs.version-template }} ]; then
+            echo "version-template=dev" >> $GITHUB_OUTPUT
+          else
+            echo "version-template=${{ inputs.version-template }}" >> $GITHUB_OUTPUT
+          fi
 
   create-bee-workflow:
     runs-on: ubuntu-latest
@@ -122,7 +127,7 @@ jobs:
           bee_name: ${{ env.BEE_NAME }}
           token: '${{ env.TOKEN }}'
           custom_version_json: ${{ needs.init-github-context-and-params-gen.outputs.custom-app-version-formatted }}
-          version-template: '${{ github.event.inputs.version-template }}'
+          version-template: ${{ needs.init-github-context-and-params-gen.outputs.version-template }}
 
   run-e2e-test-job:
     needs: [ bump-check, create-bee-workflow, init-github-context-and-params-gen ]
@@ -154,20 +159,21 @@ jobs:
           inputs: '{ "bee-name": "${{ env.BEE_NAME }}" }'
 
   report-workflow:
-    needs: [ bump-check ]
+    needs: [ bump-check, init-github-context-and-params-gen ]
     uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
     if: github.ref == 'refs/heads/main' && needs.bump-check.outputs.is-bump == 'no'
     with:
       notify-slack-channels-upon-workflow-completion: "#terra-teaspoons-alerts"
+      relates-to-chart-releases: "teaspoons-${{ needs.init-github-context-and-params-gen.outputs.version-template }}"
     permissions:
       id-token: write
 
   report-workflow-against-staging-to-qa:
-    needs: [ bump-check ]
+    needs: [ bump-check, init-github-context-and-params-gen ]
     uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
     if: github.ref == 'refs/heads/main' && needs.bump-check.outputs.is-bump == 'no' && github.event.inputs.version-template == 'staging'
     with:
       notify-slack-channels-upon-workflow-completion: "#dsde-qa"
-      relates-to-environments: '${{ github.event.inputs.version-template }}'
+      relates-to-chart-releases: "teaspoons-${{ needs.init-github-context-and-params-gen.outputs.version-template }}"
     permissions:
       id-token: write
