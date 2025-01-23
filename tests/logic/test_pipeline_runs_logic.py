@@ -1,4 +1,5 @@
 # tests/logic/test_pipeline_runs_logic.py
+from datetime import datetime, timedelta
 
 import pytest
 import uuid
@@ -303,7 +304,12 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     mock_job_report = mock({"status": "SUCCEEDED"})
     test_output_name = "output1"
     test_signed_url = "signed_url"
-    mock_pipeline_run_report = mock({"outputs": {test_output_name: test_signed_url}})
+    mock_pipeline_run_report = mock(
+        {
+            "outputs": {test_output_name: test_signed_url},
+            "output_expiration_date": str(datetime.now() + timedelta(days=1)),
+        }
+    )
     mock_async_pipeline_run_response = mock(
         {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
     )
@@ -329,6 +335,34 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     verify(pipeline_runs_logic).download_files_with_signed_urls(
         test_local_destination, [test_signed_url]
     )
+
+
+def test_get_result_and_download_expired_outputs(capture_logs):
+    test_job_id = uuid.uuid4()
+    test_local_destination = "local/path"
+
+    # mock successful job status
+    mock_job_report = mock({"status": "SUCCEEDED"})
+
+    mock_pipeline_run_report = mock(
+        {
+            "outputs": {},
+            "output_expiration_date": str(datetime.now() - timedelta(days=1)),
+        }
+    )
+    mock_async_pipeline_run_response = mock(
+        {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
+    )
+
+    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
+        mock_async_pipeline_run_response
+    )
+
+    with pytest.raises(SystemExit):
+        pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
+            test_job_id, test_local_destination
+        )
+    assert f"Results for job {test_job_id} have expired" in capture_logs.text
 
 
 def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):

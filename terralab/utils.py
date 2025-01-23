@@ -228,3 +228,16 @@ def format_timestamp(timestamp_string: str) -> str:
         local_timezone
     )
     return datetime_obj.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+
+def timestamp_before_now(timestamp_string: str) -> bool:
+    """Check if a timestamp is before the current time.
+    If timestamp_str is None or empty, return False."""
+    if not timestamp_string:
+        return False
+
+    now = datetime.datetime.now(tzlocal.get_localzone())
+    datetime_obj = datetime.datetime.fromisoformat(timestamp_string).astimezone(
+        tzlocal.get_localzone()
+    )
+    return datetime_obj < now
