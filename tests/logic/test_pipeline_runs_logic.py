@@ -1,5 +1,4 @@
 # tests/logic/test_pipeline_runs_logic.py
-from datetime import datetime, timedelta
 
 import pytest
 import uuid
@@ -12,9 +11,6 @@ from teaspoons_client import (
     JobControl,
 )
 
-from terralab.logic.pipeline_runs_logic import (
-    get_result_and_download_pipeline_run_outputs,
-)
 from tests.utils_for_tests import capture_logs
 
 
@@ -307,12 +303,7 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     mock_job_report = mock({"status": "SUCCEEDED"})
     test_output_name = "output1"
     test_signed_url = "signed_url"
-    mock_pipeline_run_report = mock(
-        {
-            "outputs": {test_output_name: test_signed_url},
-            "output_expiration_date": str(datetime.now() + timedelta(days=1)),
-        }
-    )
+    mock_pipeline_run_report = mock({"outputs": {test_output_name: test_signed_url}})
     mock_async_pipeline_run_response = mock(
         {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
     )
