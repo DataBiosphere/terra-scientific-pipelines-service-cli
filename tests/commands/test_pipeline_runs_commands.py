@@ -1,19 +1,19 @@
 # tests/commands/test_pipeline_runs_commands.py
 
 import logging
-import pytest
 import uuid
+
 from click.testing import CliRunner
 from mockito import when, verify, mock
-
 from teaspoons_client import (
     AsyncPipelineRunResponse,
     JobReport,
     ErrorReport,
     PipelineRunReport,
 )
-from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
+
 from terralab.commands import pipeline_runs_commands
+from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
 from tests.utils_for_tests import capture_logs
 
 LOGGER = logging.getLogger(__name__)

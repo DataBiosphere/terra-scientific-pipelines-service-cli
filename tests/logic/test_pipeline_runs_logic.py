@@ -1,16 +1,16 @@
 # tests/logic/test_pipeline_runs_logic.py
 
-import pytest
 import uuid
-from mockito import when, mock, verify
 
-from terralab.logic import pipeline_runs_logic
+import pytest
+from mockito import when, mock, verify
 from teaspoons_client import (
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
 )
 
+from terralab.logic import pipeline_runs_logic
 from tests.utils_for_tests import capture_logs
 
 

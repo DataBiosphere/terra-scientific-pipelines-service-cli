@@ -1,24 +1,24 @@
 # commands/pipeline_runs_commands.py
 
-import click
 import logging
 import uuid
 
+import click
 from teaspoons_client import AsyncPipelineRunResponse, PipelineRun
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
+from terralab.log import (
+    indented,
+    add_blankline_before,
+    format_table_with_status,
+    format_status,
+)
 from terralab.logic import pipeline_runs_logic, pipelines_logic
 from terralab.utils import (
     handle_api_exceptions,
     process_inputs_to_dict,
     validate_job_id,
     format_timestamp,
-)
-from terralab.log import (
-    indented,
-    add_blankline_before,
-    format_table_with_status,
-    format_status,
 )
 
 LOGGER = logging.getLogger(__name__)

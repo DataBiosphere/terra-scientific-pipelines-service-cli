@@ -1,8 +1,10 @@
 # log.py
 
-import colorlog
 import logging
+
+import colorlog
 from tabulate import tabulate
+
 from terralab.constants import FAILED_KEY, SUCCEEDED_KEY, RUNNING_KEY, PREPARING_KEY
 
 

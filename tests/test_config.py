@@ -1,6 +1,7 @@
 # tests/test_config
 
 from mockito import mock, when
+
 from terralab import config
 
 

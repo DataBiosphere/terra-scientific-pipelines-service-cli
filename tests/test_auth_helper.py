@@ -2,9 +2,10 @@
 
 import builtins
 import logging
+
 import pytest
-from mockito import when, mock, verify, times
 from jwt import ExpiredSignatureError
+from mockito import when, mock, verify, times
 from oauth2_cli_auth._timeout import TimeoutException
 
 from terralab import auth_helper

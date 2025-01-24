@@ -4,20 +4,18 @@ import datetime
 import json
 import logging
 import os
-import requests
-import tzlocal
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
+
+import requests
+import tzlocal
+from teaspoons_client import ApiException
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from functools import wraps
-
-from teaspoons_client import ApiException
-
 from terralab.constants import SUPPORT_EMAIL_TEXT
 from terralab.log import add_blankline_before
-
 
 LOGGER = logging.getLogger(__name__)
 

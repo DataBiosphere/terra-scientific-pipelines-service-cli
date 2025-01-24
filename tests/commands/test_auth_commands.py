@@ -2,6 +2,7 @@
 
 from click.testing import CliRunner
 from mockito import when, verify
+
 from terralab.commands import auth_commands
 
 

@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+
 from teaspoons_client import (
     PipelineRunsApi,
     PreparePipelineRunResponse,
@@ -12,9 +13,9 @@ from teaspoons_client import (
     PipelineRun,
 )
 
-from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 from terralab.client import ClientWrapper
 from terralab.log import indented, add_blankline_before
+from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 
 LOGGER = logging.getLogger(__name__)
 

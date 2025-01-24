@@ -3,9 +3,9 @@
 import logging
 from importlib import resources as impresources
 from pathlib import Path
-from oauth2_cli_auth import OAuth2ClientInfo
-from dotenv import dotenv_values
 
+from dotenv import dotenv_values
+from oauth2_cli_auth import OAuth2ClientInfo
 
 LOGGER = logging.getLogger(__name__)
 

@@ -9,12 +9,12 @@ from teaspoons_client import (
     GetPipelineDetailsRequestBody,
 )
 
+from terralab.client import ClientWrapper
 from terralab.constants import (
     FILE_TYPE_KEY,
 )
-from terralab.client import ClientWrapper
-from terralab.utils import is_valid_local_file
 from terralab.log import join_lines, add_blankline_before
+from terralab.utils import is_valid_local_file
 
 LOGGER = logging.getLogger(__name__)
 

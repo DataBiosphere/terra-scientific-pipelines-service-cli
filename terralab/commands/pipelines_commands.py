@@ -1,11 +1,12 @@
 # commands/pipelines_commands.py
 
-import click
 import logging
 
+import click
+
+from terralab.log import pad_column, format_table
 from terralab.logic import pipelines_logic
 from terralab.utils import handle_api_exceptions
-from terralab.log import pad_column, format_table
 
 LOGGER = logging.getLogger(__name__)
 
