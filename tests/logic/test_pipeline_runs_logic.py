@@ -12,6 +12,9 @@ from teaspoons_client import (
     JobControl,
 )
 
+from terralab.logic.pipeline_runs_logic import (
+    get_result_and_download_pipeline_run_outputs,
+)
 from tests.utils_for_tests import capture_logs
 
 
@@ -337,7 +340,17 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     )
 
 
-def test_get_result_and_download_expired_outputs(capture_logs):
+get_result_and_download_pipeline_run_outputs_testdata = [
+    # value for pipeline_run_report.outputs
+    ({}),
+    (None),
+]
+
+
+@pytest.mark.parametrize(
+    "pipeline_report_outputs", get_result_and_download_pipeline_run_outputs_testdata
+)
+def test_get_result_and_download_expired_outputs(pipeline_report_outputs, capture_logs):
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
@@ -346,8 +359,7 @@ def test_get_result_and_download_expired_outputs(capture_logs):
 
     mock_pipeline_run_report = mock(
         {
-            "outputs": {},
-            "output_expiration_date": str(datetime.now() - timedelta(days=1)),
+            "outputs": pipeline_report_outputs,
         }
     )
     mock_async_pipeline_run_response = mock(

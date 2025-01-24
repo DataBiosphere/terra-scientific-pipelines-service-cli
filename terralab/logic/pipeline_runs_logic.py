@@ -12,14 +12,9 @@ from teaspoons_client import (
     PipelineRun,
 )
 
-from terralab.utils import (
-    upload_file_with_signed_url,
-    download_files_with_signed_urls,
-    timestamp_before_now,
-)
+from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 from terralab.client import ClientWrapper
-from terralab.log import indented
-
+from terralab.log import indented, add_blankline_before
 
 LOGGER = logging.getLogger(__name__)
 
@@ -157,11 +152,19 @@ def get_result_and_download_pipeline_run_outputs(
     job_status: str = result.job_report.status
     LOGGER.debug(f"Job {job_id} status is {job_status}")
     if job_status != "SUCCEEDED":
-        LOGGER.error(f"Results not available for job {job_id} with status {job_status}")
+        LOGGER.error(
+            add_blankline_before(
+                f"Results not available for job {job_id} with status {job_status}"
+            )
+        )
         exit(1)
 
-    if timestamp_before_now(result.pipeline_run_report.output_expiration_date):
-        LOGGER.error(f"Results for job {job_id} have expired")
+    if not result.pipeline_run_report.outputs:
+        LOGGER.error(
+            add_blankline_before(
+                f"Results for job {job_id} have expired. No results available."
+            )
+        )
         exit(1)
 
     # extract output signed urls and download them all

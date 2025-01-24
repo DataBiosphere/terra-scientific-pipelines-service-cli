@@ -232,19 +232,3 @@ def test_format_timestamp(timestamp, local_timezone, expected, unstub):
     assert formatted == expected
 
     unstub()
-
-
-def test_timestamp_before_now():
-    # future timestamp
-    future_timestamp = str(datetime.now() + timedelta(days=1))
-    assert not utils.timestamp_before_now(future_timestamp)
-
-    # past timestamp
-    past_timestamp = str(datetime.now() - timedelta(days=1))
-    assert utils.timestamp_before_now(past_timestamp)
-
-    # empty timestamp
-    assert not utils.timestamp_before_now("")
-
-    # None timestamp
-    assert not utils.timestamp_before_now(None)
