@@ -1,16 +1,16 @@
 # tests/logic/test_pipeline_runs_logic.py
 
-import pytest
 import uuid
-from mockito import when, mock, verify
 
-from terralab.logic import pipeline_runs_logic
+import pytest
+from mockito import when, mock, verify
 from teaspoons_client import (
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
 )
 
+from terralab.logic import pipeline_runs_logic
 from tests.utils_for_tests import capture_logs
 
 
@@ -329,6 +329,43 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
     verify(pipeline_runs_logic).download_files_with_signed_urls(
         test_local_destination, [test_signed_url]
     )
+
+
+get_result_and_download_pipeline_run_outputs_testdata = [
+    # value for pipeline_run_report.outputs
+    ({}),
+    (None),
+]
+
+
+@pytest.mark.parametrize(
+    "pipeline_report_outputs", get_result_and_download_pipeline_run_outputs_testdata
+)
+def test_get_result_and_download_expired_outputs(pipeline_report_outputs, capture_logs):
+    test_job_id = uuid.uuid4()
+    test_local_destination = "local/path"
+
+    # mock successful job status
+    mock_job_report = mock({"status": "SUCCEEDED"})
+
+    mock_pipeline_run_report = mock(
+        {
+            "outputs": pipeline_report_outputs,
+        }
+    )
+    mock_async_pipeline_run_response = mock(
+        {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
+    )
+
+    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
+        mock_async_pipeline_run_response
+    )
+
+    with pytest.raises(SystemExit):
+        pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
+            test_job_id, test_local_destination
+        )
+    assert f"Results for job {test_job_id} have expired" in capture_logs.text
 
 
 def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):

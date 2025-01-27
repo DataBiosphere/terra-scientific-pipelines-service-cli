@@ -1,16 +1,16 @@
 # tests/test_utils
 
 import os
-import pytest
 import tempfile
 import uuid
 import zoneinfo
+
+import pytest
+from mockito import mock, when
 from requests.exceptions import HTTPError
 
-from mockito import mock, when
 from terralab import utils
 from tests.utils_for_tests import capture_logs
-
 
 process_inputs_testdata = [
     # input tuple, expected_output (failure = None)

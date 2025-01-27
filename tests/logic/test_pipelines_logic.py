@@ -1,10 +1,10 @@
 # tests/logic/test_pipelines_logic.py
 
 import os
-import pytest
 import tempfile
-from mockito import when, mock, verify
 
+import pytest
+from mockito import when, mock, verify
 from teaspoons_client import ApiException, GetPipelineDetailsRequestBody
 
 from terralab.constants import (
@@ -12,10 +12,8 @@ from terralab.constants import (
     FILE_TYPE_KEY,
     INTEGER_TYPE_KEY,
     STRING_ARRAY_TYPE_KEY,
-    FILE_ARRAY_TYPE_KEY,
 )
 from terralab.logic import pipelines_logic
-
 from tests.utils_for_tests import capture_logs
 
 

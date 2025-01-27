@@ -1,16 +1,14 @@
 # auth_helper.py
 
-import jwt
+import base64
 import logging
 import os
-import webbrowser
 import typing as t
-
-import base64
 import urllib
-
+import webbrowser
 from collections.abc import Callable
 
+import jwt
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
     OAuthCallbackHttpServer,
@@ -19,7 +17,6 @@ from oauth2_cli_auth import (
 from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
-
 
 LOGGER = logging.getLogger(__name__)
 

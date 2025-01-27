@@ -3,9 +3,9 @@
 import logging
 
 from teaspoons_client import Configuration, ApiClient
-from terralab.config import CliConfig
-from terralab.auth_helper import get_or_refresh_access_token
 
+from terralab.auth_helper import get_or_refresh_access_token
+from terralab.config import CliConfig
 
 LOGGER = logging.getLogger(__name__)
 

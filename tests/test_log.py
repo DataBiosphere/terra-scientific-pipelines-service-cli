@@ -1,7 +1,7 @@
 # tests/test_log.py
 
-from math import ceil
 import pytest
+
 from terralab import log
 
 

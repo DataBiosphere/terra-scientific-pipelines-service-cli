@@ -1,17 +1,13 @@
 # cli.py
 
-import click
 import collections
 import logging
 from typing import Optional, Mapping
 
+import click
+
 from terralab import __version__, log
 from terralab.commands.auth_commands import logout, login_with_oauth
-from terralab.commands.pipelines_commands import (
-    pipelines,
-    list as list_pipelines,
-    details as details_pipelines,
-)
 from terralab.commands.pipeline_runs_commands import (
     submit,
     download,
@@ -19,8 +15,12 @@ from terralab.commands.pipeline_runs_commands import (
     details as details_jobs,
     list as list_jobs,
 )
+from terralab.commands.pipelines_commands import (
+    pipelines,
+    list as list_pipelines,
+    details as details_pipelines,
+)
 from terralab.commands.quotas_commands import quota
-
 
 # Context settings for commands, for overwriting some click defaults
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
