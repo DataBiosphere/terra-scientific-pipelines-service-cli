@@ -130,3 +130,10 @@ jobs:
           author_name: "bump-build-publish-cli workflow"
           icon_emoji: ":triangular_ruler:"
           fields: job, commit
+
+  # Run e2e tests
+  python-client-job:
+    needs: [ tag-job ]
+    uses: ./.github/workflows/run-e2e-tests.yml
+    with:
+      cli-version-ref: ${{ needs.tag-job.outputs.checkout-ref }}
