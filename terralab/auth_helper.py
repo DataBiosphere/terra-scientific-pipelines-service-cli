@@ -218,7 +218,8 @@ def _save_local_token(token_file: str, token: str):
 
     descriptor = os.open(
         token_file,
-        os.O_WRONLY | os.O_CREAT, 0o600
+        os.O_WRONLY | os.O_CREAT, 
+        0o600  # equivalent of chmod 600, i.e. no access for anyone besides current user
     )
     with os.fdopen(descriptor, "w") as f:
         f.write(token)
