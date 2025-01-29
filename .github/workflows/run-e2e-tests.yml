@@ -1,10 +1,11 @@
 name: Run Terralab CLI e2e tests with BEE using GCP workspace
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '*.md'
+  workflow_call:
+    inputs:
+      cli-version-ref:
+        description: 'Branch or semantic version (git tag) of CLI repo to use.'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       custom-app-version:
