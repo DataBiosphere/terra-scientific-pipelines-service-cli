@@ -215,5 +215,10 @@ def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]
 def _save_local_token(token_file: str, token: str):
     # Create the containing directory if it doesn't exist
     os.makedirs(os.path.dirname(token_file), exist_ok=True)
-    with open(token_file, "w") as f:
+
+    descriptor = os.open(
+        token_file,
+        os.O_WRONLY | os.O_CREAT, 0o600
+    )
+    with os.fdopen(descriptor, "w") as f:
         f.write(token)
