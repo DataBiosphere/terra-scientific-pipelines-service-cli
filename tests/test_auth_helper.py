@@ -2,6 +2,7 @@
 
 import builtins
 import logging
+import os
 
 import pytest
 from jwt import ExpiredSignatureError
@@ -528,10 +529,12 @@ def test_save_local_token(mock_builtin_open, unstub):
     mock_access_token_file = mock()
     mock_token = mock()
     mock_dirname = mock()
+    mock_descriptor = mock()
 
     when(auth_helper.os.path).dirname(mock_access_token_file).thenReturn(mock_dirname)
     when(auth_helper.os).makedirs(mock_dirname, exist_ok=True).thenReturn(None)
-    when(mock_builtin_open).write().thenReturn(None)
+    when(auth_helper.os).open(mock_access_token_file, os.O_WRONLY | os.O_CREAT, 0o600).thenReturn(mock_descriptor)
+    when(auth_helper.os).write().thenReturn(None)
 
     auth_helper._save_local_token(mock_access_token_file, mock_token)
 
