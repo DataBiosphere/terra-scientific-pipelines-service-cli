@@ -135,7 +135,7 @@ jobs:
   # Run e2e tests
   run-cli-e2e-tests:
     name: Run e2e tests on newly published Python client
-    needs: [ tag-job ]
+    # needs: [ tag-job ]
     uses: ./.github/workflows/run-e2e-tests.yml
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
