@@ -5,9 +5,9 @@ on:
     branches:
       - main
       - TSPS-425_e2e_test_correct_tag_fix
-    paths-ignore:
-      - '*.md'
-      - '.github/**'
+    # paths-ignore:
+    #   - '*.md'
+    #   - '.github/**'
   workflow_dispatch:
     inputs:
       bump:
