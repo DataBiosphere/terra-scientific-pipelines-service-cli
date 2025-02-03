@@ -534,7 +534,13 @@ def test_save_local_token(mock_builtin_open, unstub):
     when(auth_helper.os.path).dirname(mock_access_token_file).thenReturn(mock_dirname)
     when(auth_helper.os).makedirs(mock_dirname, exist_ok=True).thenReturn(None)
     when(auth_helper.os).open(mock_access_token_file, os.O_WRONLY | os.O_CREAT, 0o600).thenReturn(mock_descriptor)
-    when(auth_helper.os).write().thenReturn(None)
+    
+    mock_fdopen = mock()
+    when(mock_fdopen).__enter__().thenReturn(mock_fdopen)
+    when(mock_fdopen).__exit__(None, None, None).thenReturn(None)
+    when(auth_helper.os).fdopen(mock_descriptor, "w").thenReturn(mock_fdopen)
+
+    when(mock_fdopen).write().thenReturn(None)
 
     auth_helper._save_local_token(mock_access_token_file, mock_token)
 
