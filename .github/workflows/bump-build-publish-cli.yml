@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - TSPS-425_e2e_test_correct_tag_fix
     paths-ignore:
       - '*.md'
       - '.github/**'
@@ -24,112 +25,112 @@ on:
         default: 'main'
 
 jobs:
-  bump-check:
-    runs-on: ubuntu-latest
-    outputs:
-      is-bump: ${{ steps.skiptest.outputs.is-bump }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Skip version bump merges
-        id: skiptest
-        uses: ./.github/actions/bump-skip
-        with:
-          event-name: ${{ github.event_name }}
+  # bump-check:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     is-bump: ${{ steps.skiptest.outputs.is-bump }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Skip version bump merges
+  #       id: skiptest
+  #       uses: ./.github/actions/bump-skip
+  #       with:
+  #         event-name: ${{ github.event_name }}
 
-  tag-job:
-    needs: [ bump-check ]
-    runs-on: ubuntu-latest
-    if: needs.bump-check.outputs.is-bump == 'no'
-    outputs:
-      tag: ${{ steps.tag.outputs.new_tag }}
-    steps:
-      - name: Set part of semantic version to bump
-        id: controls
-        run: |
-          SEMVER_PART=""
-          CHECKOUT_BRANCH="$GITHUB_REF"
-          if ${{github.event_name == 'push' }}; then
-            SEMVER_PART="patch"
-          elif ${{github.event_name == 'workflow_dispatch' }}; then
-            SEMVER_PART=${{ github.event.inputs.bump }}
-            CHECKOUT_BRANCH=${{ github.event.inputs.branch }}
-          fi
-          echo ::set-output name=semver-part::$SEMVER_PART
-          echo ::set-output name=checkout-branch::$CHECKOUT_BRANCH
+  # tag-job:
+  #   needs: [ bump-check ]
+  #   runs-on: ubuntu-latest
+  #   if: needs.bump-check.outputs.is-bump == 'no'
+  #   outputs:
+  #     tag: ${{ steps.tag.outputs.new_tag }}
+  #   steps:
+  #     - name: Set part of semantic version to bump
+  #       id: controls
+  #       run: |
+  #         SEMVER_PART=""
+  #         CHECKOUT_BRANCH="$GITHUB_REF"
+  #         if ${{github.event_name == 'push' }}; then
+  #           SEMVER_PART="patch"
+  #         elif ${{github.event_name == 'workflow_dispatch' }}; then
+  #           SEMVER_PART=${{ github.event.inputs.bump }}
+  #           CHECKOUT_BRANCH=${{ github.event.inputs.branch }}
+  #         fi
+  #         echo ::set-output name=semver-part::$SEMVER_PART
+  #         echo ::set-output name=checkout-branch::$CHECKOUT_BRANCH
 
-      - name: Checkout current code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ steps.controls.outputs.checkout-branch }}
-          token: ${{ secrets.BROADBOT_TOKEN }}
+  #     - name: Checkout current code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         ref: ${{ steps.controls.outputs.checkout-branch }}
+  #         token: ${{ secrets.BROADBOT_TOKEN }}
 
-      - name: Bump the tag to a new version
-        # https://github.com/DataBiosphere/github-actions/tree/master/actions/bumper
-        uses: databiosphere/github-actions/actions/bumper@bumper-0.4.0
-        id: tag
-        env:
-          DEFAULT_BUMP: patch
-          GITHUB_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
-          HOTFIX_BRANCHES: hotfix.*
-          OVERRIDE_BUMP: ${{ steps.controls.outputs.semver-part }}
-          RELEASE_BRANCHES: main
-          VERSION_FILE_PATH: pyproject.toml
-          VERSION_LINE_MATCH: "^version\\s*=\\s*\".*\""
+  #     - name: Bump the tag to a new version
+  #       # https://github.com/DataBiosphere/github-actions/tree/master/actions/bumper
+  #       uses: databiosphere/github-actions/actions/bumper@bumper-0.4.0
+  #       id: tag
+  #       env:
+  #         DEFAULT_BUMP: patch
+  #         GITHUB_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
+  #         HOTFIX_BRANCHES: hotfix.*
+  #         OVERRIDE_BUMP: ${{ steps.controls.outputs.semver-part }}
+  #         RELEASE_BRANCHES: main
+  #         VERSION_FILE_PATH: pyproject.toml
+  #         VERSION_LINE_MATCH: "^version\\s*=\\s*\".*\""
 
-  build-and-publish:
-    name: Build and publish Python client to PyPI
-    needs: [ bump-check, tag-job ]
-    if: needs.bump-check.outputs.is-bump == 'no'
-    runs-on: ubuntu-latest
-    permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing (OIDC)
-      # https://docs.pypi.org/trusted-publishers/using-a-publisher/
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.tag-job.outputs.tag }}
+  # build-and-publish:
+  #   name: Build and publish Python client to PyPI
+  #   needs: [ bump-check, tag-job ]
+  #   if: needs.bump-check.outputs.is-bump == 'no'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     # IMPORTANT: this permission is mandatory for trusted publishing (OIDC)
+  #     # https://docs.pypi.org/trusted-publishers/using-a-publisher/
+  #     id-token: write
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ needs.tag-job.outputs.tag }}
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
+  #     - name: Set up Python 3.12
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.12
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+  #     - name: Install Poetry
+  #       uses: snok/install-poetry@v1
 
-      - name: Report current terralab-cli version
-        run: |
-          poetry version
+  #     - name: Report current terralab-cli version
+  #       run: |
+  #         poetry version
 
-      - name: Build the CLI using poetry
-        run: |
-          poetry build
+  #     - name: Build the CLI using poetry
+  #       run: |
+  #         poetry build
       
-      - name: Publish the CLI to PyPi
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
+  #     - name: Publish the CLI to PyPi
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         packages-dir: dist/
 
-  notify-slack:
-    needs: [ bump-check, tag-job, build-and-publish ]
-    runs-on: ubuntu-latest
-    if: failure() && needs.bump-check.outputs.is-bump == 'no'
+  # notify-slack:
+  #   needs: [ bump-check, tag-job, build-and-publish ]
+  #   runs-on: ubuntu-latest
+  #   if: failure() && needs.bump-check.outputs.is-bump == 'no'
 
-    steps:
-      - name: Notify Teaspoons Slack on Failure
-        uses: broadinstitute/action-slack@v3.8.0
-        # see https://github.com/broadinstitute/action-slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        with:
-          status: failure
-          channel: "#terra-tsps-alerts"
-          username: "Bump, Build, and Publish Terralab CLI"
-          author_name: "bump-build-publish-cli workflow"
-          icon_emoji: ":triangular_ruler:"
-          fields: job, commit
+  #   steps:
+  #     - name: Notify Teaspoons Slack on Failure
+  #       uses: broadinstitute/action-slack@v3.8.0
+  #       # see https://github.com/broadinstitute/action-slack
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  #       with:
+  #         status: failure
+  #         channel: "#terra-tsps-alerts"
+  #         username: "Bump, Build, and Publish Terralab CLI"
+  #         author_name: "bump-build-publish-cli workflow"
+  #         icon_emoji: ":triangular_ruler:"
+  #         fields: job, commit
 
   # Run e2e tests
   run-cli-e2e-tests:
@@ -139,4 +140,4 @@ jobs:
     secrets:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
     with:
-      cli-version-ref: ${{ needs.tag-job.outputs.checkout-ref }}
+      cli-version-ref: '0.0.25' # ${{ needs.tag-job.outputs.checkout-ref }}
