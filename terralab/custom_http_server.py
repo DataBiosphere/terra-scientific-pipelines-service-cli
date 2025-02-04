@@ -16,7 +16,7 @@ class CustomOAuthRedirectHandler(OAuthRedirectHandler):
     Customized for terralab to receive and parse a POST request from the redirect.
     """
 
-    def do_GET(self) -> None:
+    def do_GET(self):
         """For security reasons, we don't ever want to process a GET request."""
         return NotImplementedError("GET request not supported for authentication flow.")
 
