@@ -23,6 +23,12 @@ class CliConfig:
             exit(1)
         LOGGER.debug(f"Imported config with values: {self.config}")
 
+        self.client_id = self.config["OAUTH_CLIENT_ID"]
+        self.openid_config_uri = self.config["OAUTH_OPENID_CONFIGURATION_URI"]
+        self.scopes = [
+            f"offline_access+email+profile+{self.client_id}"
+        ]  # including the offline_access scope is how we request a refresh token
+
         self.client_info = OAuth2ClientInfo.from_oidc_endpoint(
             self.config["OAUTH_OPENID_CONFIGURATION_URI"],
             client_id=self.config["OAUTH_CLIENT_ID"],
