@@ -18,7 +18,7 @@ class CustomOAuthRedirectHandler(OAuthRedirectHandler):
 
     def do_GET(self) -> None:
         """For security reasons, we don't ever want to process a GET request."""
-        raise NotImplemented("GET request not supported for authentication flow.")
+        return NotImplementedError("GET request not supported for authentication flow.")
 
     def do_POST(self) -> None:
         ctype = self.headers.get("Content-Type")

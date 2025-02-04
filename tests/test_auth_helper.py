@@ -180,9 +180,9 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
         "refresh_token": expected_refresh_token,
     }
 
-    when(auth_helper).CustomOAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
-        mock_callback_server
-    )
+    when(auth_helper).CustomOAuthCallbackHttpServer(
+        mock_cli_config.server_port
+    ).thenReturn(mock_callback_server)
     when(auth_helper).get_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
@@ -203,9 +203,9 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
 def test_get_access_token_with_browser_open_no_code(mock_cli_config, unstub):
     mock_callback_server = mock()
 
-    when(auth_helper).CustomOAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
-        mock_callback_server
-    )
+    when(auth_helper).CustomOAuthCallbackHttpServer(
+        mock_cli_config.server_port
+    ).thenReturn(mock_callback_server)
     when(auth_helper).get_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(None)
@@ -243,9 +243,9 @@ def test_refresh_tokens(mock_cli_config, unstub):
     mock_callback_url = mock()
     mock_callback_server = mock({"callback_url": mock_callback_url})
 
-    when(auth_helper).CustomOAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
-        mock_callback_server
-    )
+    when(auth_helper).CustomOAuthCallbackHttpServer(
+        mock_cli_config.server_port
+    ).thenReturn(mock_callback_server)
     when(auth_helper)._exchange_code_for_response(
         "mock_client_info",
         mock_callback_url,

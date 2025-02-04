@@ -9,7 +9,6 @@ import webbrowser
 from collections.abc import Callable
 
 import jwt
-from terralab.custom_http_server import CustomOAuthCallbackHttpServer
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
     get_auth_url,
@@ -17,6 +16,7 @@ from oauth2_cli_auth import (
 from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
+from terralab.custom_http_server import CustomOAuthCallbackHttpServer
 
 LOGGER = logging.getLogger(__name__)
 
