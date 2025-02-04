@@ -1,6 +1,9 @@
 name: Run Terralab CLI e2e tests with BEE using GCP workspace
 on:
   workflow_call:
+    secrets: 
+      BROADBOT_TOKEN:
+        required: true
     inputs:
       cli-version-ref:
         description: 'Branch or semantic version (git tag) of CLI repo to use.'
@@ -33,10 +36,11 @@ on:
           - dev
           - staging
           - prod
+
 env:
   BEE_NAME: 'teaspoons-cli-${{ github.run_id }}-${{ github.run_attempt}}-dev'
-  TOKEN: '${{ secrets.BROADBOT_TOKEN }}'
   RUN_NAME_SUFFIX: ${{ github.event.repository.name }}-${{ github.run_id }}-${{github.run_attempt }}
+
 jobs:
   bump-check:
     runs-on: ubuntu-latest
@@ -125,7 +129,7 @@ jobs:
         with:
           run_name: "bee-create-${{ env.BEE_NAME }}"
           bee_name: ${{ env.BEE_NAME }}
-          token: '${{ env.TOKEN }}'
+          token: '${{ secrets.BROADBOT_TOKEN }}'
           custom_version_json: ${{ needs.init-github-context-and-params-gen.outputs.custom-app-version-formatted }}
           version-template: ${{ needs.init-github-context-and-params-gen.outputs.version-template }}
 
@@ -155,7 +159,7 @@ jobs:
           repo: broadinstitute/terra-github-workflows
           ref: refs/heads/main
           wait-for-completion: false
-          token: '${{ env.TOKEN }}'
+          token: '${{ secrets.BROADBOT_TOKEN }}'
           inputs: '{ "bee-name": "${{ env.BEE_NAME }}" }'
 
   report-workflow:
