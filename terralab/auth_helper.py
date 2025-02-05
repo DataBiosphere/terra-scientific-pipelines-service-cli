@@ -11,12 +11,12 @@ from collections.abc import Callable
 import jwt
 from oauth2_cli_auth import (
     OAuth2ClientInfo,
-    OAuthCallbackHttpServer,
     get_auth_url,
 )
 from oauth2_cli_auth._urllib_util import _load_json
 
 from terralab.config import CliConfig
+from terralab.custom_http_server import CustomOAuthCallbackHttpServer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,11 +80,11 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     :param cli_config: Configuration object containing environment specific values
     :return: Access Token and Refresh Token
     """
-    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    callback_server = CustomOAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, callback_server.callback_url)
-    _open_browser(f"{auth_url}&prompt=login", LOGGER.info)
+    _open_browser(f"{auth_url}&response_mode=form_post&prompt=login", LOGGER.info)
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError("No code could be obtained from browser callback page")
@@ -114,7 +114,7 @@ def _open_browser(
 
 
 def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]:
-    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
+    callback_server = CustomOAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
     response_dict = _exchange_code_for_response(
