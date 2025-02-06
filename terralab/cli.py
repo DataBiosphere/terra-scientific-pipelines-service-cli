@@ -54,6 +54,11 @@ class OrderedGroup(click.Group):
     help="DEBUG-level logging",
 )
 def cli(debug):
+    """To submit a job, run `terralab submit PIPELINE_NAME [INPUTS] --description DESCRIPTION`
+
+    For more information about the required inputs for a pipeline, run `terralab pipelines details PIPELINE_NAME`
+
+    To list available pipelines, run `terralab pipelines list`"""
     log.configure_logging(debug)
     LOGGER.debug(
         "Log level set to: %s", logging.getLevelName(logging.getLogger().level)
