@@ -1,6 +1,16 @@
 repos:
 - repo: local
   hooks:
+    - id: mypy
+      name: mypy
+      entry: "./tools/run-mypy"
+      language: system
+      # trigger for commits changing Python files
+      types: [python]
+      # use require_serial so that script
+      # is only called once per commit
+      require_serial: true
+      # print the number of files as a sanity-check
     - id: ruff
       name: ruff
       entry: "./tools/run-ruff"

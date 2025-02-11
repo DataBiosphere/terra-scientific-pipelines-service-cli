@@ -2,7 +2,8 @@
 
 import logging
 
-from teaspoons_client import QuotasApi, QuotaWithDetails
+from teaspoons_client.api.quotas_api import QuotasApi
+from teaspoons_client.models.quota_with_details import QuotaWithDetails
 
 from terralab.client import ClientWrapper
 

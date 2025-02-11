@@ -2,15 +2,16 @@
 
 import logging
 import uuid
+from typing import Any
 
-from teaspoons_client import (
-    PipelineRunsApi,
-    PreparePipelineRunResponse,
-    PreparePipelineRunRequestBody,
-    StartPipelineRunRequestBody,
-    JobControl,
+from teaspoons_client import (  # type: ignore[attr-defined]
     AsyncPipelineRunResponse,
+    JobControl,
     PipelineRun,
+    PipelineRunsApi,
+    PreparePipelineRunRequestBody,
+    PreparePipelineRunResponse,
+    StartPipelineRunRequestBody,
 )
 
 from terralab.client import ClientWrapper
@@ -28,15 +29,15 @@ def prepare_pipeline_run(
     pipeline_name: str,
     job_id: str,
     pipeline_version: int,
-    pipeline_inputs: dict,
+    pipeline_inputs: dict[str, Any],
     description: str,
-) -> dict:
+) -> dict[str, str]:
     """Call the preparePipelineRun Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url}."""
     prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
         PreparePipelineRunRequestBody(
             jobId=job_id,
-            pipeline_name=pipeline_name,
+            pipelineName=pipeline_name,
             pipelineVersion=pipeline_version,
             pipelineInputs=pipeline_inputs,
             description=description,
@@ -50,10 +51,14 @@ def prepare_pipeline_run(
         )
 
         result = response.file_input_upload_urls
-        return {
-            input_name: signed_url_dict.get(SIGNED_URL_KEY)
-            for input_name, signed_url_dict in result.items()
-        }
+        if result:
+            return {
+                input_name: signed_url_dict[SIGNED_URL_KEY]
+                for input_name, signed_url_dict in result.items()
+            }
+        else:
+            LOGGER.error("Error preparing pipeline run.")
+            exit(1)
 
 
 def start_pipeline_run(job_id: str) -> uuid.UUID:
@@ -63,9 +68,11 @@ def start_pipeline_run(job_id: str) -> uuid.UUID:
     )
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.start_pipeline_run(
-            start_pipeline_run_request_body
-        ).job_report.id
+        return uuid.UUID(
+            pipeline_runs_client.start_pipeline_run(
+                start_pipeline_run_request_body
+            ).job_report.id
+        )
 
 
 def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponse:
@@ -89,8 +96,8 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
         response = pipeline_runs_client.get_all_pipeline_runs(
             limit=min(api_chunk_default, n_results_requested), page_token=None
         )
-        LOGGER.debug(f"Retrieved {len(response.results)} PipelineRun results")
-        results = response.results
+        results = list(response.results) if response.results else []
+        LOGGER.debug(f"Retrieved {len(results)} PipelineRun results")
         page_token = response.page_token
 
         while len(results) < n_results_requested and page_token:
@@ -98,9 +105,10 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
                 limit=min(api_chunk_default, n_results_requested - len(results)),
                 page_token=page_token,
             )
-            results.extend(response.results)
+            new_results = list(response.results) if response.results else []
+            results.extend(new_results)
             LOGGER.debug(
-                f"Retrieved {len(response.results)} PipelineRun more results, totaling {len(results)}"
+                f"Retrieved {len(new_results)} PipelineRun more results, totaling {len(results)}"
             )
             page_token = response.page_token
             if not (page_token):
@@ -113,7 +121,10 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
 
 
 def prepare_upload_start_pipeline_run(
-    pipeline_name: str, pipeline_version: int, pipeline_inputs: dict, description: str
+    pipeline_name: str,
+    pipeline_version: int,
+    pipeline_inputs: dict[str, Any],
+    description: str,
 ) -> uuid.UUID:
     """Prepare pipeline run, upload input files, and start pipeline run.
     Returns the uuid of the job."""
@@ -121,7 +132,7 @@ def prepare_upload_start_pipeline_run(
     job_id = str(uuid.uuid4())
     LOGGER.info(f"Generated job_id {job_id}")
 
-    file_input_upload_urls: dict = prepare_pipeline_run(
+    file_input_upload_urls: dict[str, str] = prepare_pipeline_run(
         pipeline_name, job_id, pipeline_version, pipeline_inputs, description
     )
 
@@ -144,7 +155,7 @@ def prepare_upload_start_pipeline_run(
 
 def get_result_and_download_pipeline_run_outputs(
     job_id: uuid.UUID, local_destination: str
-):
+) -> None:
     """Retrieve pipeline run result, download all output files."""
     LOGGER.info(
         f"Getting results for job {job_id} and downloading to {local_destination}"

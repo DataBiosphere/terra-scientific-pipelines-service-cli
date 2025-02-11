@@ -4,7 +4,8 @@ import logging
 import uuid
 
 import click
-from teaspoons_client import AsyncPipelineRunResponse, PipelineRun
+from teaspoons_client.models.async_pipeline_run_response import AsyncPipelineRunResponse
+from teaspoons_client.models.pipeline_run import PipelineRun
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
 from terralab.log import (
@@ -37,7 +38,9 @@ LOGGER = logging.getLogger(__name__)
 )
 @click.argument("inputs", nargs=-1, type=click.UNPROCESSED)
 @handle_api_exceptions
-def submit(pipeline_name: str, version: int, inputs: str, description: str):
+def submit(
+    pipeline_name: str, version: int, inputs: tuple[str, ...], description: str
+) -> None:
     """Submit a job for a PIPELINE_NAME pipeline
 
     To see the required inputs for a given pipeline, use the `terralab pipelines details` command.
@@ -65,7 +68,7 @@ def submit(pipeline_name: str, version: int, inputs: str, description: str):
     help="optional location to download results to. defaults to the current directory.",
 )
 @handle_api_exceptions
-def download(job_id: str, local_destination: str):
+def download(job_id: str, local_destination: str) -> None:
     """Download all output files from a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
@@ -78,14 +81,14 @@ def download(job_id: str, local_destination: str):
 
 
 @click.group()
-def jobs():
+def jobs() -> None:
     """Get information about your jobs"""
 
 
 @jobs.command(short_help="Get the status and details of a job")
 @click.argument("job_id", type=str)
 @handle_api_exceptions
-def details(job_id: str):
+def details(job_id: str) -> None:
     """Get the status and details of a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
@@ -126,7 +129,7 @@ def details(job_id: str):
     LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
-@jobs.command(short_help="List your jobs")
+@jobs.command(name="list", short_help="List your jobs")
 @click.option(
     "--num_results",
     type=int,
@@ -134,7 +137,7 @@ def details(job_id: str):
     help="Number of results to display. Defaults to 10.",
 )
 @handle_api_exceptions
-def list(num_results: int):
+def list_command(num_results: int) -> None:
     results: list[PipelineRun] = pipeline_runs_logic.get_pipeline_runs(num_results)
     if results:
         # create list of list of strings; first list is headers
@@ -156,7 +159,7 @@ def list(num_results: int):
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
-                    pipeline_run.description,
+                    pipeline_run.description or "",
                 ]
             )
 

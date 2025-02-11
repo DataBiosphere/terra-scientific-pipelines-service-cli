@@ -12,13 +12,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 @click.group()
-def pipelines():
+def pipelines() -> None:
     """Get information about available pipelines"""
 
 
-@pipelines.command()
+@pipelines.command(name="list")
 @handle_api_exceptions
-def list():
+def list_command() -> None:
     """List all available pipelines"""
     pipelines_list = pipelines_logic.list_pipelines()
     LOGGER.info(
@@ -28,7 +28,11 @@ def list():
     pipelines_list_rows = [["Name", "Version", "Description"]]
     for pipeline in pipelines_list:
         pipelines_list_rows.append(
-            [pipeline.pipeline_name, pipeline.pipeline_version, pipeline.description]
+            [
+                pipeline.pipeline_name,
+                str(pipeline.pipeline_version),
+                pipeline.description,
+            ]
         )
 
     LOGGER.info(format_table(pipelines_list_rows))
@@ -38,7 +42,7 @@ def list():
 @click.argument("pipeline_name")
 @click.option("--version", type=int, help="pipeline version, defaults to latest")
 @handle_api_exceptions
-def details(pipeline_name: str, version: int):
+def details(pipeline_name: str, version: int) -> None:
     """Get information about the PIPELINE_NAME pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name, version)
 
