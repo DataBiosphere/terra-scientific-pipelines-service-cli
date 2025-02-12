@@ -14,7 +14,6 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 from terralab.client import ClientWrapper
 from terralab.constants import (
     FILE_TYPE_KEY,
-    SUPPORT_EMAIL,
 )
 from terralab.log import join_lines, add_blankline_before
 from terralab.utils import is_valid_local_file
@@ -28,17 +27,7 @@ def list_pipelines() -> list[Pipeline]:
         pipeline_client = PipelinesApi(api_client=api_client)
         pipelines = pipeline_client.get_pipelines()
 
-        result = []
-        if pipelines.results:
-            for pipeline in pipelines.results:
-                result.append(pipeline)
-        else:
-            LOGGER.error(
-                f"No pipelines found. Please contact support at {SUPPORT_EMAIL}."
-            )
-            exit(1)
-
-        return result
+        return [pipeline for pipeline in pipelines.results]
 
 
 def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:

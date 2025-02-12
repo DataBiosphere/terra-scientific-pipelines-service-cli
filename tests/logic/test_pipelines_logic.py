@@ -64,13 +64,6 @@ def test_list_pipelines(mock_pipelines_api):
     assert result[0].description == "Test Description"
 
 
-def test_list_pipelines_empty_result(mock_pipelines_api):
-    when(mock_pipelines_api).get_pipelines().thenReturn(mock({"results": []}))
-
-    with pytest.raises(SystemExit):
-        pipelines_logic.list_pipelines()
-
-
 def test_get_pipeline_info(mock_pipelines_api):
     mock_pipeline = mock(
         {

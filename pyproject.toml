@@ -14,11 +14,11 @@ terralab = "terralab.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-terra-scientific-pipelines-service-api-client = "0.1.29"
+terra-scientific-pipelines-service-api-client = "0.1.36"
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 colorlog = "^6.9.0"
-oauth2-cli-auth = "1.5.0"
+oauth2-cli-auth = "^1.5.0"
 PyJWT = "^2.9.0"
 requests = "^2.32.3"
 tqdm = "^4.67.0"

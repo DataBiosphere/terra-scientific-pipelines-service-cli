@@ -51,28 +51,23 @@ def prepare_pipeline_run(
         )
 
         result = response.file_input_upload_urls
-        if result:
-            return {
-                input_name: signed_url_dict[SIGNED_URL_KEY]
-                for input_name, signed_url_dict in result.items()
-            }
-        else:
-            LOGGER.error("Error preparing pipeline run.")
-            exit(1)
+
+        return {
+            input_name: signed_url_dict[SIGNED_URL_KEY]
+            for input_name, signed_url_dict in result.items()
+        }
 
 
-def start_pipeline_run(job_id: str) -> uuid.UUID:
+def start_pipeline_run(job_id: str) -> str:
     """Call the startPipelineRun Teaspoons endpoint and return the Async Job Response."""
     start_pipeline_run_request_body: StartPipelineRunRequestBody = (
         StartPipelineRunRequestBody(jobControl=JobControl(id=job_id))
     )
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return uuid.UUID(
-            pipeline_runs_client.start_pipeline_run(
-                start_pipeline_run_request_body
-            ).job_report.id
-        )
+        return pipeline_runs_client.start_pipeline_run(
+            start_pipeline_run_request_body
+        ).job_report.id
 
 
 def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponse:
@@ -125,7 +120,7 @@ def prepare_upload_start_pipeline_run(
     pipeline_version: int,
     pipeline_inputs: dict[str, Any],
     description: str,
-) -> uuid.UUID:
+) -> str:
     """Prepare pipeline run, upload input files, and start pipeline run.
     Returns the uuid of the job."""
     # generate a job id for the user
