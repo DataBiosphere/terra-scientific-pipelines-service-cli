@@ -154,3 +154,32 @@ def test_get_info_api_exception(capture_logs, unstub):
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
     unstub()
+
+
+def test_get_info_api_exception_no_body(capture_logs, unstub):
+    runner = CliRunner()
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        "bad_pipeline_name", None
+    ).thenRaise(
+        ApiException(
+            status=400,
+            reason="Error Reason",
+        )
+    )
+
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["details", "bad_pipeline_name"]
+    )
+
+    assert result.exit_code != 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(
+        "bad_pipeline_name", None
+    )
+    assert (
+        "API call failed with status code 400 (Error Reason): [no message body]"
+        in capture_logs.text
+    )
+    assert SUPPORT_EMAIL_TEXT in capture_logs.text
+
+    unstub()

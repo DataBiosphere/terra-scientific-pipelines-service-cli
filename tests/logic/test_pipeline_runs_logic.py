@@ -85,6 +85,45 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     )
 
 
+def test_prepare_pipeline_run_empty_response(mock_pipeline_runs_api, capture_logs):
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_pipeline_version = 1
+    test_pipeline_inputs = {}
+    test_description = "i am a description"
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+        jobId=test_job_id,
+        pipelineName=test_pipeline_name,
+        pipelineVersion=test_pipeline_version,
+        pipelineInputs=test_pipeline_inputs,
+        description=test_description,
+    )
+
+    mock_pipeline_run_response = mock(
+        {
+            "job_id": test_job_id,
+            "file_input_upload_urls": None,
+        }
+    )
+    when(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_prepare_pipeline_run_request_body
+    ).thenReturn(mock_pipeline_run_response)
+
+    with pytest.raises(SystemExit):
+        pipeline_runs_logic.prepare_pipeline_run(
+            test_pipeline_name,
+            test_job_id,
+            test_pipeline_version,
+            test_pipeline_inputs,
+            test_description,
+        )
+
+    verify(mock_pipeline_runs_api).prepare_pipeline_run(
+        test_prepare_pipeline_run_request_body
+    )
+    assert "Error preparing pipeline run." in capture_logs.text
+
+
 def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"

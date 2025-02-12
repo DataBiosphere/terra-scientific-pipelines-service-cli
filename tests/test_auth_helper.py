@@ -55,7 +55,7 @@ def test_get_or_refresh_access_token_valid_oauth(mock_cli_config, unstub):
     unstub()
 
 
-def test_get_or_refresh_access_token_valid_refresh(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_valid_access(mock_cli_config, unstub):
     test_access_token = "access token"
     test_refresh_token = "refresh token"
 

@@ -35,10 +35,10 @@ def load_config(
         exit(1)
     LOGGER.debug(f"Imported config with values: {config}")
 
-    if config["SERVER_PORT"] is None:
+    if (server_port := config.get("SERVER_PORT")) is None:
         raise RuntimeError("Expected config value for server port not found")
 
-    if config["TEASPOONS_API_URL"] is None:
+    if (teaspoons_api_url := config.get("TEASPOONS_API_URL")) is None:
         raise RuntimeError("Expected config value for API URL not found")
 
     return CliConfig(
@@ -48,8 +48,8 @@ def load_config(
             # including the offline_access scope is how we request a refresh token
             scopes=[f"offline_access+email+profile+{config['OAUTH_CLIENT_ID']}"],
         ),
-        teaspoons_api_url=config["TEASPOONS_API_URL"],
-        server_port=int(config["SERVER_PORT"]),
+        teaspoons_api_url=teaspoons_api_url,
+        server_port=int(server_port),
         access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/access_token',
         refresh_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/refresh_token',
         oauth_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_token',
