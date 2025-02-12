@@ -11,7 +11,7 @@ from typing import Any
 
 import requests
 import tzlocal
-from teaspoons_client.exceptions import ApiException
+from teaspoons_client import ApiException  # type: ignore[attr-defined]
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 

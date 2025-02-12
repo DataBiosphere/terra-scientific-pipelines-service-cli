@@ -49,6 +49,7 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     existing_refresh_token = _load_local_token(
         cli_config.refresh_token_file, validate=False
     )  # refresh tokens cannot be validated
+    new_refresh_token = None
     if existing_refresh_token:
         try:
             LOGGER.debug("Attempting to refresh tokens")
@@ -57,7 +58,6 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
             )
         except Exception as e:
             LOGGER.debug(f"Token refresh failed: {e}")
-            new_refresh_token = None
 
     if not new_refresh_token:
         LOGGER.debug("Getting new tokens via browser login")
@@ -133,7 +133,7 @@ def _exchange_code_for_response(
     redirect_uri: str,
     code: str,
     grant_type: str = "authorization_code",
-) -> dict[str, t.Any]:
+) -> dict[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens.
     Exchange a code for an access token using the endpoints from client info and return the entire response
@@ -168,9 +168,7 @@ def _exchange_code_for_response(
         client_info.token_url, data=encoded_data, headers=headers
     )
 
-    json_response = t.cast(
-        dict[str, t.Any], _load_json(response)
-    )  # the _load_json function is weirdly typed
+    json_response: dict[str, str] = _load_json(response)
 
     if "error" in json_response:
         # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1

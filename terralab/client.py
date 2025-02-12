@@ -3,8 +3,7 @@
 import logging
 from typing import Any
 
-from teaspoons_client.configuration import Configuration
-from teaspoons_client.api_client import ApiClient
+from teaspoons_client import ApiClient, Configuration  # type: ignore[attr-defined]
 
 from terralab.auth_helper import get_or_refresh_access_token
 from terralab.config import load_config

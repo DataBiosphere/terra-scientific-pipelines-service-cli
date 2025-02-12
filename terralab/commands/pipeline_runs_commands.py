@@ -4,8 +4,7 @@ import logging
 import uuid
 
 import click
-from teaspoons_client.models.async_pipeline_run_response import AsyncPipelineRunResponse
-from teaspoons_client.models.pipeline_run import PipelineRun
+from teaspoons_client import AsyncPipelineRunResponse, PipelineRun  # type: ignore[attr-defined]
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
 from terralab.log import (
