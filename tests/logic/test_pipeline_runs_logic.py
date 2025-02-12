@@ -17,7 +17,7 @@ from tests.utils_for_tests import capture_logs
 @pytest.fixture
 def mock_cli_config(unstub):
     config = mock({"token_file": "mock_token_file"})
-    when(pipeline_runs_logic).CliConfig(...).thenReturn(config)
+    when(pipeline_runs_logic).load_config(...).thenReturn(config)
     yield config
     unstub()
 
@@ -129,20 +129,21 @@ def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
 
 
 def test_start_pipeline_run_running(mock_pipeline_runs_api):
-    test_job_id = str(uuid.uuid4())
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
-        jobControl=JobControl(id=test_job_id)
+        jobControl=JobControl(id=test_job_id_str)
     )
     mock_job_report = mock(
-        {"id": test_job_id, "status_code": 202}
+        {"id": test_job_id_str, "status_code": 202}
     )  # successful (running) status code
     mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
     when(mock_pipeline_runs_api).start_pipeline_run(
         test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    result = pipeline_runs_logic.start_pipeline_run(test_job_id)
+    result = pipeline_runs_logic.start_pipeline_run(test_job_id_str)
 
     assert result == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(
@@ -151,13 +152,14 @@ def test_start_pipeline_run_running(mock_pipeline_runs_api):
 
 
 def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
-    test_job_id = str(uuid.uuid4())
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
 
     test_start_pipeline_run_request_body = StartPipelineRunRequestBody(
-        jobControl=JobControl(id=test_job_id)
+        jobControl=JobControl(id=test_job_id_str)
     )
     mock_job_report = mock(
-        {"id": test_job_id, "status_code": 500}
+        {"id": test_job_id_str, "status_code": 500}
     )  # internal error status code
     mock_error_report = mock({"message": "some error message"})
     mock_async_pipeline_run_response = mock(
@@ -167,7 +169,7 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
         test_start_pipeline_run_request_body
     ).thenReturn(mock_async_pipeline_run_response)
 
-    response = pipeline_runs_logic.start_pipeline_run(test_job_id)
+    response = pipeline_runs_logic.start_pipeline_run(test_job_id_str)
 
     assert response == test_job_id
     verify(mock_pipeline_runs_api).start_pipeline_run(

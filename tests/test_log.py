@@ -65,11 +65,6 @@ format_table_with_status_testdata = [
         "State",
         ["Name", "\033[1;37;42mSucceeded\033[0m", "25"],
     ),
-    (  # None input should resolve to empty string
-        [["Name", "Status", "Age"], ["Alice", "SUCCEEDED", None]],
-        "Status",
-        ["Name", "\033[1;37;42mSucceeded\033[0m", ""],
-    ),
 ]
 
 

@@ -16,7 +16,7 @@ def mock_cli_config(unstub):
             "client_info": "mock_client_info",
         }
     )
-    when(auth_logic).CliConfig(...).thenReturn(config)
+    when(auth_logic).load_config(...).thenReturn(config)
     yield config
     unstub()
 
