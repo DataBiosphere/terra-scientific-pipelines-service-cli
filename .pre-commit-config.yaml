@@ -1,0 +1,39 @@
+repos:
+- repo: local
+  hooks:
+    - id: mypy
+      name: mypy
+      entry: "./tools/run-mypy"
+      language: system
+      # trigger for commits changing Python files
+      types: [python]
+      # use require_serial so that script
+      # is only called once per commit
+      require_serial: true
+      # print the number of files as a sanity-check
+    - id: ruff
+      name: ruff
+      entry: "./tools/run-ruff"
+      language: system
+      # trigger for commits changing Python files
+      types: [python]
+      # use require_serial so that script is only called once per commit
+      require_serial: true
+      # print the number of files as a sanity-check
+      verbose: true
+    - id: black
+      name: black
+      entry: "./tools/run-black"
+      language: system
+      # trigger for commits changing Python files
+      types: [python]
+      # use require_serial so that script is only called once per commit
+      require_serial: true
+      # print the number of files as a sanity-check
+      verbose: true
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+        types: [file, python]

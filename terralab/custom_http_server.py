@@ -10,13 +10,13 @@ from oauth2_cli_auth.http_server import OAuthRedirectHandler
 from oauth2_cli_auth._timeout import TimeoutException, _method_with_timeout
 
 
-class CustomOAuthRedirectHandler(OAuthRedirectHandler):
+class CustomOAuthRedirectHandler(OAuthRedirectHandler):  # type: ignore[misc]
     """
     HTTPRequest Handler that is intended to be used as oauth2 callback page.
     Customized for terralab to receive and parse a POST request from the redirect.
     """
 
-    def do_GET(self):
+    def do_GET(self) -> NotImplementedError:
         """For security reasons, we don't ever want to process a GET request."""
         return NotImplementedError("GET request not supported for authentication flow.")
 
@@ -58,7 +58,7 @@ class CustomOAuthCallbackHttpServer(HTTPServer):
     Same as the OAuthCallbackHttpServer from oauth2_cli_auth, except uses our CustomOAuthRedirectHandler.
     """
 
-    def __init__(self, port):
+    def __init__(self, port: int) -> None:
         super().__init__(("", port), CustomOAuthRedirectHandler)
 
         self._code: str | None = None
@@ -78,7 +78,9 @@ class CustomOAuthCallbackHttpServer(HTTPServer):
         """
         return f"http://localhost:{self.server_port}"
 
-    def wait_for_code(self, attempts: int = 3, timeout_per_attempt=10) -> Optional[str]:
+    def wait_for_code(
+        self, attempts: int = 3, timeout_per_attempt: int = 10
+    ) -> Optional[str]:
         """
         Wait for the server to open the callback page containing the code query parameter.
 

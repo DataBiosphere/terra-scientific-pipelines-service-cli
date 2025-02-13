@@ -7,10 +7,11 @@ import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
+from typing import Any
 
 import requests
 import tzlocal
-from teaspoons_client import ApiException
+from teaspoons_client import ApiException  # type: ignore[attr-defined]
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
@@ -20,13 +21,16 @@ from terralab.log import add_blankline_before
 LOGGER = logging.getLogger(__name__)
 
 
-def handle_api_exceptions(func):
+def handle_api_exceptions(func: Any) -> Any:
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: str, **kwargs: str) -> Any:
         try:
             return func(*args, **kwargs)
         except ApiException as e:
-            formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
+            if e.body is not None:
+                formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
+            else:
+                formatted_message = f"API call failed with status code {e.status} ({e.reason}): [no message body]"
             LOGGER.error(add_blankline_before(formatted_message))
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)
@@ -38,7 +42,9 @@ def handle_api_exceptions(func):
     return wrapper
 
 
-def process_inputs_to_dict(inputs: tuple) -> dict:
+def process_inputs_to_dict(
+    inputs: tuple[str, ...]
+) -> dict[str, str | list[str] | None]:
     """Process command line arguments (input as a tuple) into a dictionary.
 
     Handles arguments in the format:
@@ -55,7 +61,7 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
     Raises:
         ValueError: If arguments are improperly formatted or contain duplicate keys
     """
-    inputs_dict = {}
+    inputs_dict: dict[str, str | list[str] | None] = {}
     i = 0
 
     # parser keys
@@ -75,8 +81,8 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
 
         if ALTERNATE_INPUT_DELIMITER in arg_without_dashes:
             # Handle --key=value format
-            key, value = arg_without_dashes.split(ALTERNATE_INPUT_DELIMITER, 1)
-            value = process_value(value)
+            key, raw_value = arg_without_dashes.split(ALTERNATE_INPUT_DELIMITER, 1)
+            value = process_value(raw_value)
         else:
             # Handle --key value or --flag format
             key = arg_without_dashes
@@ -96,7 +102,7 @@ def process_inputs_to_dict(inputs: tuple) -> dict:
     return inputs_dict
 
 
-def process_value(raw_value: str):
+def process_value(raw_value: str) -> str | list[str]:
     """Process a raw input value string, splitting to an array if commas are present."""
     # process arrays
     ARRAY_INPUT_DELIMITER = ","
@@ -115,7 +121,7 @@ def is_valid_local_file(local_file_path: str) -> bool:
 PROGRESS_BAR_FORMAT = "{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [elapsed: {elapsed} ETA: {remaining} ({rate_fmt}{postfix})]"
 
 
-def upload_file_with_signed_url(local_file_path, signed_url):
+def upload_file_with_signed_url(local_file_path: str, signed_url: str) -> None:
     """Uploads a local file using a signed URL"""
     try:
         with open(local_file_path, "rb") as in_file:
@@ -144,7 +150,7 @@ def upload_file_with_signed_url(local_file_path, signed_url):
 class SignedUrlDownload:
     """Class to generate and capture all the information needed to perform a download of a file based on a signed url."""
 
-    def __init__(self, signed_url, local_destination_dir):
+    def __init__(self, signed_url: str, local_destination_dir: str) -> None:
         self.signed_url = signed_url
         # extract file name from signed url; signed url looks like:
         # https://storage.googleapis.com/fc-secure-6970c3a9-dc92-436d-af3d-917bcb4cf05a/test_signed_urls/helloworld.txt?x-goog-signature...
@@ -196,7 +202,9 @@ def download_files_with_signed_urls(
         ]
 
         with ThreadPoolExecutor(max_workers=len(downloads)) as ex:
-            downloaded_file_paths: list[str] = ex.map(download_with_pbar, downloads)
+            downloaded_file_paths: list[str] = list(
+                ex.map(download_with_pbar, downloads)
+            )
     except Exception as e:
         LOGGER.error(add_blankline_before(f"Error downloading files: {e}"))
         exit(1)
@@ -216,7 +224,7 @@ def validate_job_id(job_id: str) -> uuid.UUID:
         exit(1)
 
 
-def format_timestamp(timestamp_string: str) -> str:
+def format_timestamp(timestamp_string: str | None) -> str:
     """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string in the caller's timezone.
     If timestamp_str is None or empty, return an empty string."""
     if not (timestamp_string):

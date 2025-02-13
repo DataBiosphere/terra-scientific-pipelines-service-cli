@@ -1,12 +1,14 @@
 # logic/pipelines_logic.py
 
 import logging
+from typing import Any
 
-from teaspoons_client import (
-    PipelinesApi,
-    PipelineWithDetails,
-    Pipeline,
+from teaspoons_client import (  # type: ignore[attr-defined]
     GetPipelineDetailsRequestBody,
+    Pipeline,
+    PipelinesApi,
+    PipelineUserProvidedInputDefinition,
+    PipelineWithDetails,
 )
 
 from terralab.client import ClientWrapper
@@ -20,16 +22,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def list_pipelines() -> list[Pipeline]:
-    """List all pipelines, returning a list of dictionaries."""
+    """List all pipelines, returning a list of Pipeline objects."""
     with ClientWrapper() as api_client:
         pipeline_client = PipelinesApi(api_client=api_client)
         pipelines = pipeline_client.get_pipelines()
 
-        result = []
-        for pipeline in pipelines.results:
-            result.append(pipeline)
-
-        return result
+        return [pipeline for pipeline in pipelines.results]
 
 
 def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:
@@ -45,7 +43,7 @@ def get_pipeline_info(pipeline_name: str, version: int) -> PipelineWithDetails:
 
 
 def validate_pipeline_inputs(
-    pipeline_name: str, version: int, inputs_dict: dict[str, any]
+    pipeline_name: str, version: int, inputs_dict: dict[str, Any]
 ) -> None:
     """Validate pipeline inputs against required parameters and file existence.
     Exits with error if validation fails."""
@@ -71,7 +69,9 @@ def validate_pipeline_inputs(
         exit(1)
 
 
-def _validate_single_input(input_def, inputs_dict: dict) -> str | None:
+def _validate_single_input(
+    input_def: PipelineUserProvidedInputDefinition, inputs_dict: dict[str, Any]
+) -> str | None:
     """Validate a single input definition against provided inputs.
     Returns error message if validation fails, None otherwise."""
     input_name = input_def.name

@@ -17,7 +17,7 @@ from tests.utils_for_tests import capture_logs
 @pytest.fixture
 def mock_cli_config(unstub):
     config = mock({"token_file": "mock_token_file"})
-    when(pipeline_runs_logic).CliConfig(...).thenReturn(config)
+    when(pipeline_runs_logic).load_config(...).thenReturn(config)
     yield config
     unstub()
 

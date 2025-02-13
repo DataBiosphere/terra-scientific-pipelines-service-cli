@@ -33,37 +33,39 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     """Get a valid access token, refreshing or obtaining a new one if necessary."""
 
     # check for an oauth token file first
-    access_token = _load_local_token(
+    oauth_access_token = _load_local_token(
         cli_config.oauth_token_file, validate=False
     )  # oauth tokens can't be validated against b2c
-    if access_token:
+    if oauth_access_token:
         LOGGER.debug("Found oauth access token")
-        return access_token
+        return oauth_access_token
 
-    access_token = _load_local_token(
+    existing_access_token = _load_local_token(
         cli_config.access_token_file
     )  # note that this load function by default only returns valid tokens
-    if access_token:
-        return access_token
+    if existing_access_token:
+        return existing_access_token
 
-    refresh_token = _load_local_token(
+    existing_refresh_token = _load_local_token(
         cli_config.refresh_token_file, validate=False
     )  # refresh tokens cannot be validated
-    if refresh_token:
+    new_refresh_token = None
+    if existing_refresh_token:
         try:
             LOGGER.debug("Attempting to refresh tokens")
-            access_token, refresh_token = refresh_tokens(cli_config, refresh_token)
+            new_access_token, new_refresh_token = refresh_tokens(
+                cli_config, existing_refresh_token
+            )
         except Exception as e:
             LOGGER.debug(f"Token refresh failed: {e}")
-            refresh_token = None
 
-    if not refresh_token:
+    if not new_refresh_token:
         LOGGER.debug("Getting new tokens via browser login")
-        access_token, refresh_token = get_tokens_with_browser_open(cli_config)
+        new_access_token, new_refresh_token = get_tokens_with_browser_open(cli_config)
 
-    _save_local_token(cli_config.access_token_file, access_token)
-    _save_local_token(cli_config.refresh_token_file, refresh_token)
-    return access_token
+    _save_local_token(cli_config.access_token_file, new_access_token)
+    _save_local_token(cli_config.refresh_token_file, new_refresh_token)
+    return new_access_token
 
 
 def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
@@ -131,7 +133,7 @@ def _exchange_code_for_response(
     redirect_uri: str,
     code: str,
     grant_type: str = "authorization_code",
-) -> dict:
+) -> dict[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to customize the request for use with refresh tokens.
     Exchange a code for an access token using the endpoints from client info and return the entire response
@@ -166,7 +168,7 @@ def _exchange_code_for_response(
         client_info.token_url, data=encoded_data, headers=headers
     )
 
-    json_response = _load_json(response)
+    json_response: dict[str, str] = _load_json(response)
 
     if "error" in json_response:
         # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1
@@ -195,7 +197,7 @@ def _validate_token(token: str) -> bool:
         return False
 
 
-def _clear_local_token(token_file: str):
+def _clear_local_token(token_file: str) -> None:
     try:
         os.remove(token_file)
     except FileNotFoundError:
@@ -212,14 +214,14 @@ def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]
         return None
 
 
-def _save_local_token(token_file: str, token: str):
+def _save_local_token(token_file: str, token: str) -> None:
     # Create the containing directory if it doesn't exist
     os.makedirs(os.path.dirname(token_file), exist_ok=True)
 
     descriptor = os.open(
         token_file,
-        os.O_WRONLY | os.O_CREAT, 
-        0o600  # equivalent of chmod 600, i.e. no access for anyone besides current user
+        os.O_WRONLY | os.O_CREAT,
+        0o600,  # equivalent of chmod 600, i.e. no access for anyone besides current user
     )
     with os.fdopen(descriptor, "w") as f:
         f.write(token)

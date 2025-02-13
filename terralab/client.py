@@ -1,11 +1,12 @@
 # client.py
 
 import logging
+from typing import Any
 
-from teaspoons_client import Configuration, ApiClient
+from teaspoons_client import ApiClient, Configuration  # type: ignore[attr-defined]
 
 from terralab.auth_helper import get_or_refresh_access_token
-from terralab.config import CliConfig
+from terralab.config import load_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,12 +24,12 @@ class ClientWrapper:
     by subsequent commands
     """
 
-    def __enter__(self):
-        cli_config = CliConfig()  # initialize the config from environment variables
+    def __enter__(self) -> ApiClient:
+        cli_config = load_config()  # initialize the config from environment variables
 
         access_token = get_or_refresh_access_token(cli_config)
-        return _get_api_client(access_token, cli_config.config["TEASPOONS_API_URL"])
+        return _get_api_client(access_token, cli_config.teaspoons_api_url)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         # no action needed
         pass

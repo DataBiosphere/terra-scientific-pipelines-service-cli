@@ -55,7 +55,7 @@ def test_get_or_refresh_access_token_valid_oauth(mock_cli_config, unstub):
     unstub()
 
 
-def test_get_or_refresh_access_token_valid_refresh(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_valid_access(mock_cli_config, unstub):
     test_access_token = "access token"
     test_refresh_token = "refresh token"
 
@@ -533,8 +533,10 @@ def test_save_local_token(mock_builtin_open, unstub):
 
     when(auth_helper.os.path).dirname(mock_access_token_file).thenReturn(mock_dirname)
     when(auth_helper.os).makedirs(mock_dirname, exist_ok=True).thenReturn(None)
-    when(auth_helper.os).open(mock_access_token_file, os.O_WRONLY | os.O_CREAT, 0o600).thenReturn(mock_descriptor)
-    
+    when(auth_helper.os).open(
+        mock_access_token_file, os.O_WRONLY | os.O_CREAT, 0o600
+    ).thenReturn(mock_descriptor)
+
     mock_fdopen = mock()
     when(mock_fdopen).__enter__().thenReturn(mock_fdopen)
     when(mock_fdopen).__exit__(None, None, None).thenReturn(None)

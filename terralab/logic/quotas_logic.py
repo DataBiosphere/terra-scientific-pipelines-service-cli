@@ -2,7 +2,7 @@
 
 import logging
 
-from teaspoons_client import QuotasApi, QuotaWithDetails
+from teaspoons_client import QuotasApi, QuotaWithDetails  # type: ignore[attr-defined]
 
 from terralab.client import ClientWrapper
 

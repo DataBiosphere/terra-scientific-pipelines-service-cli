@@ -2,7 +2,7 @@
 
 import collections
 import logging
-from typing import Optional, Mapping
+from typing import Optional, MutableMapping, Any
 
 import click
 
@@ -13,11 +13,11 @@ from terralab.commands.pipeline_runs_commands import (
     download,
     jobs,
     details as details_jobs,
-    list as list_jobs,
+    list_command as list_jobs,
 )
 from terralab.commands.pipelines_commands import (
     pipelines,
-    list as list_pipelines,
+    list_command as list_pipelines,
     details as details_pipelines,
 )
 from terralab.commands.quotas_commands import quota
@@ -34,15 +34,15 @@ class OrderedGroup(click.Group):
     def __init__(
         self,
         name: Optional[str] = None,
-        commands: Optional[Mapping[str, click.Command]] = None,
-        **kwargs
-    ):
+        commands: Optional[MutableMapping[str, click.Command]] = None,
+        **kwargs: Any
+    ) -> None:
         super(OrderedGroup, self).__init__(name, commands, **kwargs)
         #: the registered subcommands by their exported names.
         self.commands = commands or collections.OrderedDict()
 
-    def list_commands(self, ctx: click.Context) -> Mapping[str, click.Command]:
-        return self.commands
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        return list(self.commands)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, cls=OrderedGroup)
@@ -53,7 +53,7 @@ class OrderedGroup(click.Group):
     hidden=True,  # doesn't show up in terralab --help menu
     help="DEBUG-level logging",
 )
-def cli(debug):
+def cli(debug: bool) -> None:
     """To submit a job, run `terralab submit PIPELINE_NAME [INPUTS] --description DESCRIPTION`
 
     For more information about the required inputs for a pipeline, run `terralab pipelines details PIPELINE_NAME`

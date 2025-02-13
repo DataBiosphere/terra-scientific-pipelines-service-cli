@@ -12,14 +12,20 @@ You do not need to re-run these commands each time you update code locally, unle
 
 
 ## Developing
-If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of 
-your code changes.
+If you do update dependencies in `pyproject.toml`, run `poetry lock` and check in the resulting changes to `poetry.lock` along with the rest of
+your code changes. 
 
 If you use an IDE terminal, you can run the following commands from there. To interact with a 
 terminal external to your IDE, first run `poetry shell` and then you'll be able to run the 
 commands as documented here.
 
 ### Tests, linters, and formatting
+Install [pre-commit](https://pre-commit.com/):
+```bash
+pre-commit install
+```
+This will activate the pre-commit tasks defined in `.pre-commit-config.yaml` on each commit.
+
 To run tests:
 ```bash
 pytest
