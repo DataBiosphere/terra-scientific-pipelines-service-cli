@@ -27,10 +27,21 @@ def handle_api_exceptions(func: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except ApiException as e:
+            message = None
             if e.body is not None:
-                formatted_message = f"API call failed with status code {e.status} ({e.reason}): {json.loads(e.body)['message']}"
-            else:
-                formatted_message = f"API call failed with status code {e.status} ({e.reason}): [no message body]"
+                message = json.loads(e.body)["message"]
+            if e.status == 401 and message == "User not found":
+                LOGGER.error(
+                    add_blankline_before(
+                        "User not found in Terra. Are you sure you've registered? Visit https://app.terra.bio to register."
+                    )
+                )
+                exit(1)
+            formatted_message = (
+                f"API call failed with status code {e.status} ({e.reason}): {message}"
+                if message
+                else f"API call failed with status code {e.status} ({e.reason})"
+            )
             LOGGER.error(add_blankline_before(formatted_message))
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)

@@ -176,8 +176,58 @@ def test_get_info_api_exception_no_body(capture_logs, unstub):
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(
         "bad_pipeline_name", None
     )
+    assert "API call failed with status code 400 (Error Reason)" in capture_logs.text
+    assert SUPPORT_EMAIL_TEXT in capture_logs.text
+
+    unstub()
+
+
+def test_get_info_api_exception_no_user_found(capture_logs, unstub):
+    runner = CliRunner()
+    pipeline_name = "whatever"
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        pipeline_name, None
+    ).thenRaise(
+        ApiException(
+            status=401,
+            reason=None,
+            body='{"message": "User not found"}',
+        )
+    )
+
+    result = runner.invoke(pipelines_commands.pipelines, ["details", pipeline_name])
+
+    assert result.exit_code != 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
     assert (
-        "API call failed with status code 400 (Error Reason): [no message body]"
+        "User not found in Terra. Are you sure you've registered? Visit https://app.terra.bio to register."
+        in capture_logs.text
+    )
+
+    unstub()
+
+
+def test_get_info_api_exception_different_401(capture_logs, unstub):
+    runner = CliRunner()
+    pipeline_name = "whatever"
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        pipeline_name, None
+    ).thenRaise(
+        ApiException(
+            status=401,
+            reason="Error Reason",
+            body='{"message": "Something other than user not found"}',
+        )
+    )
+
+    result = runner.invoke(pipelines_commands.pipelines, ["details", pipeline_name])
+
+    assert result.exit_code != 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
+    assert (
+        "API call failed with status code 401 (Error Reason): Something other than user not found"
         in capture_logs.text
     )
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
