@@ -33,7 +33,7 @@ def handle_api_exceptions(func: Any) -> Any:
             if e.status == 401 and message == "User not found":
                 LOGGER.error(
                     add_blankline_before(
-                        "User not found in Terra. Are you sure you've registered (https://app.terra.bio)?"
+                        "User not found in Terra. Are you sure you've registered? Visit https://app.terra.bio to register."
                     )
                 )
                 exit(1)
