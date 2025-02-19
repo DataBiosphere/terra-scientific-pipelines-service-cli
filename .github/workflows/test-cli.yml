@@ -36,6 +36,8 @@ jobs:
     if: needs.bump-check.outputs.is-bump == 'no'
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # disable shallow clone, needed for sonar
       
       - name: Set up python
         uses: actions/setup-python@v5
