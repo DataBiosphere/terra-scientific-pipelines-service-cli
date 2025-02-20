@@ -948,13 +948,13 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "pkginfo"
-version = "1.12.0"
+version = "1.12.1.2"
 description = "Query metadata from sdists / bdists / installed packages."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pkginfo-1.12.0-py3-none-any.whl", hash = "sha256:dcd589c9be4da8973eceffa247733c144812759aa67eaf4bbf97016a02f39088"},
-    {file = "pkginfo-1.12.0.tar.gz", hash = "sha256:8ad91a0445a036782b9366ef8b8c2c50291f83a553478ba8580c73d3215700cf"},
+    {file = "pkginfo-1.12.1.2-py3-none-any.whl", hash = "sha256:c783ac885519cab2c34927ccfa6bf64b5a704d7c69afaea583dd9b7afe969343"},
+    {file = "pkginfo-1.12.1.2.tar.gz", hash = "sha256:5cd957824ac36f140260964eba3c6be6442a8359b8c48f4adf90210f33a04b7b"},
 ]
 
 [package.extras]
@@ -1620,13 +1620,13 @@ widechars = ["wcwidth"]
 
 [[package]]
 name = "terra-scientific-pipelines-service-api-client"
-version = "0.1.36"
+version = "0.1.40"
 description = "Terra Scientific Pipelines Service"
 optional = false
 python-versions = "*"
 files = [
-    {file = "terra_scientific_pipelines_service_api_client-0.1.36-py3-none-any.whl", hash = "sha256:fca073af4ae7129e2237cfecc990dcce823c2458ce336f211fa9c1045c5c8295"},
-    {file = "terra_scientific_pipelines_service_api_client-0.1.36.tar.gz", hash = "sha256:8e4dde881d6915f0d4331e218d936a76b1cc503b1f7cc4d06975d878fea62e91"},
+    {file = "terra_scientific_pipelines_service_api_client-0.1.40-py3-none-any.whl", hash = "sha256:34c4ee16f0afed1f5c33bcb4f3f2b647855fdeb4e833f6f189e450dd88e0049a"},
+    {file = "terra_scientific_pipelines_service_api_client-0.1.40.tar.gz", hash = "sha256:7e4c69f95f0d656e600e5fc4516bfa804f5375dc81f32c38a33784ad9f5a4c25"},
 ]
 
 [package.dependencies]
@@ -1669,13 +1669,13 @@ telegram = ["requests"]
 
 [[package]]
 name = "trove-classifiers"
-version = "2025.1.15.22"
+version = "2025.2.18.16"
 description = "Canonical source for classifiers on PyPI (pypi.org)."
 optional = false
 python-versions = "*"
 files = [
-    {file = "trove_classifiers-2025.1.15.22-py3-none-any.whl", hash = "sha256:5f19c789d4f17f501d36c94dbbf969fb3e8c2784d008e6f5164dd2c3d6a2b07c"},
-    {file = "trove_classifiers-2025.1.15.22.tar.gz", hash = "sha256:90af74358d3a01b3532bc7b3c88d8c6a094c2fd50a563d13d9576179326d7ed9"},
+    {file = "trove_classifiers-2025.2.18.16-py3-none-any.whl", hash = "sha256:7f6dfae899f23f04b73bc09e0754d9219a6fc4d6cca6acd62f1850a87ea92262"},
+    {file = "trove_classifiers-2025.2.18.16.tar.gz", hash = "sha256:b1ee2e1668589217d4edf506743e28b1834da128f8a122bad522c02d837006e1"},
 ]
 
 [[package]]
@@ -1727,13 +1727,13 @@ files = [
 
 [[package]]
 name = "tzlocal"
-version = "5.2"
+version = "5.3"
 description = "tzinfo object for the local timezone"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "tzlocal-5.2-py3-none-any.whl", hash = "sha256:49816ef2fe65ea8ac19d19aa7a1ae0551c834303d5014c6d5a62e4cbda8047b8"},
-    {file = "tzlocal-5.2.tar.gz", hash = "sha256:8d399205578f1a9342816409cc1e46a93ebd5755e39ea2d85334bea911bf0e6e"},
+    {file = "tzlocal-5.3-py3-none-any.whl", hash = "sha256:3814135a1bb29763c6e4f08fd6e41dbb435c7a60bfbb03270211bcc537187d8c"},
+    {file = "tzlocal-5.3.tar.gz", hash = "sha256:2fafbfc07e9d8b49ade18f898d6bcd37ae88ce3ad6486842a2e4f03af68323d2"},
 ]
 
 [package.dependencies]
@@ -1867,4 +1867,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "daef9878b507525bf9fdcb67a700ca35553db49be4a8cab3792239e979c651b3"
+content-hash = "680ee1e41a1bafe5d8be755675bde681e50df5da9c30c35ba582662a8b1db4b5"
