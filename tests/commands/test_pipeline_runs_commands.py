@@ -340,7 +340,7 @@ def create_test_pipeline_run_response(
     return AsyncPipelineRunResponse(
         jobReport=job_report,
         pipelineRunReport=PipelineRunReport(
-            pipelineName=pipeline_name, pipelineVersion=1, wdlMethodVersion="1.0.0"
+            pipelineName=pipeline_name, pipelineVersion=1, toolVersion="1.0.0"
         ),
         errorReport=error_report,
     )
