@@ -38,7 +38,10 @@ def mock_quotas_api(mock_client_wrapper, unstub):
 def test_get_user_quota(mock_quotas_api):
     pipeline_name = "Test Pipeline"
     mock_quota = QuotaWithDetails(
-        pipeline_name=pipeline_name, quota_limit=1000, quota_consumed=300
+        pipeline_name=pipeline_name,
+        quota_limit=1000,
+        quota_consumed=300,
+        quota_units="samples",
     )
     when(mock_quotas_api).get_quota_for_pipeline(
         pipeline_name=pipeline_name
@@ -49,3 +52,4 @@ def test_get_user_quota(mock_quotas_api):
     assert mock_quota.pipeline_name == result.pipeline_name
     assert mock_quota.quota_limit == result.quota_limit
     assert mock_quota.quota_consumed == result.quota_consumed
+    assert mock_quota.quota_units == result.quota_units
