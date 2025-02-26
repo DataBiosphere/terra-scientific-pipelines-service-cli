@@ -23,6 +23,10 @@ def test_get_info_success(capture_logs, unstub):
 
     assert result.exit_code == 0
     verify(quotas_commands.quotas_logic).get_user_quota(test_pipeline_name)
+    assert (
+        "Note: It may take a few minutes for recently submitted jobs to be reflected."
+        in capture_logs.text
+    )
     assert test_pipeline_name in capture_logs.text
     # quota limit
     assert "Quota Limit: 1000" in capture_logs.text
