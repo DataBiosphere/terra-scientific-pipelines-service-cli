@@ -173,7 +173,7 @@ def _exchange_code_for_response(
     if "error" in json_response:
         # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1
         LOGGER.debug(
-            f"Error in authentication flow exchanging code for response: {json_response["error"]}; error description: {json_response["error_description"]}"
+            f'Error in authentication flow exchanging code for response: {json_response["error"]}; error description: {json_response["error_description"]}'
         )
     else:
         LOGGER.debug("Token refresh successful")

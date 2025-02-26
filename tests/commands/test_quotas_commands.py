@@ -11,7 +11,10 @@ from tests.utils_for_tests import capture_logs
 def test_get_info_success(capture_logs, unstub):
     test_pipeline_name = "test_pipeline"
     test_quota_details = QuotaWithDetails(
-        pipeline_name=test_pipeline_name, quota_limit=1000, quota_consumed=300
+        pipeline_name=test_pipeline_name,
+        quota_limit=1000,
+        quota_consumed=300,
+        quota_units="samples",
     )
 
     when(quotas_commands.quotas_logic).get_user_quota(test_pipeline_name).thenReturn(
@@ -25,11 +28,11 @@ def test_get_info_success(capture_logs, unstub):
     verify(quotas_commands.quotas_logic).get_user_quota(test_pipeline_name)
     assert test_pipeline_name in capture_logs.text
     # quota limit
-    assert "Quota Limit: 1000" in capture_logs.text
+    assert "Quota Limit: 1000 samples" in capture_logs.text
     # quota consumed
-    assert "Quota Used: 300" in capture_logs.text
+    assert "Quota Used: 300 samples" in capture_logs.text
     # quota left
-    assert "Quota Available: 700" in capture_logs.text
+    assert "Quota Available: 700 samples" in capture_logs.text
 
     unstub()
 
