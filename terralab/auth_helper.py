@@ -163,7 +163,15 @@ def _exchange_code_for_response(
         "grant_type": grant_type,
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")
+    clean_data = data.copy()
+    if "refresh_token" in clean_data:
+        clean_data["refresh_token"] = "REDACTED"
+    if "code" in clean_data:
+        clean_data["code"] = "REDACTED"
 
+    LOGGER.debug(
+        f"Requesting new token at {client_info.token_url} with data {clean_data}"
+    )
     response = urllib.request.Request(
         client_info.token_url, data=encoded_data, headers=headers
     )
