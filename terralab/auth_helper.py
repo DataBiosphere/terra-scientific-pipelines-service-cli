@@ -225,3 +225,4 @@ def _save_local_token(token_file: str, token: str) -> None:
     )
     with os.fdopen(descriptor, "w") as f:
         f.write(token)
+        f.flush()
