@@ -164,11 +164,11 @@ def _exchange_code_for_response(
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")
 
-    response = urllib.request.Request(
+    request = urllib.request.Request(
         client_info.token_url, data=encoded_data, headers=headers
     )
 
-    json_response: dict[str, str] = _load_json(response)
+    json_response: dict[str, str] = _load_json(request)
 
     if "error" in json_response:
         # see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#error-response-1

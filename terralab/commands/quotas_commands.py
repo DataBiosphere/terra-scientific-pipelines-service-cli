@@ -21,7 +21,7 @@ def quota(pipeline_name: str) -> None:
     quota_consumed = quota_info.quota_consumed
     quota_pipeline = quota_info.pipeline_name
     quota_units = quota_info.quota_units
-    
+
     LOGGER.info(
         "Note: It may take a few minutes for recently submitted jobs to be reflected."
     )
