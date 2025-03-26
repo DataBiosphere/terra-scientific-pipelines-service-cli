@@ -69,7 +69,17 @@ rm -rf $(poetry env info --path)
 poetry install
 ```
 
-To run the CLI against your locally running instance of Teaspoons:
-4. Follow [the instructions in the Teaspoons repo for running the service locally](https://github.com/DataBiosphere/terra-scientific-pipelines-service/blob/main/README.md#local-development). 
-5. In this repo, edit the `terralab/.terralab-cli-config` file to point the `TEASPOONS_API_URL` to `http://localhost:8080` instead of the live environment deployment of Teaspoons.
-6. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
+By default the CLI points to the **production** [instance](https://teaspoons.dsde-prod.broadinstitute.org) of Teaspoons. Note that you need to be on the VPN (non-split) to access the production instance.
+
+To run the CLI against your **locally** running instance of Teaspoons:
+1. Follow [the instructions in the Teaspoons repo for running the service locally](https://github.com/DataBiosphere/terra-scientific-pipelines-service/blob/main/README.md#local-development). 
+2. In this repo, edit the `terralab/.terralab-cli-config` file:
+   1. Point the `TEASPOONS_API_URL` to `http://localhost:8080` instead of the live environment deployment of Teaspoons.
+   2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment (this can be found on the swagger page's authentication form) 
+3. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
+
+To run the CLI against the **dev** instance of Teaspoons:
+1. In this repo, edit the `terralab/.terralab-cli-config` file:
+   1. Point the `TEASPOONS_API_URL` to `https://teaspoons.dsde-dev.broadinstitute.org` instead of the live environment deployment of Teaspoons.
+   2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment (this can be found on the swagger page's authentication form)
+2. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
