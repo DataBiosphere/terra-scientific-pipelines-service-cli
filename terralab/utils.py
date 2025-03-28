@@ -29,7 +29,10 @@ def handle_api_exceptions(func: Any) -> Any:
         except ApiException as e:
             message = None
             if e.body is not None:
-                message = json.loads(e.body)["message"]
+                try:
+                    message = json.loads(e.body)["message"]
+                except json.JSONDecodeError:
+                    message = e.body
             if e.status == 401 and message == "User not found":
                 LOGGER.error(
                     add_blankline_before(
