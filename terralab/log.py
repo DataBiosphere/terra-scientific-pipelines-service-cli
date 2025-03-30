@@ -17,7 +17,6 @@ def configure_logging(debug: bool) -> None:
             "%(log_color)s%(message)s",
             log_colors={
                 "DEBUG": "cyan",
-                "INFO": "white",
                 "WARNING": "yellow",
                 "ERROR": "red",
                 "CRITICAL": "red,bg_white",
