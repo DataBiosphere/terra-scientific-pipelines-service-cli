@@ -243,7 +243,7 @@ def test_non_json_api_exception_body(capture_logs, unstub):
         pipeline_name, None
     ).thenRaise(
         ApiException(
-            status=401,
+            status=403,
             reason=None,
             body='403 Forbidden: blah blahbalh',
         )
