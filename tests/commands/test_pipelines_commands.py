@@ -233,3 +233,29 @@ def test_get_info_api_exception_different_401(capture_logs, unstub):
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
     unstub()
+
+
+def test_non_json_api_exception_body(capture_logs, unstub):
+    runner = CliRunner()
+    pipeline_name = "whatever"
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        pipeline_name, None
+    ).thenRaise(
+        ApiException(
+            status=403,
+            reason=None,
+            body='403 Forbidden: blah blahbalh',
+        )
+    )
+
+    result = runner.invoke(pipelines_commands.pipelines, ["details", pipeline_name])
+
+    assert result.exit_code != 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
+    assert (
+        "403 Forbidden: blah blahbalh"
+        in capture_logs.text
+    )
+
+    unstub()
