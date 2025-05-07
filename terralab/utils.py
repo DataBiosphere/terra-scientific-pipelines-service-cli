@@ -14,6 +14,7 @@ import tzlocal
 from teaspoons_client import ApiException  # type: ignore[attr-defined]
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
+from urllib3.exceptions import MaxRetryError
 
 from terralab.constants import SUPPORT_EMAIL_TEXT
 from terralab.log import add_blankline_before
@@ -46,6 +47,14 @@ def handle_api_exceptions(func: Any) -> Any:
                 else f"API call failed with status code {e.status} ({e.reason})"
             )
             LOGGER.error(add_blankline_before(formatted_message))
+            LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
+            exit(1)
+        except MaxRetryError:
+            LOGGER.error(
+                add_blankline_before(
+                    "Maximum retries reached. The server may be down or unreachable. Please try again later."
+                )
+            )
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)
         except Exception as e:
@@ -248,3 +257,27 @@ def format_timestamp(timestamp_string: str | None) -> str:
         local_timezone
     )
     return datetime_obj.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+
+# This is a workaround to make the retry messages from urllib3 more user-friendly.
+# Previously they would show up as ugly errors, i.e.
+#   Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None))
+#   after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection
+#   object at 0x102c47ef0>: Failed to establish a new connection: [Errno 61]
+#   Connection refused')': /api/pipelineruns/v1/pipelineruns?limit=10
+
+
+class RetryMessageFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Matches the retry warning messages produced by urllib3
+        if (
+            "Retrying (" in record.getMessage()
+            and "after connection broken by" in record.getMessage()
+        ):
+            record.msg = "terralab encountered a problem connecting to the server. Retrying your request..."
+            record.args = ()
+        return True
+
+
+urllib3_logger = logging.getLogger("urllib3.connectionpool")
+urllib3_logger.addFilter(RetryMessageFilter())

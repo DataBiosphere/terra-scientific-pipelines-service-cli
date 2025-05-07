@@ -245,7 +245,7 @@ def test_non_json_api_exception_body(capture_logs, unstub):
         ApiException(
             status=403,
             reason=None,
-            body='403 Forbidden: blah blahbalh',
+            body="403 Forbidden: blah blahbalh",
         )
     )
 
@@ -253,9 +253,6 @@ def test_non_json_api_exception_body(capture_logs, unstub):
 
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
-    assert (
-        "403 Forbidden: blah blahbalh"
-        in capture_logs.text
-    )
+    assert "403 Forbidden: blah blahbalh" in capture_logs.text
 
     unstub()
