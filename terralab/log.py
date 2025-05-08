@@ -131,6 +131,12 @@ class RetryMessageFilter(logging.Filter):
         ):
             record.msg = "terralab encountered a problem connecting to the server. Retrying your request..."
             record.args = ()
+            record.levelno = logging.DEBUG
+            record.levelname = "DEBUG"
+
+            # Ensures that we still abide by the global logging level
+            if logging.getLogger().getEffectiveLevel() > logging.DEBUG:
+                return False
         return True
 
 
