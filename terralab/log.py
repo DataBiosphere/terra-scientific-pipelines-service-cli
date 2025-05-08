@@ -112,3 +112,27 @@ def format_status_in_table_row(
 
 def format_status(status_str: str) -> str:
     return COLORFUL_STATUS[status_str]
+
+
+# This filter makes the retry messages from urllib3 more user-friendly.
+# Previously they would show up as ugly errors, i.e.
+#       Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None))
+#       after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection
+#       object at 0x102c47ef0>: Failed to establish a new connection: [Errno 61]
+#       Connection refused')': /api/pipelineruns/v1/pipelineruns?limit=10
+
+
+class RetryMessageFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Matches the retry warning messages produced by urllib3
+        if (
+            "Retrying (" in record.getMessage()
+            and "after connection broken by" in record.getMessage()
+        ):
+            record.msg = "terralab encountered a problem connecting to the server. Retrying your request..."
+            record.args = ()
+        return True
+
+
+urllib3_logger = logging.getLogger("urllib3.connectionpool")
+urllib3_logger.addFilter(RetryMessageFilter())
