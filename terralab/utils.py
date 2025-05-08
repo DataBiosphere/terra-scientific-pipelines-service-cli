@@ -52,7 +52,7 @@ def handle_api_exceptions(func: Any) -> Any:
         except MaxRetryError:
             LOGGER.error(
                 add_blankline_before(
-                    "Maximum retries reached. The server may be down or unreachable. Please try again later."
+                    "The server may be down or unreachable. Maximum retries reached. Please try again later."
                 )
             )
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
