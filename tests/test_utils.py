@@ -195,7 +195,8 @@ def test_server_unavailable_error(capture_logs):
         mock_retry_function()
 
     assert (
-        "The server may be down or unreachable. Maximum retries reached. Please try again later."
+        "Unable to connect to the server after multiple retries. "
+        "The server may be down or unreachable. Please try again later."
         in capture_logs.text
     )
 
