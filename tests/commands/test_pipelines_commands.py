@@ -245,7 +245,7 @@ def test_non_json_api_exception_body(capture_logs, unstub):
         ApiException(
             status=403,
             reason=None,
-            body="403 Forbidden: blah blahbalh",
+            body="403 Forbidden: blah blah blah",
         )
     )
 
