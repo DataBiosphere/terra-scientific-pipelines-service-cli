@@ -8,8 +8,9 @@ import zoneinfo
 import pytest
 from mockito import mock, when
 from requests.exceptions import HTTPError
-
+from urllib3.exceptions import MaxRetryError
 from terralab import utils
+from terralab.utils import handle_api_exceptions
 from tests.utils_for_tests import capture_logs
 
 process_inputs_testdata = [
@@ -183,6 +184,21 @@ def test_validate_uuid(capture_logs):
     with pytest.raises(SystemExit):
         utils.validate_job_id(None)
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
+
+
+def test_server_unavailable_error(capture_logs):
+    @handle_api_exceptions
+    def mock_retry_function():
+        raise MaxRetryError(None, "Just a test")
+
+    with pytest.raises(SystemExit):
+        mock_retry_function()
+
+    assert (
+        "Unable to connect to the server after multiple retries. "
+        "The server may be down or unreachable. Please try again later."
+        in capture_logs.text
+    )
 
 
 format_timestamp_testdata = [

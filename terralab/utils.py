@@ -14,6 +14,7 @@ import tzlocal
 from teaspoons_client import ApiException  # type: ignore[attr-defined]
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
+from urllib3.exceptions import MaxRetryError
 
 from terralab.constants import SUPPORT_EMAIL_TEXT
 from terralab.log import add_blankline_before
@@ -46,6 +47,15 @@ def handle_api_exceptions(func: Any) -> Any:
                 else f"API call failed with status code {e.status} ({e.reason})"
             )
             LOGGER.error(add_blankline_before(formatted_message))
+            LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
+            exit(1)
+        except MaxRetryError:
+            LOGGER.error(
+                add_blankline_before(
+                    "Unable to connect to the server after multiple retries. "
+                    "The server may be down or unreachable. Please try again later."
+                )
+            )
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
             exit(1)
         except Exception as e:

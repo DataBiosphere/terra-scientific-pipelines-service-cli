@@ -2,6 +2,8 @@
 
 import pytest
 
+import logging
+from terralab.log import RetryMessageFilter
 from terralab import log
 
 
@@ -90,6 +92,52 @@ def test_format_table_with_status_line_wrapping():
     # the long field should have been wrapped into two rows, so expect 4 (header + ---- + 2 data lines)
     formatted_rows = formatted.split("\n")
     assert len(formatted_rows) == 4
+
+
+def test_retry_message_filter_match():
+    filter_instance = RetryMessageFilter()
+
+    record = logging.LogRecord(
+        name="urllib3.connectionpool",
+        level=logging.WARNING,
+        pathname="test_path",
+        lineno=10,
+        msg="Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) "
+        "after connection broken by 'NewConnectionError': /api/test",
+        args=(),
+        exc_info=None,
+    )
+
+    result = filter_instance.filter(record)
+
+    assert result is False
+    assert record.levelno == logging.DEBUG
+    assert (
+        record.msg
+        == "terralab encountered a problem connecting to the server. Retrying your request..."
+    )
+    assert record.args == ()
+
+
+# Tests that we don't clobber other non-retry log messages
+def test_retry_message_filter_non_match():
+    filter_instance = RetryMessageFilter()
+
+    non_matching_record = logging.LogRecord(
+        name="urllib3.connectionpool",
+        level=logging.WARNING,
+        pathname="test_path",
+        lineno=10,
+        msg="Some other log message",
+        args=(),
+        exc_info=None,
+    )
+
+    result = filter_instance.filter(non_matching_record)
+
+    assert result is True
+    assert non_matching_record.levelno == logging.WARNING
+    assert non_matching_record.msg == "Some other log message"
 
 
 format_status_in_table_row_testdata = [
