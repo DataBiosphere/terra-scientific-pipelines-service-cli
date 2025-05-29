@@ -246,7 +246,7 @@ def test_list_jobs(capture_logs):
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description 1",
-                "quota_consumed": 500,
+                "quota_consumed": 127911,
             }
         ),
         mock(
