@@ -246,6 +246,7 @@ def test_list_jobs(capture_logs):
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description 1",
+                "quota_consumed": 500,
             }
         ),
         mock(
@@ -270,6 +271,7 @@ def test_list_jobs(capture_logs):
     # Check that job details are in output
     assert test_pipeline_runs[0].job_id in capture_logs.text
     assert test_pipeline_runs[0].pipeline_name in capture_logs.text
+    assert str(test_pipeline_runs[0].quota_consumed) in capture_logs.text
     assert "Succeeded" in capture_logs.text
     assert test_pipeline_runs[1].job_id in capture_logs.text
     assert test_pipeline_runs[1].pipeline_name in capture_logs.text
