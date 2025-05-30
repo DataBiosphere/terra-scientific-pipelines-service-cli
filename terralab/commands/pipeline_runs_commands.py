@@ -148,6 +148,7 @@ def list_command(num_results: int) -> None:
                 "Submitted",
                 "Completed",
                 "Description",
+                "Quota Consumed",
             ]
         ]
         for pipeline_run in results:
@@ -159,6 +160,11 @@ def list_command(num_results: int) -> None:
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
                     pipeline_run.description or "",
+                    (
+                        str(pipeline_run.quota_consumed)
+                        if pipeline_run.quota_consumed is not None
+                        else ""
+                    ),
                 ]
             )
 
