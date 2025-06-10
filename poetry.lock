@@ -1539,18 +1539,18 @@ all = ["numpy"]
 
 [[package]]
 name = "requests"
-version = "2.32.3"
+version = "2.32.4"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
-    {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
+    {file = "requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c"},
+    {file = "requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422"},
 ]
 
 [package.dependencies]
 certifi = ">=2017.4.17"
-charset-normalizer = ">=2,<4"
+charset_normalizer = ">=2,<4"
 idna = ">=2.5,<4"
 urllib3 = ">=1.21.1,<3"
 
@@ -1652,13 +1652,13 @@ widechars = ["wcwidth"]
 
 [[package]]
 name = "terra-scientific-pipelines-service-api-client"
-version = "1.0.14"
+version = "1.0.16"
 description = "Terra Scientific Pipelines Service"
 optional = false
 python-versions = "*"
 files = [
-    {file = "terra_scientific_pipelines_service_api_client-1.0.14-py3-none-any.whl", hash = "sha256:4e4baea74d124d56f2cd2983e70c795fcb21f1e86d6048be537416eabb5d4114"},
-    {file = "terra_scientific_pipelines_service_api_client-1.0.14.tar.gz", hash = "sha256:708725c093193de3a8e1f56b7ee68a5a02fc954e106226bd6c5b3f5bb647641c"},
+    {file = "terra_scientific_pipelines_service_api_client-1.0.16-py3-none-any.whl", hash = "sha256:b63da47fd5a85756c60c5df8997aec71e01d94bf400971c9df0730329278b841"},
+    {file = "terra_scientific_pipelines_service_api_client-1.0.16.tar.gz", hash = "sha256:c320775db3195789e99959d17ece59cbc514ad7a238717485e7b334e9fea3ea3"},
 ]
 
 [package.dependencies]
@@ -1669,13 +1669,13 @@ urllib3 = ">=1.25.3,<3.0.0"
 
 [[package]]
 name = "tomlkit"
-version = "0.13.2"
+version = "0.13.3"
 description = "Style preserving TOML library"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "tomlkit-0.13.2-py3-none-any.whl", hash = "sha256:7a974427f6e119197f670fbbbeae7bef749a6c14e793db934baefc1b5f03efde"},
-    {file = "tomlkit-0.13.2.tar.gz", hash = "sha256:fff5fe59a87295b278abd31bec92c15d9bc4a06885ab12bcea52c71119392e79"},
+    {file = "tomlkit-0.13.3-py3-none-any.whl", hash = "sha256:c89c649d79ee40629a9fda55f8ace8c6a1b42deb912b2a8fd8d942ddadb606b0"},
+    {file = "tomlkit-0.13.3.tar.gz", hash = "sha256:430cf247ee57df2b94ee3fbe588e71d362a941ebb545dec29b53961d61add2a1"},
 ]
 
 [[package]]
@@ -1913,4 +1913,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "4fe2e97b5c9b9f1c903bb5fa88025eb4ec5b1af460304245aed65f4e4cd9f02e"
+content-hash = "f38af516e4fda9f07cc6d751e152b8f928aa1e2dcb911f5dd56d3cd4fda91dc1"

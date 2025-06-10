@@ -47,7 +47,7 @@ def details(pipeline_name: str, version: int) -> None:
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name, version)
 
     # format the information nicely
-    col_width = 18
+    col_width = 20
 
     LOGGER.info(
         f"{pad_column("Pipeline Name:", col_width)}{pipeline_info.pipeline_name}"
@@ -56,6 +56,9 @@ def details(pipeline_name: str, version: int) -> None:
         f"{pad_column("Pipeline Version:", col_width)}{pipeline_info.pipeline_version}"
     )
     LOGGER.info(f"{pad_column("Description:", col_width)}{pipeline_info.description}")
+    LOGGER.info(
+        f"{pad_column("Min Quota Consumed:", col_width)}{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units}"
+    )
     LOGGER.info("Inputs:")
 
     inputs_for_usage = []
