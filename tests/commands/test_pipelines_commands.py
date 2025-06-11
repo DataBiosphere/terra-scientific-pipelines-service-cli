@@ -9,6 +9,7 @@ from teaspoons_client import (
     PipelineWithDetails,
     PipelineUserProvidedInputDefinition,
     ApiException,
+    PipelineQuota,
 )
 
 from terralab.commands import pipelines_commands
@@ -54,6 +55,12 @@ def test_get_info_success_no_version(capture_logs, unstub):
     test_input_definition = PipelineUserProvidedInputDefinition(
         name="test_input", type="test_type"
     )
+    test_pipeline_quota = PipelineQuota(
+        pipeline_name="test_pipeline",
+        default_quota=1000,
+        min_quota_consumed=500,
+        quota_units="units",
+    )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
         pipeline_version=1,
@@ -61,6 +68,7 @@ def test_get_info_success_no_version(capture_logs, unstub):
         display_name="test_display_name",
         type="test_type",
         inputs=[test_input_definition],
+        pipeline_quota=test_pipeline_quota,
     )
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -77,9 +85,10 @@ def test_get_info_success_no_version(capture_logs, unstub):
         test_pipeline_name, None
     )
     assert test_pipeline_name in capture_logs.text
-    assert "Pipeline Version: 1" in capture_logs.text
+    assert "Pipeline Version:   1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
+    assert "Min Quota Consumed: 500 units" in capture_logs.text
 
     unstub()
 
@@ -89,6 +98,12 @@ def test_get_info_success_version(capture_logs, unstub):
     test_input_definition = PipelineUserProvidedInputDefinition(
         name="test_input", type="test_type"
     )
+    test_pipeline_quota = PipelineQuota(
+        pipeline_name="test_pipeline",
+        default_quota=1000,
+        min_quota_consumed=500,
+        quota_units="units",
+    )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
         pipeline_version=1,
@@ -96,6 +111,7 @@ def test_get_info_success_version(capture_logs, unstub):
         display_name="test_display_name",
         type="test_type",
         inputs=[test_input_definition],
+        pipeline_quota=test_pipeline_quota,
     )
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -110,9 +126,10 @@ def test_get_info_success_version(capture_logs, unstub):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, 1)
     assert test_pipeline_name in capture_logs.text
-    assert "Pipeline Version: 1" in capture_logs.text
+    assert "Pipeline Version:   1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
+    assert "Min Quota Consumed: 500 units" in capture_logs.text
 
     unstub()
 
