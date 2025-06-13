@@ -217,6 +217,33 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config, unstub):
     unstub()
 
 
+def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
+    mock_callback_server = mock()
+    expected_auth_url = "https://test/url"
+    expected_url = f"{expected_auth_url}&prompt=login&brand=scientificServices"
+    exchange_response_dict = {
+        "access_token": "accesstoken",
+        "refresh_token": "refreshtoken",
+    }
+
+    when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
+        mock_callback_server
+    )
+    when(auth_helper).get_auth_url(mock_cli_config.client_info, ...).thenReturn(
+        expected_auth_url
+    )
+    when(auth_helper)._open_browser(...).thenReturn(None)
+    when(mock_callback_server).wait_for_code().thenReturn("code")
+    when(auth_helper)._exchange_code_for_response(...).thenReturn(
+        exchange_response_dict
+    )
+
+    auth_helper.get_tokens_with_browser_open(mock_cli_config)
+
+    verify(auth_helper)._open_browser(expected_url, ...)
+    unstub()
+
+
 def test_open_browser(capture_logs, unstub):
     test_url = "http://test/url"
 
