@@ -157,7 +157,7 @@ def list_command(num_results: int) -> None:
                 [
                     pipeline_run.job_id,
                     pipeline_run.pipeline_name,
-                    pipeline_run.pipeline_version,
+                    str(pipeline_run.pipeline_version),
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
