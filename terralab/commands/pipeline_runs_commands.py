@@ -144,6 +144,7 @@ def list_command(num_results: int) -> None:
             [
                 "Job ID",
                 "Pipeline Name",
+                "Version",
                 "Status",
                 "Submitted",
                 "Completed",
@@ -156,6 +157,7 @@ def list_command(num_results: int) -> None:
                 [
                     pipeline_run.job_id,
                     pipeline_run.pipeline_name,
+                    str(pipeline_run.pipeline_version),
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),

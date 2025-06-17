@@ -242,6 +242,7 @@ def test_list_jobs(capture_logs):
             {
                 "job_id": str(uuid.uuid4()),
                 "pipeline_name": "test_pipeline1",
+                "pipeline_version": 1234567,
                 "status": SUCCEEDED_KEY,
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
@@ -253,6 +254,7 @@ def test_list_jobs(capture_logs):
             {
                 "job_id": str(uuid.uuid4()),
                 "pipeline_name": "test_pipeline2",
+                "pipeline_version": 111111111,
                 "status": FAILED_KEY,
                 "time_submitted": "2024-01-02T12:00:00Z",
                 "time_completed": "2024-01-02T12:30:00Z",
@@ -271,11 +273,13 @@ def test_list_jobs(capture_logs):
     # Check that job details are in output
     assert test_pipeline_runs[0].job_id in capture_logs.text
     assert test_pipeline_runs[0].pipeline_name in capture_logs.text
+    assert str(test_pipeline_runs[0].pipeline_version) in capture_logs.text
     assert str(test_pipeline_runs[0].quota_consumed) in capture_logs.text
     assert "Succeeded" in capture_logs.text
     assert test_pipeline_runs[1].job_id in capture_logs.text
     assert test_pipeline_runs[1].pipeline_name in capture_logs.text
     assert "Failed" in capture_logs.text
+    assert str(test_pipeline_runs[1].pipeline_version) in capture_logs.text
 
 
 def test_list_jobs_custom_limit(capture_logs):
