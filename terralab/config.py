@@ -20,7 +20,7 @@ class CliConfig:
     server_port: int
     access_token_file: str
     refresh_token_file: str
-    oauth_token_file: str
+    oauth_access_token_file: str
 
 
 def load_config(
@@ -52,5 +52,5 @@ def load_config(
         server_port=int(server_port),
         access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/access_token',
         refresh_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/refresh_token',
-        oauth_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_token',
+        oauth_access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_access_token',
     )
