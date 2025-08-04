@@ -80,7 +80,6 @@ def get_tokens_with_oob_redirect(cli_config: CliConfig) -> tuple[str, str]:
     :param cli_config: Configuration object containing environment specific values
     :return: Access Token and Refresh Token
     """
-    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(
@@ -92,9 +91,7 @@ def get_tokens_with_oob_redirect(cli_config: CliConfig) -> tuple[str, str]:
     )
 
     try:
-        response_dict = _exchange_code_for_response(
-            client_info, callback_server.callback_url, code
-        )
+        response_dict = _exchange_code_for_response(client_info, code)
     except urllib.error.URLError:
         LOGGER.error(f"Failed to get tokens with code {code}")
         exit(1)
@@ -120,6 +117,8 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, callback_server.callback_url)
+    print(f"auth_url: {auth_url}")
+    print(f"callback_url: {callback_server.callback_url}")
     _open_browser(f"{auth_url}&prompt=login&brand=scientificServices", LOGGER.info)
     code = callback_server.wait_for_code()
     if code is None:
@@ -127,9 +126,7 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
             "No code could be obtained from browser callback page. If you are running terralab on a remote environment, try running 'terralab login' first."
         )
 
-    response_dict = _exchange_code_for_response(
-        client_info, callback_server.callback_url, code
-    )
+    response_dict = _exchange_code_for_response(client_info, code)
     return response_dict["access_token"], response_dict["refresh_token"]
 
 
@@ -152,12 +149,10 @@ def _open_browser(
 
 
 def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]:
-    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
     response_dict = _exchange_code_for_response(
         client_info,
-        callback_server.callback_url,
         refresh_token,
         grant_type="refresh_token",
     )
@@ -166,7 +161,6 @@ def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]
 
 def _exchange_code_for_response(
     client_info: OAuth2ClientInfo,
-    redirect_uri: str,
     code: str,
     grant_type: str = "authorization_code",
 ) -> dict[str, str]:
@@ -175,7 +169,6 @@ def _exchange_code_for_response(
     Exchange a code for an access token using the endpoints from client info and return the entire response
 
     :param client_info: Info about oauth2 client
-    :param redirect_uri: Callback URL
     :param code: Code to redeem
     :param grant_type: Type of grant request (default `authorization_code`, can also be `refresh_token`)
     :return: Response from OAuth2 endpoint
@@ -195,7 +188,6 @@ def _exchange_code_for_response(
     code_key = "refresh_token" if grant_type == "refresh_token" else "code"
     data = {
         code_key: code,
-        "redirect_uri": redirect_uri,
         "grant_type": grant_type,
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")
