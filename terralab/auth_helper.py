@@ -117,8 +117,6 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, callback_server.callback_url)
-    print(f"auth_url: {auth_url}")
-    print(f"callback_url: {callback_server.callback_url}")
     _open_browser(f"{auth_url}&prompt=login&brand=scientificServices", LOGGER.info)
     code = callback_server.wait_for_code()
     if code is None:
