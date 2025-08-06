@@ -20,7 +20,10 @@ def test_config():
     assert test_config.teaspoons_api_url == "not-real"
     assert test_config.access_token_file == f"{Path.home()}/.cool/access_token"
     assert test_config.refresh_token_file == f"{Path.home()}/.cool/refresh_token"
-    assert test_config.oauth_token_file == f"{Path.home()}/.cool/oauth_token"
+    assert (
+        test_config.oauth_access_token_file == f"{Path.home()}/.cool/oauth_access_token"
+    )
+    assert test_config.remote_oauth_redirect_uri == "https://something/redirect"
 
     assert test_config.server_port == 12345
     assert test_config.client_info == mock_client_info
