@@ -127,7 +127,7 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError(
-            "No code could be obtained from browser callback page. If you are running terralab on a remote environment, try running 'terralab login' first."
+            "No code could be obtained from browser callback page.  If your environment does not have access to a web browser, try running 'terralab login' first."
         )
 
     response_dict = _exchange_code_for_response(client_info, code)
