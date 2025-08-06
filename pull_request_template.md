@@ -10,6 +10,8 @@ _Please replace this description with a concise description of this Pull Request
 - [ ] Test that auth flow still works, since this isn't covered by tests
     1. Main flow: run `terralab logout` and then `terralab pipelines list` - should prompt a browser login
     2. Refresh token flow: run `rm ~/.terralab/access_token` and then `terralab pipelines list` - should succeed without a browser login
+    3. Auth code flow: run `terralab logout` and then `terralab login` - should prompt a browser login, and copy-paste to CLI should work without an error
+    4. Auth code refresh token flow: after step 3, run `rm ~/.terralab/access_token` and then `terralab pipelines list` - should succeed without a browser login
 - [ ] Updated external documentation (if applicable)
 - [ ] Updated internal documentation (if applicable)
 - [ ] Planned non patch version bump (if applicable)
