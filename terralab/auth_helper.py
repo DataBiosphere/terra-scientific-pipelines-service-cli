@@ -91,8 +91,7 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
         "Once finished, enter the verification code provided in your browser (it will be masked here): ",
         is_password=True,
         multiline=False,
-    )  # , hide_input=True)
-    LOGGER.debug(f"captured code {code[:10]}... with length {len(code)}")
+    )
 
     try:
         response_dict = _exchange_code_for_response(client_info, code)
@@ -194,7 +193,6 @@ def _exchange_code_for_response(
     code_key = "refresh_token" if grant_type == "refresh_token" else "code"
     data = {
         code_key: code,
-        # "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
         "grant_type": grant_type,
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")

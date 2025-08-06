@@ -20,5 +20,5 @@ def login_with_oauth(token: str) -> None:
 
 @click.command()
 def login() -> None:
-    """Login via external browser"""
+    """Login via authorization code (useful when default login flow is not possible)"""
     auth_logic.login_with_custom_redirect()

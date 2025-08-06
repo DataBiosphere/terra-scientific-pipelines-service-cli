@@ -37,3 +37,14 @@ def test_login_with_oauth_no_token():
 
     assert result.exit_code != 0
     assert "Error: Missing argument 'TOKEN'" in result.output
+
+
+def test_login():
+    runner = CliRunner()
+
+    when(auth_commands.auth_logic).login_with_custom_redirect()
+
+    result = runner.invoke(auth_commands.login)
+
+    assert result.exit_code == 0
+    verify(auth_commands.auth_logic).login_with_custom_redirect()

@@ -53,3 +53,17 @@ def test_config_missing_server_port():
         config.load_config(
             config_file=".test.missing_server_port.config", package="tests"
         )
+
+
+def test_config_missing_redirect_uri():
+    mock_client_info = mock()
+    when(config.OAuth2ClientInfo).from_oidc_endpoint(
+        "https://dontcare",
+        client_id="whatever",
+        scopes=["offline_access+email+profile+whatever"],
+    ).thenReturn(mock_client_info)
+
+    with pytest.raises(RuntimeError):
+        config.load_config(
+            config_file=".test.missing_redirect_uri.config", package="tests"
+        )
