@@ -7,7 +7,7 @@ import typing as t
 import urllib
 import webbrowser
 from collections.abc import Callable
-from click import prompt
+from prompt_toolkit import prompt
 
 import jwt
 from oauth2_cli_auth import (
@@ -69,7 +69,7 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     return new_access_token
 
 
-def get_tokens_with_oob_redirect(cli_config: CliConfig) -> tuple[str, str]:
+def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
     """
     Provides a simplified API to:
 
@@ -82,13 +82,17 @@ def get_tokens_with_oob_redirect(cli_config: CliConfig) -> tuple[str, str]:
     """
     client_info = cli_config.client_info
 
-    auth_url = get_auth_url(
-        client_info, "urn:ietf:wg:oauth:2.0:oob"
-    )  # out of band callback to generate code to copy
-    _open_browser(f"{auth_url}&prompt=login&brand=scientificServices", LOGGER.info)
-    code = prompt(
-        "Once finished, enter the verification code provided in your browser", type=str
+    auth_url = get_auth_url(client_info, cli_config.remote_oauth_redirect_uri)
+    prompt_text = f"Authentication required.  Please paste the following URL into a browser if it does not open automatically: \n\n{auth_url}\n"
+    _open_browser(
+        f"{auth_url}&prompt=login&brand=scientificServices", prompt_text, LOGGER.info
     )
+    code = prompt(
+        "Once finished, enter the verification code provided in your browser (it will be masked here): ",
+        is_password=True,
+        multiline=False,
+    )  # , hide_input=True)
+    LOGGER.debug(f"captured code {code[:10]}... with length {len(code)}")
 
     try:
         response_dict = _exchange_code_for_response(client_info, code)
@@ -117,7 +121,10 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, callback_server.callback_url)
-    _open_browser(f"{auth_url}&prompt=login&brand=scientificServices", LOGGER.info)
+    prompt_text = "Authentication required.  Your browser should automatically open an authentication page.  If your environment does not have access to a web browser, please exit this command and try running 'terralab login' first."
+    _open_browser(
+        f"{auth_url}&prompt=login&brand=scientificServices", prompt_text, LOGGER.info
+    )
     code = callback_server.wait_for_code()
     if code is None:
         raise ValueError(
@@ -129,7 +136,9 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
 
 
 def _open_browser(
-    url: str, print_open_browser_instruction: Callable[[str], None] | None = print
+    url: str,
+    prompt_text: str,
+    print_open_browser_instruction: Callable[[str], None] | None = print,
 ) -> None:
     """
     Open browser using webbrowser module and show message about URL open
@@ -137,12 +146,11 @@ def _open_browser(
 
     :param print_open_browser_instruction: Callback to print the instructions to open the browser. Set to None in order to supress the output.
     :param url: URL to open and display
+    :param prompt_text: Text to display in the command line
     :return: None
     """
     if print_open_browser_instruction is not None:
-        print_open_browser_instruction(
-            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your browser:\n\n{url}\n"
-        )
+        print_open_browser_instruction(prompt_text)
     webbrowser.open(url)
 
 
@@ -186,6 +194,7 @@ def _exchange_code_for_response(
     code_key = "refresh_token" if grant_type == "refresh_token" else "code"
     data = {
         code_key: code,
+        # "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
         "grant_type": grant_type,
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")

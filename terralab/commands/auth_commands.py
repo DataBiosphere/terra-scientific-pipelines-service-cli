@@ -21,4 +21,4 @@ def login_with_oauth(token: str) -> None:
 @click.command()
 def login() -> None:
     """Login via external browser"""
-    auth_logic.login_with_oob_redirect()
+    auth_logic.login_with_custom_redirect()

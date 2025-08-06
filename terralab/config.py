@@ -21,6 +21,7 @@ class CliConfig:
     access_token_file: str
     refresh_token_file: str
     oauth_access_token_file: str
+    remote_oauth_redirect_uri: str
 
 
 def load_config(
@@ -41,6 +42,9 @@ def load_config(
     if (teaspoons_api_url := config.get("TEASPOONS_API_URL")) is None:
         raise RuntimeError("Expected config value for API URL not found")
 
+    if (remote_oauth_redirect_uri := config.get("REMOTE_OAUTH_REDIRECT_URI")) is None:
+        raise RuntimeError("Expected config value for remote redirect_uri not found")
+
     return CliConfig(
         client_info=OAuth2ClientInfo.from_oidc_endpoint(
             config["OAUTH_OPENID_CONFIGURATION_URI"],
@@ -53,4 +57,5 @@ def load_config(
         access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/access_token',
         refresh_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/refresh_token',
         oauth_access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_access_token',
+        remote_oauth_redirect_uri=remote_oauth_redirect_uri,
     )
