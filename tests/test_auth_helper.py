@@ -3,6 +3,7 @@
 import builtins
 import logging
 import os
+import urllib
 
 import pytest
 from jwt import ExpiredSignatureError
@@ -21,7 +22,7 @@ def mock_cli_config(unstub):
         {
             "access_token_file": "mock_access_token_file",
             "refresh_token_file": "mock_refresh_token_file",
-            "oauth_token_file": "mock_oauth_token_file",
+            "oauth_access_token_file": "mock_oauth_access_token_file",
             "client_info": "mock_client_info",
             "server_port": "0",
         }
@@ -48,7 +49,7 @@ def test_get_or_refresh_access_token_valid_oauth(mock_cli_config, unstub):
 
     # mock an existing oauth token
     when(auth_helper)._load_local_token(
-        "mock_oauth_token_file", validate=False
+        "mock_oauth_access_token_file", validate=False
     ).thenReturn(test_oauth_token)
 
     assert auth_helper.get_or_refresh_access_token(mock_cli_config) == test_oauth_token
@@ -61,7 +62,7 @@ def test_get_or_refresh_access_token_valid_access(mock_cli_config, unstub):
 
     # mock a valid access token
     when(auth_helper)._load_local_token(
-        "mock_oauth_token_file", validate=False
+        "mock_oauth_access_token_file", validate=False
     ).thenReturn(None)
     when(auth_helper)._load_local_token("mock_access_token_file").thenReturn(
         test_access_token
@@ -81,7 +82,7 @@ def test_get_or_refresh_access_token_valid_refresh(mock_cli_config, unstub):
 
     # mock no valid access token, but find a refresh token
     when(auth_helper)._load_local_token(
-        "mock_oauth_token_file", validate=False
+        "mock_oauth_access_token_file", validate=False
     ).thenReturn(None)
     when(auth_helper)._load_local_token("mock_access_token_file").thenReturn(None)
     when(auth_helper)._load_local_token(
@@ -112,7 +113,7 @@ def test_get_or_refresh_access_token_failed_refresh(mock_cli_config, unstub):
 
     # mock no valid access token, but find a refresh token
     when(auth_helper)._load_local_token(
-        "mock_oauth_token_file", validate=False
+        "mock_oauth_access_token_file", validate=False
     ).thenReturn(None)
     when(auth_helper)._load_local_token("mock_access_token_file").thenReturn(None)
     when(auth_helper)._load_local_token(
@@ -147,7 +148,7 @@ def test_get_or_refresh_access_token_none_found(mock_cli_config, unstub):
 
     # mock no valid access token, no refresh token
     when(auth_helper)._load_local_token(
-        "mock_oauth_token_file", validate=False
+        "mock_oauth_access_token_file", validate=False
     ).thenReturn(None)
     when(auth_helper)._load_local_token("mock_access_token_file").thenReturn(None)
     when(auth_helper)._load_local_token(
@@ -171,6 +172,52 @@ def test_get_or_refresh_access_token_none_found(mock_cli_config, unstub):
     unstub()
 
 
+def test_get_tokens_with_custom_redirect(mock_cli_config, unstub):
+    mock_code = mock()
+    expected_access_token = "accesstoken"
+    expected_refresh_token = "refreshtoken"
+    exchange_response_dict = {
+        "access_token": expected_access_token,
+        "refresh_token": expected_refresh_token,
+    }
+
+    when(auth_helper).get_auth_url(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
+    when(auth_helper).prompt(...).thenReturn(mock_code)
+    when(auth_helper)._exchange_code_for_response(
+        "mock_client_info", mock_code
+    ).thenReturn(exchange_response_dict)
+
+    access_token, refresh_token = auth_helper.get_tokens_with_custom_redirect(
+        mock_cli_config
+    )
+
+    assert access_token == expected_access_token
+    assert refresh_token == expected_refresh_token
+
+    unstub()
+
+
+def test_get_access_token_with_custom_redirect_error(
+    mock_cli_config, capture_logs, unstub
+):
+    mock_code = mock()
+
+    when(auth_helper).get_auth_url(...).thenReturn(None)
+    when(auth_helper)._open_browser(...).thenReturn(None)
+    when(auth_helper).prompt(...).thenReturn(mock_code)
+    when(auth_helper)._exchange_code_for_response(
+        "mock_client_info", mock_code
+    ).thenRaise(urllib.error.URLError("message"))
+
+    with pytest.raises(SystemExit):
+        auth_helper.get_tokens_with_custom_redirect(mock_cli_config)
+
+    assert f"Failed to get tokens with code {mock_code}" in capture_logs.text
+
+    unstub()
+
+
 def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
     mock_callback_server = mock()
     mock_code = mock()
@@ -187,9 +234,9 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
     when(auth_helper).get_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
-    when(auth_helper)._exchange_code_for_response(...).thenReturn(
-        exchange_response_dict
-    )
+    when(auth_helper)._exchange_code_for_response(
+        "mock_client_info", mock_code
+    ).thenReturn(exchange_response_dict)
 
     access_token, refresh_token = auth_helper.get_tokens_with_browser_open(
         mock_cli_config
@@ -219,6 +266,7 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config, unstub):
 
 def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
     mock_callback_server = mock()
+    mock_code = mock()
     expected_auth_url = "https://test/url"
     expected_url = f"{expected_auth_url}&prompt=login&brand=scientificServices"
     exchange_response_dict = {
@@ -233,10 +281,10 @@ def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
         expected_auth_url
     )
     when(auth_helper)._open_browser(...).thenReturn(None)
-    when(mock_callback_server).wait_for_code().thenReturn("code")
-    when(auth_helper)._exchange_code_for_response(...).thenReturn(
-        exchange_response_dict
-    )
+    when(mock_callback_server).wait_for_code().thenReturn(mock_code)
+    when(auth_helper)._exchange_code_for_response(
+        "mock_client_info", mock_code
+    ).thenReturn(exchange_response_dict)
 
     auth_helper.get_tokens_with_browser_open(mock_cli_config)
 
@@ -246,16 +294,20 @@ def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
 
 def test_open_browser(capture_logs, unstub):
     test_url = "http://test/url"
+    test_prompt_text = "test prompt text"
 
     when(auth_helper.webbrowser).open(test_url)  # do nothing
 
     # nothing should print
-    auth_helper._open_browser(test_url, None)
+    auth_helper._open_browser(test_url, test_prompt_text, None)
     assert "" == capture_logs.text
 
     # when you pass a logging function, a message should be logged
-    auth_helper._open_browser(test_url, LOGGER.info)
-    assert test_url in capture_logs.text
+    auth_helper._open_browser(test_url, test_prompt_text, LOGGER.info)
+    assert test_prompt_text in capture_logs.text
+
+    # each of those calls should have involved a call to webbrowser.open(test_url)
+    verify(auth_helper.webbrowser, times=2).open(test_url)
     unstub()
 
 
@@ -276,7 +328,6 @@ def test_refresh_tokens(mock_cli_config, unstub):
     )
     when(auth_helper)._exchange_code_for_response(
         "mock_client_info",
-        mock_callback_url,
         test_refresh_token,
         grant_type="refresh_token",
     ).thenReturn(expected_response_dict)
@@ -293,13 +344,11 @@ def test_exchange_code_for_response_default_success(unstub):
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
     mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
-    test_redirect_url = "https://redirect/url"
     test_code = "test code"
 
     # defaults: code key for test_code, grant_type is authorization_code
     expected_data_dict = {
         "code": test_code,
-        "redirect_uri": test_redirect_url,
         "grant_type": "authorization_code",
     }
     mock_urlencode_output = mock()
@@ -325,9 +374,7 @@ def test_exchange_code_for_response_default_success(unstub):
     )
 
     assert (
-        auth_helper._exchange_code_for_response(
-            mock_client_info, test_redirect_url, test_code
-        )
+        auth_helper._exchange_code_for_response(mock_client_info, test_code)
         == expected_json_response
     )
     unstub()
@@ -338,13 +385,11 @@ def test_exchange_code_for_response_default_error(capture_logs, unstub):
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
     mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
-    test_redirect_url = "https://redirect/url"
     test_code = "test code"
 
     # defaults: code key for test_code, grant_type is authorization_code
     expected_data_dict = {
         "code": test_code,
-        "redirect_uri": test_redirect_url,
         "grant_type": "authorization_code",
     }
     mock_urlencode_output = mock()
@@ -374,9 +419,7 @@ def test_exchange_code_for_response_default_error(capture_logs, unstub):
     )
 
     assert (
-        auth_helper._exchange_code_for_response(
-            mock_client_info, test_redirect_url, test_code
-        )
+        auth_helper._exchange_code_for_response(mock_client_info, test_code)
         == expected_json_response
     )
     assert (
@@ -391,13 +434,11 @@ def test_exchange_code_for_response_refresh(capture_logs, unstub):
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
     mock_client_info = mock({"token_url": mock_token_url, "client_id": mock_client_id})
-    test_redirect_url = "https://redirect/url"
     test_code = "test code"
 
     # refresh_token instead of code key for test_code, grant type is refresh_token
     expected_data_dict = {
         "refresh_token": test_code,
-        "redirect_uri": test_redirect_url,
         "grant_type": "refresh_token",
     }
     mock_urlencode_output = mock()
@@ -424,7 +465,7 @@ def test_exchange_code_for_response_refresh(capture_logs, unstub):
 
     assert (
         auth_helper._exchange_code_for_response(
-            mock_client_info, test_redirect_url, test_code, "refresh_token"
+            mock_client_info, test_code, "refresh_token"
         )
         == expected_json_response
     )
@@ -435,9 +476,7 @@ def test_exchange_code_for_response_refresh(capture_logs, unstub):
 def test_exchange_code_for_response_bad_grant_type(capture_logs, unstub):
     unexpected_grant_type = "what is this"
     with pytest.raises(SystemExit):
-        auth_helper._exchange_code_for_response(
-            mock(), mock(), mock(), unexpected_grant_type
-        )
+        auth_helper._exchange_code_for_response(mock(), mock(), unexpected_grant_type)
 
     assert (
         f"Authentication error: Unexpected grant_type {unexpected_grant_type}"

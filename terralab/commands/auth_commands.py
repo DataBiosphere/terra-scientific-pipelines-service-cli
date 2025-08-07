@@ -16,3 +16,9 @@ def logout() -> None:
 def login_with_oauth(token: str) -> None:
     """Login using oauth bearer token from gcloud"""
     auth_logic.login_with_oauth(token)
+
+
+@click.command()
+def login() -> None:
+    """Login via authorization code (useful when default login flow is not possible)"""
+    auth_logic.login_with_custom_redirect()

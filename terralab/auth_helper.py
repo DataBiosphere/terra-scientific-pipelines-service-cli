@@ -7,6 +7,7 @@ import typing as t
 import urllib
 import webbrowser
 from collections.abc import Callable
+from prompt_toolkit import prompt
 
 import jwt
 from oauth2_cli_auth import (
@@ -32,9 +33,9 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     Returns a valid access token"""
     """Get a valid access token, refreshing or obtaining a new one if necessary."""
 
-    # check for an oauth token file first
+    # check for an oauth access token file
     oauth_access_token = _load_local_token(
-        cli_config.oauth_token_file, validate=False
+        cli_config.oauth_access_token_file, validate=False
     )  # oauth tokens can't be validated against b2c
     if oauth_access_token:
         LOGGER.debug("Found oauth access token")
@@ -68,6 +69,39 @@ def get_or_refresh_access_token(cli_config: CliConfig) -> str:
     return new_access_token
 
 
+def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
+    """
+    Provides a simplified API to:
+
+    - Open the browser with the authorization URL
+    - Wait for the user to copy the authorization code back into the program
+    - Get access token from code
+
+    :param cli_config: Configuration object containing environment specific values
+    :return: Access Token and Refresh Token
+    """
+    client_info = cli_config.client_info
+
+    auth_url = get_auth_url(client_info, cli_config.remote_oauth_redirect_uri)
+    prompt_text = f"Authentication required.  Please paste the following URL into a browser if it does not open automatically: \n\n{auth_url}\n"
+    _open_browser(
+        f"{auth_url}&prompt=login&brand=scientificServices", prompt_text, LOGGER.info
+    )
+    code = prompt(
+        "Once finished, enter the verification code provided in your browser (it will be masked here): ",
+        is_password=True,
+        multiline=False,
+    )
+
+    try:
+        response_dict = _exchange_code_for_response(client_info, code)
+    except urllib.error.URLError:
+        LOGGER.error(f"Failed to get tokens with code {code}")
+        exit(1)
+
+    return response_dict["access_token"], response_dict["refresh_token"]
+
+
 def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     """
     Note: this is overridden from the oauth2-cli-auth library to use a custom auth url
@@ -86,19 +120,24 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, callback_server.callback_url)
-    _open_browser(f"{auth_url}&prompt=login&brand=scientificServices", LOGGER.info)
+    prompt_text = "Authentication required.  Your browser should automatically open an authentication page.  If your environment does not have access to a web browser, please exit this command and run 'terralab login' first."
+    _open_browser(
+        f"{auth_url}&prompt=login&brand=scientificServices", prompt_text, LOGGER.info
+    )
     code = callback_server.wait_for_code()
     if code is None:
-        raise ValueError("No code could be obtained from browser callback page")
+        raise ValueError(
+            "No code could be obtained from browser callback page.  If your environment does not have access to a web browser, run 'terralab login' first."
+        )
 
-    response_dict = _exchange_code_for_response(
-        client_info, callback_server.callback_url, code
-    )
+    response_dict = _exchange_code_for_response(client_info, code)
     return response_dict["access_token"], response_dict["refresh_token"]
 
 
 def _open_browser(
-    url: str, print_open_browser_instruction: Callable[[str], None] | None = print
+    url: str,
+    prompt_text: str,
+    print_open_browser_instruction: Callable[[str], None] | None = print,
 ) -> None:
     """
     Open browser using webbrowser module and show message about URL open
@@ -106,22 +145,19 @@ def _open_browser(
 
     :param print_open_browser_instruction: Callback to print the instructions to open the browser. Set to None in order to supress the output.
     :param url: URL to open and display
+    :param prompt_text: Text to display in the command line
     :return: None
     """
     if print_open_browser_instruction is not None:
-        print_open_browser_instruction(
-            f"Authentication required.  Your browser should automatically open an authentication page.  If it doesn't, please paste the following URL into your browser:\n\n{url}\n"
-        )
+        print_open_browser_instruction(prompt_text)
     webbrowser.open(url)
 
 
 def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]:
-    callback_server = OAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
     response_dict = _exchange_code_for_response(
         client_info,
-        callback_server.callback_url,
         refresh_token,
         grant_type="refresh_token",
     )
@@ -130,7 +166,6 @@ def refresh_tokens(cli_config: CliConfig, refresh_token: str) -> tuple[str, str]
 
 def _exchange_code_for_response(
     client_info: OAuth2ClientInfo,
-    redirect_uri: str,
     code: str,
     grant_type: str = "authorization_code",
 ) -> dict[str, str]:
@@ -139,7 +174,6 @@ def _exchange_code_for_response(
     Exchange a code for an access token using the endpoints from client info and return the entire response
 
     :param client_info: Info about oauth2 client
-    :param redirect_uri: Callback URL
     :param code: Code to redeem
     :param grant_type: Type of grant request (default `authorization_code`, can also be `refresh_token`)
     :return: Response from OAuth2 endpoint
@@ -159,7 +193,6 @@ def _exchange_code_for_response(
     code_key = "refresh_token" if grant_type == "refresh_token" else "code"
     data = {
         code_key: code,
-        "redirect_uri": redirect_uri,
         "grant_type": grant_type,
     }
     encoded_data = urllib.parse.urlencode(data).encode("utf-8")

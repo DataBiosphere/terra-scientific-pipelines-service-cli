@@ -7,7 +7,7 @@ from typing import Optional, MutableMapping, Any
 import click
 
 from terralab import __version__, log
-from terralab.commands.auth_commands import logout, login_with_oauth
+from terralab.commands.auth_commands import logout, login_with_oauth, login
 from terralab.commands.pipeline_runs_commands import (
     submit,
     download,
@@ -81,6 +81,7 @@ cli.add_command(list_pipelines, name="  pipelines list")
 cli.add_command(details_pipelines, name="  pipelines details")
 
 cli.add_command(quota)
+cli.add_command(login)
 cli.add_command(logout)
 
 cli.add_command(login_with_oauth)  # this is hidden from the help menu
