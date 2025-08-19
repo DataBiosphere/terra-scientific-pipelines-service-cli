@@ -12,7 +12,7 @@ from terralab.config import load_config
 LOGGER = logging.getLogger(__name__)
 
 
-def clear_local_token() -> None:
+def clear_local_tokens() -> None:
     """Remove access credentials"""
     cli_config = load_config()  # initialize the config from environment variables
     _clear_local_token(cli_config.access_token_file)
