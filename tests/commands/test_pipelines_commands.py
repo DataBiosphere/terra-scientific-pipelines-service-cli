@@ -218,7 +218,7 @@ def test_get_info_api_exception_no_user_found(capture_logs, unstub):
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
     assert (
-        "User not found in Terra. Are you sure you've registered? Visit https://app.terra.bio to register."
+        "User not found in Terra. Are you sure you've registered? Visit https://services.terra.bio to register."
         in capture_logs.text
     )
 
