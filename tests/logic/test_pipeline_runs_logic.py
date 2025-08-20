@@ -11,7 +11,7 @@ from teaspoons_client import (
 )
 
 from terralab.logic import pipeline_runs_logic
-from tests.utils_for_tests import capture_logs
+from tests.conftest import capture_logs
 
 
 @pytest.fixture

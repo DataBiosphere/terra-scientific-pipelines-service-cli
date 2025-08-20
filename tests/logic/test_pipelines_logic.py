@@ -14,7 +14,7 @@ from terralab.constants import (
     STRING_ARRAY_TYPE_KEY,
 )
 from terralab.logic import pipelines_logic
-from tests.utils_for_tests import capture_logs
+from tests.conftest import capture_logs
 
 
 @pytest.fixture

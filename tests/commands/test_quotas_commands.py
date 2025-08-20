@@ -5,7 +5,7 @@ from mockito import when, verify
 from teaspoons_client import QuotaWithDetails, ApiException
 
 from terralab.commands import quotas_commands
-from tests.utils_for_tests import capture_logs
+from tests.conftest import capture_logs
 
 
 def test_get_info_success(capture_logs, unstub):
