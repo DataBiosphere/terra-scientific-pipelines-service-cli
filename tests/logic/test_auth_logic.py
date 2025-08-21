@@ -24,7 +24,7 @@ def mock_cli_config(unstub):
 def test_clear_local_token(mock_cli_config, unstub):
     when(auth_logic)._clear_local_token(...).thenReturn(None)
 
-    auth_logic.clear_local_token()
+    auth_logic.clear_local_tokens()
 
     verify(auth_logic)._clear_local_token("mock_access_token_file")
     verify(auth_logic)._clear_local_token("mock_refresh_token_file")

@@ -14,7 +14,7 @@ from teaspoons_client import (
 
 from terralab.commands import pipeline_runs_commands
 from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
-from tests.utils_for_tests import capture_logs
+from tests.conftest import capture_logs
 
 LOGGER = logging.getLogger(__name__)
 

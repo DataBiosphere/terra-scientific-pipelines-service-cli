@@ -7,7 +7,7 @@ SERVER_PORT=10444
 # B2C auth config
 OAUTH_OPENID_CONFIGURATION_URI=https://terraprodb2c.b2clogin.com/terraprodb2c.onmicrosoft.com/b2c_1a_signup_signin_tsps_prod/v2.0/.well-known/openid-configuration
 OAUTH_CLIENT_ID=4aefc4ac-d5be-4440-ae9a-aefe4ceb098c
-REMOTE_OAUTH_REDIRECT_URI=https://app.terra.bio/pipelines/cli-auth
+REMOTE_OAUTH_REDIRECT_URI=https://services.terra.bio/pipelines/cli-auth
 
 # Terralab storage (absolute path or relative to user's home directory)
 LOCAL_STORAGE_PATH=.terralab

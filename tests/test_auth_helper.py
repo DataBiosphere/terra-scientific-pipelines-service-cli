@@ -11,13 +11,15 @@ from mockito import when, mock, verify, times
 from oauth2_cli_auth._timeout import TimeoutException
 
 from terralab import auth_helper
-from tests.utils_for_tests import capture_logs
+from tests.conftest import capture_logs
 
 LOGGER = logging.getLogger(__name__)
 
+pytestmark = pytest.mark.usefixtures("unstub_fixture")
+
 
 @pytest.fixture
-def mock_cli_config(unstub):
+def mock_cli_config():
     config = mock(
         {
             "access_token_file": "mock_access_token_file",
@@ -29,11 +31,10 @@ def mock_cli_config(unstub):
     )
     when(auth_helper).CliConfig(...).thenReturn(config)
     yield config
-    unstub()
 
 
 @pytest.fixture
-def mock_builtin_open(unstub):
+def mock_builtin_open():
     mock_open = mock()
     # Make the mock support context manager protocol
     when(mock_open).__enter__().thenReturn(mock_open)
@@ -41,10 +42,9 @@ def mock_builtin_open(unstub):
 
     when(builtins).open(...).thenReturn(mock_open)
     yield mock_open
-    unstub()
 
 
-def test_get_or_refresh_access_token_valid_oauth(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_valid_oauth(mock_cli_config):
     test_oauth_token = "oauth token"
 
     # mock an existing oauth token
@@ -53,10 +53,9 @@ def test_get_or_refresh_access_token_valid_oauth(mock_cli_config, unstub):
     ).thenReturn(test_oauth_token)
 
     assert auth_helper.get_or_refresh_access_token(mock_cli_config) == test_oauth_token
-    unstub()
 
 
-def test_get_or_refresh_access_token_valid_access(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_valid_access(mock_cli_config):
     test_access_token = "access token"
     test_refresh_token = "refresh token"
 
@@ -72,10 +71,9 @@ def test_get_or_refresh_access_token_valid_access(mock_cli_config, unstub):
     ).thenReturn(test_refresh_token)
 
     assert auth_helper.get_or_refresh_access_token(mock_cli_config) == test_access_token
-    unstub()
 
 
-def test_get_or_refresh_access_token_valid_refresh(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_valid_refresh(mock_cli_config):
     test_refresh_token = "refresh token"
     test_new_access_token = "access token"
     test_new_refresh_token = "new refresh token"
@@ -103,10 +101,9 @@ def test_get_or_refresh_access_token_valid_refresh(mock_cli_config, unstub):
         auth_helper.get_or_refresh_access_token(mock_cli_config)
         == test_new_access_token
     )
-    unstub()
 
 
-def test_get_or_refresh_access_token_failed_refresh(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_failed_refresh(mock_cli_config):
     test_refresh_token = "refresh token"
     test_new_access_token = "access token"
     test_new_refresh_token = "new refresh token"
@@ -139,10 +136,9 @@ def test_get_or_refresh_access_token_failed_refresh(mock_cli_config, unstub):
         auth_helper.get_or_refresh_access_token(mock_cli_config)
         == test_new_access_token
     )
-    unstub()
 
 
-def test_get_or_refresh_access_token_none_found(mock_cli_config, unstub):
+def test_get_or_refresh_access_token_none_found(mock_cli_config):
     test_new_access_token = "access token"
     test_new_refresh_token = "new refresh token"
 
@@ -169,10 +165,9 @@ def test_get_or_refresh_access_token_none_found(mock_cli_config, unstub):
         auth_helper.get_or_refresh_access_token(mock_cli_config)
         == test_new_access_token
     )
-    unstub()
 
 
-def test_get_tokens_with_custom_redirect(mock_cli_config, unstub):
+def test_get_tokens_with_custom_redirect(mock_cli_config):
     mock_code = mock()
     expected_access_token = "accesstoken"
     expected_refresh_token = "refreshtoken"
@@ -195,12 +190,8 @@ def test_get_tokens_with_custom_redirect(mock_cli_config, unstub):
     assert access_token == expected_access_token
     assert refresh_token == expected_refresh_token
 
-    unstub()
 
-
-def test_get_access_token_with_custom_redirect_error(
-    mock_cli_config, capture_logs, unstub
-):
+def test_get_access_token_with_custom_redirect_error(mock_cli_config, capture_logs):
     mock_code = mock()
 
     when(auth_helper).get_auth_url(...).thenReturn(None)
@@ -215,10 +206,8 @@ def test_get_access_token_with_custom_redirect_error(
 
     assert f"Failed to get tokens with code {mock_code}" in capture_logs.text
 
-    unstub()
 
-
-def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
+def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     mock_callback_server = mock()
     mock_code = mock()
     expected_access_token = "accesstoken"
@@ -245,10 +234,8 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config, unstub):
     assert access_token == expected_access_token
     assert refresh_token == expected_refresh_token
 
-    unstub()
 
-
-def test_get_access_token_with_browser_open_no_code(mock_cli_config, unstub):
+def test_get_access_token_with_browser_open_no_code(mock_cli_config):
     mock_callback_server = mock()
 
     when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
@@ -261,10 +248,8 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config, unstub):
     with pytest.raises(ValueError):
         auth_helper.get_tokens_with_browser_open(mock_cli_config)
 
-    unstub()
 
-
-def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
+def test_get_tokens_with_browser_opens_with_brand(mock_cli_config):
     mock_callback_server = mock()
     mock_code = mock()
     expected_auth_url = "https://test/url"
@@ -289,10 +274,9 @@ def test_get_tokens_with_browser_opens_with_brand(mock_cli_config, unstub):
     auth_helper.get_tokens_with_browser_open(mock_cli_config)
 
     verify(auth_helper)._open_browser(expected_url, ...)
-    unstub()
 
 
-def test_open_browser(capture_logs, unstub):
+def test_open_browser(capture_logs):
     test_url = "http://test/url"
     test_prompt_text = "test prompt text"
 
@@ -308,10 +292,9 @@ def test_open_browser(capture_logs, unstub):
 
     # each of those calls should have involved a call to webbrowser.open(test_url)
     verify(auth_helper.webbrowser, times=2).open(test_url)
-    unstub()
 
 
-def test_refresh_tokens(mock_cli_config, unstub):
+def test_refresh_tokens(mock_cli_config):
     test_refresh_token = "refresh token"
     new_access_token = "new access token"
     new_refresh_token = "new refresh token"
@@ -336,10 +319,9 @@ def test_refresh_tokens(mock_cli_config, unstub):
         new_access_token,
         new_refresh_token,
     )
-    unstub()
 
 
-def test_exchange_code_for_response_default_success(unstub):
+def test_exchange_code_for_response_default_success():
     # test with default grant_type = "authorization_code"
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
@@ -377,10 +359,9 @@ def test_exchange_code_for_response_default_success(unstub):
         auth_helper._exchange_code_for_response(mock_client_info, test_code)
         == expected_json_response
     )
-    unstub()
 
 
-def test_exchange_code_for_response_default_error(capture_logs, unstub):
+def test_exchange_code_for_response_default_error(capture_logs):
     # test with default grant_type = "authorization_code"
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
@@ -426,10 +407,9 @@ def test_exchange_code_for_response_default_error(capture_logs, unstub):
         "Error in authentication flow exchanging code for response: some error; error description: more about the error"
         in capture_logs.text
     )
-    unstub()
 
 
-def test_exchange_code_for_response_refresh(capture_logs, unstub):
+def test_exchange_code_for_response_refresh(capture_logs):
     # test with specified grant_type = "refresh_token"
     mock_token_url = "https://some/url"
     mock_client_id = "clientid"
@@ -470,10 +450,9 @@ def test_exchange_code_for_response_refresh(capture_logs, unstub):
         == expected_json_response
     )
     assert "Token refresh successful" in capture_logs.text
-    unstub()
 
 
-def test_exchange_code_for_response_bad_grant_type(capture_logs, unstub):
+def test_exchange_code_for_response_bad_grant_type(capture_logs):
     unexpected_grant_type = "what is this"
     with pytest.raises(SystemExit):
         auth_helper._exchange_code_for_response(mock(), mock(), unexpected_grant_type)
@@ -482,20 +461,18 @@ def test_exchange_code_for_response_bad_grant_type(capture_logs, unstub):
         f"Authentication error: Unexpected grant_type {unexpected_grant_type}"
         in capture_logs.text
     )
-    unstub()
 
 
-def test_validate_token_valid(unstub):
+def test_validate_token_valid():
     access_token = "accesstoken"
 
     when(auth_helper.jwt).decode(access_token, ...).thenReturn(None)
 
     # should return True
     assert auth_helper._validate_token(access_token)
-    unstub()
 
 
-def test_validate_token_expired(capture_logs, unstub):
+def test_validate_token_expired(capture_logs):
     access_token = "accesstoken"
 
     when(auth_helper.jwt).decode(access_token, ...).thenRaise(ExpiredSignatureError())
@@ -503,10 +480,9 @@ def test_validate_token_expired(capture_logs, unstub):
     # should return False
     assert not auth_helper._validate_token(access_token)
     assert "expired" in capture_logs.text
-    unstub()
 
 
-def test_validate_token_other_error(capture_logs, unstub):
+def test_validate_token_other_error(capture_logs):
     access_token = "accesstoken"
 
     when(auth_helper.jwt).decode(access_token, ...).thenRaise(ValueError())
@@ -514,10 +490,9 @@ def test_validate_token_other_error(capture_logs, unstub):
     # should return False
     assert not auth_helper._validate_token(access_token)
     assert "Error validating token" in capture_logs.text
-    unstub()
 
 
-def test_clear_local_token_success(unstub):
+def test_clear_local_token_success():
     mock_access_token_file = mock()
 
     when(auth_helper.os).remove(mock_access_token_file).thenReturn(None)
@@ -525,10 +500,9 @@ def test_clear_local_token_success(unstub):
     auth_helper._clear_local_token(mock_access_token_file)
 
     verify(auth_helper.os).remove(mock_access_token_file)
-    unstub()
 
 
-def test_clear_local_token_not_found(capture_logs, unstub):
+def test_clear_local_token_not_found(capture_logs):
     mock_access_token_file = mock()
 
     when(auth_helper.os).remove(mock_access_token_file).thenRaise(FileNotFoundError())
@@ -536,10 +510,9 @@ def test_clear_local_token_not_found(capture_logs, unstub):
     auth_helper._clear_local_token(mock_access_token_file)
 
     assert "No local token found to clean up" in capture_logs.text
-    unstub()
 
 
-def test_load_local_token_success(mock_builtin_open, unstub):
+def test_load_local_token_success(mock_builtin_open):
     mock_access_token_file = mock()
     expected_access_token = "accesstoken"
 
@@ -549,10 +522,9 @@ def test_load_local_token_success(mock_builtin_open, unstub):
     assert (
         auth_helper._load_local_token(mock_access_token_file) == expected_access_token
     )
-    unstub()
 
 
-def test_load_local_token_invalid(mock_builtin_open, unstub):
+def test_load_local_token_invalid(mock_builtin_open):
     mock_access_token_file = mock()
     expected_access_token = "accesstoken"
 
@@ -560,10 +532,9 @@ def test_load_local_token_invalid(mock_builtin_open, unstub):
     when(auth_helper)._validate_token(expected_access_token).thenReturn(False)
 
     assert auth_helper._load_local_token(mock_access_token_file) is None
-    unstub()
 
 
-def test_load_local_token_do_not_validate(mock_builtin_open, unstub):
+def test_load_local_token_do_not_validate(mock_builtin_open):
     mock_access_token_file = mock()
 
     expected_access_token = "accesstoken"
@@ -578,20 +549,18 @@ def test_load_local_token_do_not_validate(mock_builtin_open, unstub):
 
     # validate function should not have been called
     verify(auth_helper, times(0))._validate_token()
-    unstub()
 
 
-def test_load_local_token_file_not_found(mock_builtin_open, unstub):
+def test_load_local_token_file_not_found(mock_builtin_open):
     mock_access_token_file = mock()
 
     when(mock_builtin_open).read().thenRaise(FileNotFoundError())
     when(auth_helper)._clear_local_token(mock_access_token_file).thenReturn(None)
 
     assert auth_helper._load_local_token(mock_access_token_file) is None
-    unstub()
 
 
-def test_save_local_token(mock_builtin_open, unstub):
+def test_save_local_token(mock_builtin_open):
     mock_access_token_file = mock()
     mock_token = mock()
     mock_dirname = mock()
@@ -613,4 +582,3 @@ def test_save_local_token(mock_builtin_open, unstub):
     auth_helper._save_local_token(mock_access_token_file, mock_token)
 
     verify(auth_helper.os).makedirs(mock_dirname, exist_ok=True)
-    unstub()
