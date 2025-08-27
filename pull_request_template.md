@@ -16,3 +16,4 @@ _Please replace this description with a concise description of this Pull Request
 - [ ] Updated internal documentation (if applicable)
 - [ ] Planned non patch version bump (if applicable)
 - [ ] Updated Teaspoons PR (if applicable)
+- [ ] Updated CHANGELOG.md

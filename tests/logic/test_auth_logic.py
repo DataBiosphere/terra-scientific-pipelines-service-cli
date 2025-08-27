@@ -5,6 +5,8 @@ from mockito import when, mock, verify
 
 from terralab.logic import auth_logic
 
+pytestmark = pytest.mark.usefixtures("unstub_fixture")
+
 
 @pytest.fixture
 def mock_cli_config(unstub):
@@ -21,7 +23,7 @@ def mock_cli_config(unstub):
     unstub()
 
 
-def test_clear_local_token(mock_cli_config, unstub):
+def test_clear_local_tokens(mock_cli_config):
     when(auth_logic)._clear_local_token(...).thenReturn(None)
 
     auth_logic.clear_local_tokens()
@@ -31,7 +33,7 @@ def test_clear_local_token(mock_cli_config, unstub):
     verify(auth_logic)._clear_local_token("mock_oauth_access_token_file")
 
 
-def test_login_with_oauth(mock_cli_config, unstub):
+def test_login_with_oauth(mock_cli_config):
     test_token = "fake token"
     when(auth_logic)._save_local_token(...)
 
@@ -40,7 +42,7 @@ def test_login_with_oauth(mock_cli_config, unstub):
     verify(auth_logic)._save_local_token("mock_oauth_access_token_file", test_token)
 
 
-def test_login_with_custom_redirect(mock_cli_config, unstub):
+def test_login_with_custom_redirect(mock_cli_config):
     test_access_token = "fake access token"
     test_refresh_token = "fake refresh token"
 

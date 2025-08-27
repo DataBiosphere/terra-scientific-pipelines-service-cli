@@ -1,14 +1,18 @@
 # commands/auth_commands.py
 
 import click
+import logging
 
 from terralab.logic import auth_logic
+
+LOGGER = logging.getLogger(__name__)
 
 
 @click.command()
 def logout() -> None:
     """Remove access credentials"""
     auth_logic.clear_local_tokens()
+    LOGGER.info("Logged out")
 
 
 @click.command(hidden=True)

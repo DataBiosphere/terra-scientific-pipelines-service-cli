@@ -18,7 +18,6 @@ def clear_local_tokens() -> None:
     _clear_local_token(cli_config.access_token_file)
     _clear_local_token(cli_config.refresh_token_file)
     _clear_local_token(cli_config.oauth_access_token_file)
-    LOGGER.info("Logged out")
 
 
 def login_with_oauth(token: str) -> None:
