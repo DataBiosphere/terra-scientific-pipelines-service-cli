@@ -176,7 +176,7 @@ def test_get_tokens_with_custom_redirect(mock_cli_config):
         "refresh_token": expected_refresh_token,
     }
 
-    when(auth_helper).get_custom_auth_url(...).thenReturn(None)
+    when(auth_helper).get_branded_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(auth_helper).prompt(...).thenReturn(mock_code)
     when(auth_helper)._exchange_code_for_response(
@@ -194,7 +194,7 @@ def test_get_tokens_with_custom_redirect(mock_cli_config):
 def test_get_access_token_with_custom_redirect_error(mock_cli_config, capture_logs):
     mock_code = mock()
 
-    when(auth_helper).get_custom_auth_url(...).thenReturn(None)
+    when(auth_helper).get_branded_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(auth_helper).prompt(...).thenReturn(mock_code)
     when(auth_helper)._exchange_code_for_response(
@@ -220,7 +220,7 @@ def test_get_access_token_with_browser_open_valid_code(mock_cli_config):
     when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
         mock_callback_server
     )
-    when(auth_helper).get_custom_auth_url(...).thenReturn(None)
+    when(auth_helper).get_branded_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(mock_code)
     when(auth_helper)._exchange_code_for_response(
@@ -241,7 +241,7 @@ def test_get_access_token_with_browser_open_no_code(mock_cli_config):
     when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
         mock_callback_server
     )
-    when(auth_helper).get_custom_auth_url(...).thenReturn(None)
+    when(auth_helper).get_branded_auth_url(...).thenReturn(None)
     when(auth_helper)._open_browser(...).thenReturn(None)
     when(mock_callback_server).wait_for_code().thenReturn(None)
 
@@ -262,7 +262,7 @@ def test_get_tokens_with_browser_opens_with_brand(mock_cli_config):
     when(auth_helper).OAuthCallbackHttpServer(mock_cli_config.server_port).thenReturn(
         mock_callback_server
     )
-    when(auth_helper).get_custom_auth_url(mock_cli_config.client_info, ...).thenReturn(
+    when(auth_helper).get_branded_auth_url(mock_cli_config.client_info, ...).thenReturn(
         expected_url
     )
     when(auth_helper)._open_browser(...).thenReturn(None)
