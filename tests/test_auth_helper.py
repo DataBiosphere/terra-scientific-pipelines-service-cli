@@ -276,7 +276,7 @@ def test_get_tokens_with_browser_opens_with_brand(mock_cli_config):
     verify(auth_helper)._open_browser(expected_url, ...)
 
 
-def test_get_custom_auth_url():
+def test_get_branded_auth_url():
     mock_client_info = mock()
     mock_callback_url = "http://test/callback"
     mock_base_url = "http://test/base"
@@ -286,7 +286,7 @@ def test_get_custom_auth_url():
         mock_base_url
     )
     assert (
-        auth_helper.get_custom_auth_url(mock_client_info, mock_callback_url)
+        auth_helper.get_branded_auth_url(mock_client_info, mock_callback_url)
         == expected_url
     )
 

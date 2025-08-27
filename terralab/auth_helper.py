@@ -73,7 +73,7 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
     """
     Provides a simplified API to:
 
-    - Open the browser with the authorization URL
+    - Print the authorization URL for the user to copy into a web browser
     - Wait for the user to copy the authorization code back into the program
     - Get access token from code
 
@@ -82,7 +82,7 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
     """
     client_info = cli_config.client_info
 
-    auth_url = get_custom_auth_url(client_info, cli_config.remote_oauth_redirect_uri)
+    auth_url = get_branded_auth_url(client_info, cli_config.remote_oauth_redirect_uri)
     LOGGER.info(
         f"Authentication required.  Please paste the following URL into a browser: \n\n{auth_url}\n"
     )
@@ -119,7 +119,7 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     callback_server = OAuthCallbackHttpServer(cli_config.server_port)
     client_info = cli_config.client_info
 
-    auth_url = get_custom_auth_url(client_info, callback_server.callback_url)
+    auth_url = get_branded_auth_url(client_info, callback_server.callback_url)
     prompt_text = "Authentication required.  Your browser should automatically open an authentication page.  If your environment does not have access to a web browser, please exit this command and run 'terralab login' first."
     _open_browser(auth_url, prompt_text, LOGGER.info)
     code = callback_server.wait_for_code()
@@ -132,7 +132,7 @@ def get_tokens_with_browser_open(cli_config: CliConfig) -> tuple[str, str]:
     return response_dict["access_token"], response_dict["refresh_token"]
 
 
-def get_custom_auth_url(client_info: OAuth2ClientInfo, callback_url: str) -> str:
+def get_branded_auth_url(client_info: OAuth2ClientInfo, callback_url: str) -> str:
     """Add our custom fields (&prompt=login&brand=scientificServices) to the auth url"""
     base_auth_url = get_auth_url(client_info, callback_url)
     return f"{base_auth_url}&prompt=login&brand=scientificServices"
