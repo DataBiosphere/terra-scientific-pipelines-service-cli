@@ -83,10 +83,10 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
     client_info = cli_config.client_info
 
     auth_url = get_auth_url(client_info, cli_config.remote_oauth_redirect_uri)
-    prompt_text = f"Authentication required.  Please paste the following URL into a browser if it does not open automatically: \n\n{auth_url}\n"
-    _open_browser(
-        f"{auth_url}&prompt=login&brand=scientificServices", prompt_text, LOGGER.info
+    LOGGER.info(
+        f"Authentication required.  Please paste the following URL into a browser: \n\n{auth_url}\n"
     )
+
     code = prompt(
         "Once finished, enter the verification code provided in your browser (it will be masked here): ",
         is_password=True,

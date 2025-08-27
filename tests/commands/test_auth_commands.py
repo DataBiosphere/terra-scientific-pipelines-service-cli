@@ -46,11 +46,11 @@ def test_login_with_oauth_no_token():
 def test_login():
     runner = CliRunner()
 
-    when(auth_commands.auth_logic).clear_local_tokens()
+    when(auth_commands.auth_logic).clear_local_tokens(verbose=False)
     when(auth_commands.auth_logic).login_with_custom_redirect()
 
     result = runner.invoke(auth_commands.login)
 
     assert result.exit_code == 0
-    verify(auth_commands.auth_logic).clear_local_tokens()
+    verify(auth_commands.auth_logic).clear_local_tokens(verbose=False)
     verify(auth_commands.auth_logic).login_with_custom_redirect()

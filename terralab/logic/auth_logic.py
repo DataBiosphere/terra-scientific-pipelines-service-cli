@@ -12,13 +12,14 @@ from terralab.config import load_config
 LOGGER = logging.getLogger(__name__)
 
 
-def clear_local_tokens() -> None:
+def clear_local_tokens(verbose: bool = True) -> None:
     """Remove access credentials"""
     cli_config = load_config()  # initialize the config from environment variables
     _clear_local_token(cli_config.access_token_file)
     _clear_local_token(cli_config.refresh_token_file)
     _clear_local_token(cli_config.oauth_access_token_file)
-    LOGGER.info("Logged out")
+    if verbose:
+        LOGGER.info("Logged out")
 
 
 def login_with_oauth(token: str) -> None:
