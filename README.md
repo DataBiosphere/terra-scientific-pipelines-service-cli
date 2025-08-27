@@ -35,3 +35,6 @@ terralab pipelines list
 
 ## Development
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Changelog
+See [CHANGELOG.md](https://github.com/DataBiosphere/terra-scientific-pipelines-service-cli/blob/main/CHANGELOG.md)

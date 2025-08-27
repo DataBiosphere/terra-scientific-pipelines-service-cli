@@ -4,7 +4,6 @@ import pytest
 from mockito import when, mock, verify
 
 from terralab.logic import auth_logic
-from tests.conftest import capture_logs
 
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
 
@@ -24,28 +23,14 @@ def mock_cli_config(unstub):
     unstub()
 
 
-def test_clear_local_tokens(mock_cli_config, capture_logs):
+def test_clear_local_tokens(mock_cli_config):
     when(auth_logic)._clear_local_token(...).thenReturn(None)
 
-    auth_logic.clear_local_tokens()  # default is verbose = True
+    auth_logic.clear_local_tokens()
 
     verify(auth_logic)._clear_local_token("mock_access_token_file")
     verify(auth_logic)._clear_local_token("mock_refresh_token_file")
     verify(auth_logic)._clear_local_token("mock_oauth_access_token_file")
-
-    assert "Logged out" in capture_logs.text
-
-
-def test_clear_local_tokens_no_print(mock_cli_config, capture_logs):
-    when(auth_logic)._clear_local_token(...).thenReturn(None)
-
-    auth_logic.clear_local_tokens(verbose=False)
-
-    verify(auth_logic)._clear_local_token("mock_access_token_file")
-    verify(auth_logic)._clear_local_token("mock_refresh_token_file")
-    verify(auth_logic)._clear_local_token("mock_oauth_access_token_file")
-
-    assert "Logged out" not in capture_logs.text
 
 
 def test_login_with_oauth(mock_cli_config):

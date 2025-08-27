@@ -5,12 +5,12 @@ from click.testing import CliRunner
 from mockito import when, verify
 
 from terralab.commands import auth_commands
-
+from tests.conftest import capture_logs
 
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
 
 
-def test_logout():
+def test_logout(capture_logs):
     runner = CliRunner()
 
     when(auth_commands.auth_logic).clear_local_tokens()
@@ -19,6 +19,7 @@ def test_logout():
 
     assert result.exit_code == 0
     verify(auth_commands.auth_logic).clear_local_tokens()
+    assert "Logged out" in capture_logs.text
 
 
 def test_login_with_oauth():
@@ -46,11 +47,11 @@ def test_login_with_oauth_no_token():
 def test_login():
     runner = CliRunner()
 
-    when(auth_commands.auth_logic).clear_local_tokens(verbose=False)
+    when(auth_commands.auth_logic).clear_local_tokens()
     when(auth_commands.auth_logic).login_with_custom_redirect()
 
     result = runner.invoke(auth_commands.login)
 
     assert result.exit_code == 0
-    verify(auth_commands.auth_logic).clear_local_tokens(verbose=False)
+    verify(auth_commands.auth_logic).clear_local_tokens()
     verify(auth_commands.auth_logic).login_with_custom_redirect()
