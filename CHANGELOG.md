@@ -12,12 +12,12 @@ All notable changes to this project will be documented in this file with the fol
 - Bug fixes.
 
 
-## [1.0.8]
+## [1.0.8] - 2025-08-27
 
 ### Fixed
 - Removed auto-opening of authentication URL in `terralab login` command to avoid errors in remote environments.
 
-## [1.0.7] - YYYY-MM-DD
+## [1.0.7] - 2025-08-21
 
 ### Added
 - Initial release.
