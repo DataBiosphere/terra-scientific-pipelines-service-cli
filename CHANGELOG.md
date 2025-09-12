@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [1.1.0] - 2025-09-12
+
+### Changed
+- Moved a job's quota consumed from the `terralab jobs list` output table to the `terralab jobs details` output.
+
 
 ## [1.0.8] - 2025-08-27
 

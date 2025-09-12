@@ -125,6 +125,9 @@ def details(job_id: str) -> None:
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date)}"
             )
         )
+    if response.job_report.completed:
+        quota_consumed = response.pipeline_run_report.quota_consumed or 0
+        LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
     LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
@@ -149,7 +152,6 @@ def list_command(num_results: int) -> None:
                 "Submitted",
                 "Completed",
                 "Description",
-                "Quota Consumed",
             ]
         ]
         for pipeline_run in results:
@@ -162,11 +164,6 @@ def list_command(num_results: int) -> None:
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
                     pipeline_run.description or "",
-                    (
-                        str(pipeline_run.quota_consumed)
-                        if pipeline_run.quota_consumed is not None
-                        else ""
-                    ),
                 ]
             )
 
