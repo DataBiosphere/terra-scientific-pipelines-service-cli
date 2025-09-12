@@ -1,11 +1,13 @@
 # tests/commands/test_pipelines_commands.py
 
 import logging
+import pytest
 
 from click.testing import CliRunner
 from mockito import when, verify
 from teaspoons_client import (
     Pipeline,
+    PipelineOutputDefinition,
     PipelineWithDetails,
     PipelineUserProvidedInputDefinition,
     ApiException,
@@ -17,6 +19,8 @@ from terralab.constants import SUPPORT_EMAIL_TEXT
 from tests.conftest import capture_logs
 
 LOGGER = logging.getLogger(__name__)
+
+pytestmark = pytest.mark.usefixtures("unstub_fixture")
 
 
 def test_list_pipelines(capture_logs):
@@ -50,10 +54,13 @@ def test_list_pipelines(capture_logs):
     assert "test_pipeline_2" in capture_logs.text
 
 
-def test_get_info_success_no_version(capture_logs, unstub):
+def test_get_info_success_no_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
         name="test_input", type="test_type"
+    )
+    test_output_definition = PipelineOutputDefinition(
+        name="test_output", type="test_type"
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -68,6 +75,7 @@ def test_get_info_success_no_version(capture_logs, unstub):
         display_name="test_display_name",
         type="test_type",
         inputs=[test_input_definition],
+        outputs=[test_output_definition],
         pipeline_quota=test_pipeline_quota,
     )
 
@@ -88,15 +96,17 @@ def test_get_info_success_no_version(capture_logs, unstub):
     assert "Pipeline Version:   1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
+    assert "test_output" in capture_logs.text
     assert "Min Quota Consumed: 500 units" in capture_logs.text
 
-    unstub()
 
-
-def test_get_info_success_version(capture_logs, unstub):
+def test_get_info_success_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
         name="test_input", type="test_type"
+    )
+    test_output_definition = PipelineOutputDefinition(
+        name="test_output", type="test_type"
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -111,6 +121,7 @@ def test_get_info_success_version(capture_logs, unstub):
         display_name="test_display_name",
         type="test_type",
         inputs=[test_input_definition],
+        outputs=[test_output_definition],
         pipeline_quota=test_pipeline_quota,
     )
 
@@ -129,9 +140,8 @@ def test_get_info_success_version(capture_logs, unstub):
     assert "Pipeline Version:   1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
+    assert "test_output" in capture_logs.text
     assert "Min Quota Consumed: 500 units" in capture_logs.text
-
-    unstub()
 
 
 def test_get_info_missing_argument():
@@ -143,7 +153,7 @@ def test_get_info_missing_argument():
     assert "Error: Missing argument 'PIPELINE_NAME'" in result.output
 
 
-def test_get_info_api_exception(capture_logs, unstub):
+def test_get_info_api_exception(capture_logs):
     runner = CliRunner()
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -170,10 +180,8 @@ def test_get_info_api_exception(capture_logs, unstub):
     )
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
-    unstub()
 
-
-def test_get_info_api_exception_no_body(capture_logs, unstub):
+def test_get_info_api_exception_no_body(capture_logs):
     runner = CliRunner()
 
     when(pipelines_commands.pipelines_logic).get_pipeline_info(
@@ -196,10 +204,8 @@ def test_get_info_api_exception_no_body(capture_logs, unstub):
     assert "API call failed with status code 400 (Error Reason)" in capture_logs.text
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
-    unstub()
 
-
-def test_get_info_api_exception_no_user_found(capture_logs, unstub):
+def test_get_info_api_exception_no_user_found(capture_logs):
     runner = CliRunner()
     pipeline_name = "whatever"
 
@@ -222,10 +228,8 @@ def test_get_info_api_exception_no_user_found(capture_logs, unstub):
         in capture_logs.text
     )
 
-    unstub()
 
-
-def test_get_info_api_exception_different_401(capture_logs, unstub):
+def test_get_info_api_exception_different_401(capture_logs):
     runner = CliRunner()
     pipeline_name = "whatever"
 
@@ -249,10 +253,8 @@ def test_get_info_api_exception_different_401(capture_logs, unstub):
     )
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
-    unstub()
 
-
-def test_non_json_api_exception_body(capture_logs, unstub):
+def test_non_json_api_exception_body(capture_logs):
     runner = CliRunner()
     pipeline_name = "whatever"
 
@@ -271,5 +273,3 @@ def test_non_json_api_exception_body(capture_logs, unstub):
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
     assert "403 Forbidden: blah blah blah" in capture_logs.text
-
-    unstub()
