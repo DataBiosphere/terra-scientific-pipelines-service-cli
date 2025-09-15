@@ -119,15 +119,14 @@ def details(job_id: str) -> None:
         LOGGER.info(
             indented(f"Completed: {format_timestamp(response.job_report.completed)}")
         )
+        quota_consumed = response.pipeline_run_report.quota_consumed or 0
+        LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
     if response.job_report.status == SUCCEEDED_KEY:
         LOGGER.info(
             indented(
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date)}"
             )
         )
-    if response.job_report.completed:
-        quota_consumed = response.pipeline_run_report.quota_consumed or 0
-        LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
     LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
