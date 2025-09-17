@@ -69,6 +69,12 @@ def details(pipeline_name: str, version: int) -> None:
         inputs_for_usage.extend([f"--{input_definition.name}", "YOUR_VALUE_HERE"])
     inputs_string_for_usage = " ".join(inputs_for_usage)
 
+    LOGGER.info("Outputs:")
+    for output_definition in pipeline_info.outputs:
+        LOGGER.info(
+            f"{pad_column("", col_width)}{output_definition.name} ({output_definition.type})"
+        )
+
     LOGGER.info(
         f"{pad_column("Example usage:", col_width)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
     )

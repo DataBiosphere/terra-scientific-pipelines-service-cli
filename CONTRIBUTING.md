@@ -118,7 +118,7 @@ rm -rf $(poetry env info --path)
 poetry install
 ```
 
-TODO - Remove this line after release to production! By default the CLI points to the **production** [instance](https://teaspoons.dsde-prod.broadinstitute.org) of Teaspoons. Note that you need to be on the VPN (non-split) to access the production instance.
+By default the CLI points to the **production** [instance](https://teaspoons.dsde-prod.broadinstitute.org) of Teaspoons.
 
 To run the CLI against your **locally** running instance of Teaspoons:
 1. Follow [the instructions in the Teaspoons repo for running the service locally](https://github.com/DataBiosphere/terra-scientific-pipelines-service/blob/main/README.md#local-development). 
