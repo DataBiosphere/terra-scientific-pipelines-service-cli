@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "terralab-cli"
 # version is auto-incremented. do not edit.
-version = "1.0.9"
+version = "1.0.10"
 description = "Command line interface for interacting with the Terra Scientific Pipelines Service, or Teaspoons."
 authors = ["Terra Scientific Services <teaspoons-developers@broadinstitute.org>"]
 readme = "README.md"
