@@ -191,6 +191,7 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "Status:" in capture_logs.text
     assert "Completed:" in capture_logs.text
     assert "File Download Expiration:" in capture_logs.text
+    assert "Quota Consumed: 500" in capture_logs.text
 
     unstub()
 
@@ -219,6 +220,7 @@ def test_details_failed_job(capture_logs, unstub):
     assert test_error_message in capture_logs.text
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
     assert "Completed:" in capture_logs.text
+    assert "Quota Consumed: 0" in capture_logs.text
 
     unstub()
 
@@ -274,7 +276,6 @@ def test_list_jobs(capture_logs):
     assert test_pipeline_runs[0].job_id in capture_logs.text
     assert test_pipeline_runs[0].pipeline_name in capture_logs.text
     assert str(test_pipeline_runs[0].pipeline_version) in capture_logs.text
-    assert str(test_pipeline_runs[0].quota_consumed) in capture_logs.text
     assert "Succeeded" in capture_logs.text
     assert test_pipeline_runs[1].job_id in capture_logs.text
     assert test_pipeline_runs[1].pipeline_name in capture_logs.text
@@ -343,10 +344,15 @@ def create_test_pipeline_run_response(
     )
     if status in [SUCCEEDED_KEY, FAILED_KEY]:
         job_report.completed = "2024-01-01T15:00:00Z"
+
+    pipeline_run_report = PipelineRunReport(
+        pipelineName=pipeline_name, pipelineVersion=1, toolVersion="1.0.0"
+    )
+    if status == SUCCEEDED_KEY:
+        pipeline_run_report.quota_consumed = 500
+
     return AsyncPipelineRunResponse(
         jobReport=job_report,
-        pipelineRunReport=PipelineRunReport(
-            pipelineName=pipeline_name, pipelineVersion=1, toolVersion="1.0.0"
-        ),
+        pipelineRunReport=pipeline_run_report,
         errorReport=error_report,
     )

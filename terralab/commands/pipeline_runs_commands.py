@@ -119,6 +119,8 @@ def details(job_id: str) -> None:
         LOGGER.info(
             indented(f"Completed: {format_timestamp(response.job_report.completed)}")
         )
+        quota_consumed = response.pipeline_run_report.quota_consumed or 0
+        LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
     if response.job_report.status == SUCCEEDED_KEY:
         LOGGER.info(
             indented(
@@ -149,7 +151,6 @@ def list_command(num_results: int) -> None:
                 "Submitted",
                 "Completed",
                 "Description",
-                "Quota Consumed",
             ]
         ]
         for pipeline_run in results:
@@ -162,11 +163,6 @@ def list_command(num_results: int) -> None:
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
                     pipeline_run.description or "",
-                    (
-                        str(pipeline_run.quota_consumed)
-                        if pipeline_run.quota_consumed is not None
-                        else ""
-                    ),
                 ]
             )
 
