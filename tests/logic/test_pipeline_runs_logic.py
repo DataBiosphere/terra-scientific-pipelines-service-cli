@@ -234,12 +234,12 @@ def test_get_pipeline_runs(mock_pipeline_runs_api):
     test_pipeline_runs_10 = [mock() for _ in range(10)]
     n_total_results = 20
 
-    # Mock first response with page token
+    # mock first response
     mock_first_response = mock(
         {"results": test_pipeline_runs_10, "total_results": n_total_results}
     )
 
-    # Mock second response with remaining results and no page token
+    # mock second response with remaining results
     mock_second_response = mock(
         {"results": test_pipeline_runs_10[:5], "total_results": n_total_results}
     )
