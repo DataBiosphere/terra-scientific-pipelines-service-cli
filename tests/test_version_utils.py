@@ -239,9 +239,10 @@ def test_get_last_version_check_date_file_not_exists(mock_exists, mock_get_path)
 
 @patch("terralab.version_utils.get_version_info_file_path")
 @patch("terralab.version_utils.os.path.exists")
+@patch("terralab.version_utils.os.remove")
 @patch("builtins.open", new_callable=mock_open)
 def test_get_last_version_check_date_missing_key(
-    mock_file_open, mock_exists, mock_get_path
+    mock_file_open, mock_remove, mock_exists, mock_get_path
 ):
     """Test when JSON file exists but missing last_version_check key"""
     # Mock file path
@@ -260,12 +261,16 @@ def test_get_last_version_check_date_missing_key(
     # Should return None due to empty string causing ValueError in strptime
     assert result is None
 
+    # Should attempt to remove the corrupted file
+    mock_remove.assert_called_once_with(mock_file_path)
+
 
 @patch("terralab.version_utils.get_version_info_file_path")
 @patch("terralab.version_utils.os.path.exists")
+@patch("terralab.version_utils.os.remove")
 @patch("builtins.open", new_callable=mock_open)
 def test_get_last_version_check_date_invalid_date_format(
-    mock_file_open, mock_exists, mock_get_path
+    mock_file_open, mock_remove, mock_exists, mock_get_path
 ):
     """Test when JSON contains invalid date format"""
     # Mock file path
@@ -284,12 +289,16 @@ def test_get_last_version_check_date_invalid_date_format(
     # Should return None due to ValueError in strptime
     assert result is None
 
+    # Should attempt to remove the corrupted file
+    mock_remove.assert_called_once_with(mock_file_path)
+
 
 @patch("terralab.version_utils.get_version_info_file_path")
 @patch("terralab.version_utils.os.path.exists")
+@patch("terralab.version_utils.os.remove")
 @patch("builtins.open", new_callable=mock_open)
 def test_get_last_version_check_date_invalid_json(
-    mock_file_open, mock_exists, mock_get_path
+    mock_file_open, mock_remove, mock_exists, mock_get_path
 ):
     """Test when file contains invalid JSON"""
     # Mock file path
@@ -306,3 +315,5 @@ def test_get_last_version_check_date_invalid_json(
 
     # Should return None due to JSON decode error
     assert result is None
+    # Should attempt to remove the corrupted file
+    mock_remove.assert_called_once_with(mock_file_path)

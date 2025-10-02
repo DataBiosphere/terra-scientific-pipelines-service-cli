@@ -31,6 +31,13 @@ def get_last_version_check_date() -> date | None:
                     data.get("last_version_check", ""), "%Y-%m-%d"
                 ).date()
     except (ValueError, KeyError):
+        # Delete the potentially corrupted file
+        try:
+            os.remove(info_file)
+        except OSError:
+            LOGGER.debug(
+                "Version info file is unreadable and could not be automatically cleaned up"
+            )
         pass
     return None
 
