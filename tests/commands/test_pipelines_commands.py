@@ -263,7 +263,7 @@ def test_non_json_api_exception_body(capture_logs):
     ).thenRaise(
         ApiException(
             status=403,
-            reason=None,
+            reason="This is the reason that gets translated into the message",
             body="403 Forbidden: blah blah blah",
         )
     )
@@ -272,4 +272,6 @@ def test_non_json_api_exception_body(capture_logs):
 
     assert result.exit_code != 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
-    assert "403 Forbidden: blah blah blah" in capture_logs.text
+    assert (
+        "This is the reason that gets translated into the message" in capture_logs.text
+    )
