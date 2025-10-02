@@ -7,6 +7,7 @@ from typing import Optional, MutableMapping, Any
 import click
 
 from terralab import __version__, log
+from terralab.version_utils import check_version
 from terralab.commands.auth_commands import logout, login_with_oauth, login
 from terralab.commands.pipeline_runs_commands import (
     submit,
@@ -63,6 +64,9 @@ def cli(debug: bool) -> None:
     LOGGER.debug(
         "Log level set to: %s", logging.getLevelName(logging.getLogger().level)
     )
+
+    # Check for version updates on the first command run of the day
+    check_version()
 
 
 # the order in which these are added determines the order in which they show up in the --help output

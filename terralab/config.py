@@ -18,6 +18,7 @@ class CliConfig:
     client_info: OAuth2ClientInfo
     teaspoons_api_url: str
     server_port: int
+    version_info_file: str
     access_token_file: str
     refresh_token_file: str
     oauth_access_token_file: str
@@ -54,6 +55,7 @@ def load_config(
         ),
         teaspoons_api_url=teaspoons_api_url,
         server_port=int(server_port),
+        version_info_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/version_info.json',
         access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/access_token',
         refresh_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/refresh_token',
         oauth_access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_access_token',
