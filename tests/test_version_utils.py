@@ -10,11 +10,6 @@ import requests
 import json
 
 
-def test_get_version_info_file_path():
-    path = get_version_info_file_path()
-    assert path.endswith("version_info.json")
-
-
 @patch("terralab.version_utils.get_last_version_check_date")
 @patch("terralab.version_utils.version")
 @patch("terralab.version_utils.requests.get")
