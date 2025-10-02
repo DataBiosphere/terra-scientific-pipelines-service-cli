@@ -33,12 +33,7 @@ def handle_api_exceptions(func: Any) -> Any:
                 try:
                     message = json.loads(e.body)["message"]
                 except json.JSONDecodeError:
-                    try:
-                        message = (
-                            e.reason
-                        )  # 401 Unauthorized stores Unauthorized in Reason
-                    except json.JSONDecodeError:
-                        message = e.body
+                    message = e.body
             if e.status == 401 and message == "User not found":
                 LOGGER.error(
                     add_blankline_before(
@@ -46,7 +41,7 @@ def handle_api_exceptions(func: Any) -> Any:
                     )
                 )
                 exit(1)
-            elif e.status == 401 and message == "Unauthorized":
+            elif e.status == 401 and "401 Unauthorized" in str(message):
                 LOGGER.error(
                     add_blankline_before(
                         f"Something went wrong with authorization. Please run 'terralab logout' and then try again.\n{SUPPORT_EMAIL_TEXT}"
