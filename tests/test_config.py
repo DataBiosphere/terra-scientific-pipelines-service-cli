@@ -18,7 +18,7 @@ def test_config():
     test_config = config.load_config(config_file=".test.config", package="tests")
 
     assert test_config.teaspoons_api_url == "not-real"
-    assert test_config.local_storage_path == f"{Path.home()}/.cool"
+    assert test_config.version_info_file == f"{Path.home()}/.cool/version_info.json"
     assert test_config.access_token_file == f"{Path.home()}/.cool/access_token"
     assert test_config.refresh_token_file == f"{Path.home()}/.cool/refresh_token"
     assert (
