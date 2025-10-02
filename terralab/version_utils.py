@@ -5,6 +5,8 @@ import json
 from datetime import datetime, date
 from importlib.metadata import version, PackageNotFoundError
 
+from terralab.config import load_config
+
 package_name = "terralab-cli"
 
 LOGGER = logging.getLogger(__name__)
@@ -12,9 +14,10 @@ LOGGER = logging.getLogger(__name__)
 
 def get_version_info_file_path() -> str:
     """Get the path to the version info file for storing the last version check date."""
-    info_dir = os.path.expanduser("~/.terralab")
-    os.makedirs(info_dir, exist_ok=True)
-    return os.path.join(info_dir, "version_info.json")
+    config = load_config()
+    local_storage_dir = config.local_storage_path
+    os.makedirs(local_storage_dir, exist_ok=True)
+    return os.path.join(local_storage_dir, "version_info.json")
 
 
 def get_last_version_check_date() -> date | None:
