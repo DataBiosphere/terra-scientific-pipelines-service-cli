@@ -33,7 +33,12 @@ def handle_api_exceptions(func: Any) -> Any:
                 try:
                     message = json.loads(e.body)["message"]
                 except json.JSONDecodeError:
-                    message = e.body
+                    try:
+                        message = (
+                            e.reason
+                        )  # 401 Unauthorized stores Unauthorized in Reason
+                    except json.JSONDecodeError:
+                        message = e.body
             if e.status == 401 and message == "User not found":
                 LOGGER.error(
                     add_blankline_before(
