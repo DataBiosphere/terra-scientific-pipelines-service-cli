@@ -239,18 +239,20 @@ def test_get_info_api_exception_401_unauthorized(capture_logs):
         ApiException(
             status=401,
             reason="Unauthorized",
-            body="""<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
-<title>401 Unauthorized</title>
-</head><body>
-<h1>Unauthorized</h1>
-<p>This server could not verify that you
-are authorized to access the document
-requested.  Either you supplied the wrong
-credentials (e.g., bad password), or your
-browser doesn't understand how to supply
-the credentials required.</p>
-</body></html>""",
+            body=(
+                '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n'
+                "<html><head>\n"
+                "<title>401 Unauthorized</title>\n"
+                "</head><body>\n"
+                "<h1>Unauthorized</h1>\n"
+                "<p>This server could not verify that you\n"
+                "are authorized to access the document\n"
+                "requested.  Either you supplied the wrong\n"
+                "credentials (e.g., bad password), or your\n"
+                "browser doesn't understand how to supply\n"
+                "the credentials required.</p>\n"
+                "</body></html>"
+            ),
         )
     )
 
