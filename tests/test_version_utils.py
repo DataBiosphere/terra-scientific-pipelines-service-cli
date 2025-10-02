@@ -2,6 +2,7 @@ from terralab.version_utils import (
     get_version_info_file_path,
     check_version,
     update_last_version_check_date,
+    get_last_version_check_date,
 )
 from unittest.mock import patch, MagicMock, mock_open
 from datetime import date
@@ -189,3 +190,124 @@ def test_update_last_version_check_date_io_error(mock_file_open, mock_get_path):
         mock_logger.debug.assert_called_once_with(
             "Failed to write to version info file"
         )
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("terralab.version_utils.os.path.exists")
+@patch("builtins.open", new_callable=mock_open)
+def test_get_last_version_check_date_success(
+    mock_file_open, mock_exists, mock_get_path
+):
+    """Test successful reading and parsing of version check date"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Mock file exists
+    mock_exists.return_value = True
+
+    # Mock JSON data with valid date
+    test_date_str = "2023-10-15"
+    json_data = {"last_version_check": test_date_str}
+    mock_file_open.return_value.read.return_value = json.dumps(json_data)
+
+    result = get_last_version_check_date()
+
+    # Should return the parsed date
+    expected_date = date(2023, 10, 15)
+    assert result == expected_date
+
+    # Verify file operations
+    mock_exists.assert_called_once_with(mock_file_path)
+    mock_file_open.assert_called_once_with(mock_file_path, "r")
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("terralab.version_utils.os.path.exists")
+def test_get_last_version_check_date_file_not_exists(mock_exists, mock_get_path):
+    """Test when version info file does not exist"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Mock file does not exist
+    mock_exists.return_value = False
+
+    result = get_last_version_check_date()
+
+    # Should return None
+    assert result is None
+
+    # Should check if file exists
+    mock_exists.assert_called_once_with(mock_file_path)
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("terralab.version_utils.os.path.exists")
+@patch("builtins.open", new_callable=mock_open)
+def test_get_last_version_check_date_missing_key(
+    mock_file_open, mock_exists, mock_get_path
+):
+    """Test when JSON file exists but missing last_version_check key"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Mock file exists
+    mock_exists.return_value = True
+
+    # Mock JSON data without the expected key
+    json_data = {"some_other_key": "some_value"}
+    mock_file_open.return_value.read.return_value = json.dumps(json_data)
+
+    result = get_last_version_check_date()
+
+    # Should return None due to empty string causing ValueError in strptime
+    assert result is None
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("terralab.version_utils.os.path.exists")
+@patch("builtins.open", new_callable=mock_open)
+def test_get_last_version_check_date_invalid_date_format(
+    mock_file_open, mock_exists, mock_get_path
+):
+    """Test when JSON contains invalid date format"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Mock file exists
+    mock_exists.return_value = True
+
+    # Mock JSON data with invalid date format
+    json_data = {"last_version_check": "not-a-valid-date"}
+    mock_file_open.return_value.read.return_value = json.dumps(json_data)
+
+    result = get_last_version_check_date()
+
+    # Should return None due to ValueError in strptime
+    assert result is None
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("terralab.version_utils.os.path.exists")
+@patch("builtins.open", new_callable=mock_open)
+def test_get_last_version_check_date_invalid_json(
+    mock_file_open, mock_exists, mock_get_path
+):
+    """Test when file contains invalid JSON"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Mock file exists
+    mock_exists.return_value = True
+
+    # Mock invalid JSON content
+    mock_file_open.return_value.read.return_value = "not valid json content"
+
+    result = get_last_version_check_date()
+
+    # Should return None due to JSON decode error
+    assert result is None
