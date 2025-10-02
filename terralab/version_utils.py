@@ -1,3 +1,4 @@
+import logging
 import requests
 import os
 import json
@@ -6,49 +7,54 @@ from importlib.metadata import version, PackageNotFoundError
 
 package_name = "terralab-cli"
 
+LOGGER = logging.getLogger(__name__)
 
-def get_cache_file_path():
+
+def get_version_check_file_path() -> str:
     """Get the path to the cache file for storing the last warning date."""
     cache_dir = os.path.expanduser("~/.terralab")
     os.makedirs(cache_dir, exist_ok=True)
-    return os.path.join(cache_dir, "version_check_cache.json")
+    return os.path.join(cache_dir, "version_check.json")
 
 
-def get_last_warning_date():
-    """Get the date when the version warning was last shown."""
-    cache_file = get_cache_file_path()
+def get_last_version_check_date() -> date | None:
+    """Get the date when the latest version was last checked."""
+    cache_file = get_version_check_file_path()
     try:
         if os.path.exists(cache_file):
             with open(cache_file, "r") as f:
                 data = json.load(f)
                 return datetime.strptime(
-                    data.get("last_warning_date", ""), "%Y-%m-%d"
+                    data.get("last_version_check", ""), "%Y-%m-%d"
                 ).date()
     except (json.JSONDecodeError, ValueError, KeyError):
         pass
     return None
 
 
-def update_last_warning_date():
-    """Update the cache file with today's date."""
-    cache_file = get_cache_file_path()
-    data = {"last_warning_date": date.today().strftime("%Y-%m-%d")}
+def update_last_version_check_date():
+    """Update the version check file with today's date."""
+    cache_file = get_version_check_file_path()
+    data = {"last_version_check": date.today().strftime("%Y-%m-%d")}
     try:
         with open(cache_file, "w") as f:
             json.dump(data, f)
     except IOError:
-        # Silently fail if we can't write to cache file
+        # Silently fail if we can't write to the cache file
+        LOGGER.debug("Failed to write to version check file")
         pass
 
 
 def check_version_once_per_day():
     """Check for new version and show warning only once per day."""
-    # Check if we already showed the warning today
-    last_warning_date = get_last_warning_date()
+    last_version_check = get_last_version_check_date()
     today = date.today()
 
-    if last_warning_date == today:
-        return  # Already showed warning today
+    if last_version_check == today:
+        LOGGER.debug(
+            f"Skipping version check: last warning date: {last_version_check}, today: {today}"
+        )
+        return
 
     try:
         installed_version = version(package_name)
@@ -56,11 +62,16 @@ def check_version_once_per_day():
         response.raise_for_status()
         latest_version = response.json()["info"]["version"]
 
+        print(  # Debug line to show versions being compared
+            f"Installed version: {installed_version}, Latest version: {latest_version}"
+        )
+
         if installed_version < latest_version:
             print(
-                f"WARNING: A new version of {package_name} ({latest_version}) is available. You are using {installed_version}."
+                f"A new version of {package_name} ({latest_version}) is available. You are using {installed_version}."
             )
-            update_last_warning_date()
+            update_last_version_check_date()
     except (requests.exceptions.RequestException, PackageNotFoundError) as e:
-        # Silently fail - don't show error messages for version checks
+        # Silently fail - we don't want to bother the user in this case
+        LOGGER.debug(f"Version check failed: {e}")
         pass
