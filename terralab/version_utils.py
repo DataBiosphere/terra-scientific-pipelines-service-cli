@@ -38,7 +38,6 @@ def get_last_version_check_date() -> date | None:
             LOGGER.debug(
                 "Version info file is unreadable and could not be automatically cleaned up"
             )
-        pass
     return None
 
 
