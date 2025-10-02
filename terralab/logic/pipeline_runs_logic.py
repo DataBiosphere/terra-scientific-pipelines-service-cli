@@ -95,10 +95,10 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
         )
         results = list(response.results) if response.results else []
         LOGGER.debug(f"Retrieved {len(results)} PipelineRun results")
-        # Handle case where total_results is not present
+        # handle case where total_results is not present
         n_total_results = response.total_results if response.total_results else 0
 
-        # Continue fetching results until we reach the requested number or the total available
+        # continue fetching results until we reach the requested number or the total available;
         # min(n_results_requested, n_total_results) ensures we do not fetch more than available
         while len(results) < min(n_results_requested, n_total_results):
             page_number += 1
