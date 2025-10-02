@@ -1,7 +1,12 @@
-from terralab.version_utils import get_version_info_file_path, check_version
-from unittest.mock import patch, MagicMock
+from terralab.version_utils import (
+    get_version_info_file_path,
+    check_version,
+    update_last_version_check_date,
+)
+from unittest.mock import patch, MagicMock, mock_open
 from datetime import date
 import requests
+import json
 
 
 def test_get_version_info_file_path():
@@ -138,3 +143,49 @@ def test_check_version_package_not_found(mock_version, mock_get_date):
         mock_logger.debug.assert_called_once()
         debug_call = mock_logger.debug.call_args[0][0]
         assert "Version check failed" in debug_call
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("builtins.open", new_callable=mock_open)
+@patch("terralab.version_utils.date")
+def test_update_last_version_check_date_success(
+    mock_date, mock_file_open, mock_get_path
+):
+    """Test successful update of version check date"""
+    # Mock today's date
+    test_date = date(2023, 10, 15)
+    mock_date.today.return_value = test_date
+
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    # Call the function
+    update_last_version_check_date()
+
+    # Verify file was opened for writing
+    mock_file_open.assert_called_once_with(mock_file_path, "w")
+
+    # Verify JSON data was written with correct date
+    handle = mock_file_open()
+    written_data = "".join(call.args[0] for call in handle.write.call_args_list)
+    expected_data = {"last_version_check": "2023-10-15"}
+    assert json.loads(written_data) == expected_data
+
+
+@patch("terralab.version_utils.get_version_info_file_path")
+@patch("builtins.open", side_effect=IOError("Permission denied"))
+def test_update_last_version_check_date_io_error(mock_file_open, mock_get_path):
+    """Test that IOError is handled gracefully"""
+    # Mock file path
+    mock_file_path = "/test/path/version_info.json"
+    mock_get_path.return_value = mock_file_path
+
+    with patch("terralab.version_utils.LOGGER") as mock_logger:
+        # Should not raise exception
+        update_last_version_check_date()
+
+        # Should log debug message about failure
+        mock_logger.debug.assert_called_once_with(
+            "Failed to write to version info file"
+        )
