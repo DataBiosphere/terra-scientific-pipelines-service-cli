@@ -27,7 +27,7 @@ def get_last_version_check_date() -> date | None:
                 return datetime.strptime(
                     data.get("last_version_check", ""), "%Y-%m-%d"
                 ).date()
-    except (json.JSONDecodeError, ValueError, KeyError):
+    except (ValueError, KeyError):
         pass
     return None
 
@@ -42,7 +42,6 @@ def update_last_version_check_date() -> None:
     except IOError:
         # Silently fail if we can't write to the info file
         LOGGER.debug("Failed to write to version info file")
-        pass
 
 
 def check_version() -> None:
@@ -74,4 +73,3 @@ def check_version() -> None:
     except (requests.exceptions.RequestException, PackageNotFoundError) as e:
         # Silently fail - we don't want to bother the user in this case
         LOGGER.debug(f"Version check failed: {e}")
-        pass
