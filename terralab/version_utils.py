@@ -32,7 +32,7 @@ def get_last_version_check_date() -> date | None:
     return None
 
 
-def update_last_version_check_date():
+def update_last_version_check_date() -> None:
     """Update the version check file with today's date."""
     cache_file = get_version_check_file_path()
     data = {"last_version_check": date.today().strftime("%Y-%m-%d")}
@@ -45,14 +45,14 @@ def update_last_version_check_date():
         pass
 
 
-def check_version_once_per_day():
+def check_version_once_per_day() -> None:
     """Check for new version and show warning only once per day."""
     last_version_check = get_last_version_check_date()
     today = date.today()
 
     if last_version_check == today:
         LOGGER.debug(
-            f"Skipping version check: last warning date: {last_version_check}, today: {today}"
+            f"Skipping version check: last version check: {last_version_check}, today: {today}"
         )
         return
 
