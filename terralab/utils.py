@@ -41,6 +41,13 @@ def handle_api_exceptions(func: Any) -> Any:
                     )
                 )
                 exit(1)
+            elif e.status == 401 and message == "Unauthorized":
+                LOGGER.error(
+                    add_blankline_before(
+                        f"Something went wrong with authorization. Please run 'terralab logout' and then try again.\n{SUPPORT_EMAIL_TEXT}"
+                    )
+                )
+                exit(1)
             formatted_message = (
                 f"API call failed with status code {e.status} ({e.reason}): {message}"
                 if message
