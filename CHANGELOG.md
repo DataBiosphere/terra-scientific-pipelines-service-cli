@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [1.1.1] - 2025-08-02
+
+### Fixed
+- Better handling of 401 Unauthorized errors.
+
 ## [1.1.0] - 2025-09-17
 
 ### Added
