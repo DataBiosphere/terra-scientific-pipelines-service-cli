@@ -11,7 +11,12 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [1.1.1] - 2025-08-02
+## [1.1.2] - 2025-10-09
+
+### Added
+- Added automatic version checking. Users will be notified if a newer version of terralab is available.
+
+## [1.1.1] - 2025-10-02
 
 ### Fixed
 - Better handling of 401 Unauthorized errors.
