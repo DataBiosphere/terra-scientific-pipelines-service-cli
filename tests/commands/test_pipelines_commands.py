@@ -205,7 +205,7 @@ def test_get_info_api_exception_no_body(capture_logs):
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
 
 
-def test_get_info_api_exception_no_user_found(capture_logs):
+def test_get_info_api_exception_401_no_user_found(capture_logs):
     runner = CliRunner()
     pipeline_name = "whatever"
 
@@ -225,6 +225,43 @@ def test_get_info_api_exception_no_user_found(capture_logs):
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
     assert (
         "User not found in Terra. Are you sure you've registered? Visit https://services.terra.bio to register."
+        in capture_logs.text
+    )
+
+
+def test_get_info_api_exception_401_unauthorized(capture_logs):
+    runner = CliRunner()
+    pipeline_name = "whatever"
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        pipeline_name, None
+    ).thenRaise(
+        ApiException(
+            status=401,
+            reason="Unauthorized",
+            body=(
+                '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n'
+                "<html><head>\n"
+                "<title>401 Unauthorized</title>\n"
+                "</head><body>\n"
+                "<h1>Unauthorized</h1>\n"
+                "<p>This server could not verify that you\n"
+                "are authorized to access the document\n"
+                "requested.  Either you supplied the wrong\n"
+                "credentials (e.g., bad password), or your\n"
+                "browser doesn't understand how to supply\n"
+                "the credentials required.</p>\n"
+                "</body></html>"
+            ),
+        )
+    )
+
+    result = runner.invoke(pipelines_commands.pipelines, ["details", pipeline_name])
+
+    assert result.exit_code != 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(pipeline_name, None)
+    assert (
+        "Something went wrong with authorization. Please run 'terralab logout' and then try again."
         in capture_logs.text
     )
 
