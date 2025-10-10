@@ -113,7 +113,6 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
                 LOGGER.debug(
                     f"Reached end of available PipelineRun results ({n_total_results})"
                 )
-                break
 
         return results
 
