@@ -133,9 +133,9 @@ def details(job_id: str) -> None:
 @jobs.command(name="list", short_help="List your jobs")
 @click.option(
     "--num_results",
-    type=int,
+    type=click.IntRange(1, 100),
     default=10,
-    help="Number of results to display. Defaults to 10.",
+    help="Number of results to display. Defaults to 10, maximum 100.",
 )
 @handle_api_exceptions
 def list_command(num_results: int) -> None:

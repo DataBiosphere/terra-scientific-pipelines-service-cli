@@ -312,7 +312,7 @@ def test_list_jobs_custom_limit(capture_logs):
     assert test_pipeline_runs[0].job_id in capture_logs.text
 
 
-def test_list_jobs_no_results(capture_logs):
+def test_list_jobs_no_results():
     runner = CliRunner()
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_runs(10).thenReturn(
@@ -322,6 +322,30 @@ def test_list_jobs_no_results(capture_logs):
     result = runner.invoke(pipeline_runs_commands.jobs, ["list"])
 
     assert result.exit_code == 0
+
+
+def test_list_jobs_request_exceeds_limit():
+    runner = CliRunner()
+    test_n_results = 150  # exceeds max of 100
+
+    result = runner.invoke(
+        pipeline_runs_commands.jobs, ["list", "--num_results", test_n_results]
+    )
+
+    assert result.exit_code != 0
+    assert "Error: Invalid value for '--num_results'" in result.output
+
+
+def test_list_jobs_request_too_low():
+    runner = CliRunner()
+    test_n_results = 0  # below min of 1
+
+    result = runner.invoke(
+        pipeline_runs_commands.jobs, ["list", "--num_results", test_n_results]
+    )
+
+    assert result.exit_code != 0
+    assert "Error: Invalid value for '--num_results'" in result.output
 
 
 def create_test_pipeline_run_response(

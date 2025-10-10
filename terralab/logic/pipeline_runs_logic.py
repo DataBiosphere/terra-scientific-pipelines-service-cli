@@ -88,26 +88,31 @@ def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
         api_chunk_default = 10
 
         # fetch the first set of results
-        response = pipeline_runs_client.get_all_pipeline_runs(
-            limit=min(api_chunk_default, n_results_requested), page_token=None
+        page_number = 1
+        response = pipeline_runs_client.get_all_pipeline_runs_v2(
+            page_number=page_number,
+            page_size=min(api_chunk_default, n_results_requested),
         )
         results = list(response.results) if response.results else []
         LOGGER.debug(f"Retrieved {len(results)} PipelineRun results")
-        page_token = response.page_token
+        # handle case where total_results is not present
+        n_total_results = response.total_results if response.total_results else 0
 
-        while len(results) < n_results_requested and page_token:
-            response = pipeline_runs_client.get_all_pipeline_runs(
-                limit=min(api_chunk_default, n_results_requested - len(results)),
-                page_token=page_token,
+        # continue fetching results until we reach the requested number or the total available;
+        # min(n_results_requested, n_total_results) ensures we do not fetch more than available
+        while len(results) < min(n_results_requested, n_total_results):
+            page_number += 1
+            response = pipeline_runs_client.get_all_pipeline_runs_v2(
+                page_number=page_number,
+                page_size=min(api_chunk_default, n_results_requested - len(results)),
             )
             new_results = list(response.results) if response.results else []
             results.extend(new_results)
-            LOGGER.debug(
-                f"Retrieved {len(new_results)} PipelineRun more results, totaling {len(results)}"
-            )
-            page_token = response.page_token
-            if not (page_token):
-                LOGGER.debug("Reached end of available PipelineRun results")
+            LOGGER.debug(f"Retrieved {len(new_results)} additional PipelineRun results")
+            if len(results) == n_total_results:
+                LOGGER.debug(
+                    f"Reached end of available PipelineRun results ({n_total_results})"
+                )
 
         return results
 
