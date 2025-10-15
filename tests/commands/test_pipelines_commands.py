@@ -57,10 +57,10 @@ def test_list_pipelines(capture_logs):
 def test_get_info_success_no_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
-        name="test_input", type="test_type"
+        name="test_input", type="test_type", description="test input description"
     )
     test_output_definition = PipelineOutputDefinition(
-        name="test_output", type="test_type"
+        name="test_output", type="test_type", description="test output description"
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -93,20 +93,22 @@ def test_get_info_success_no_version(capture_logs):
         test_pipeline_name, None
     )
     assert test_pipeline_name in capture_logs.text
-    assert "Pipeline Version:   1" in capture_logs.text
+    assert "Version             1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
     assert "test_output" in capture_logs.text
-    assert "Min Quota Consumed: 500 units" in capture_logs.text
+    assert "Min Quota Consumed  500 units" in capture_logs.text
+    assert "test input description" in capture_logs.text
+    assert "test output description" in capture_logs.text
 
 
 def test_get_info_success_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
-        name="test_input", type="test_type"
+        name="test_input", type="test_type", description="test input description"
     )
     test_output_definition = PipelineOutputDefinition(
-        name="test_output", type="test_type"
+        name="test_output", type="test_type", description="test output description"
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -137,11 +139,69 @@ def test_get_info_success_version(capture_logs):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, 1)
     assert test_pipeline_name in capture_logs.text
-    assert "Pipeline Version:   1" in capture_logs.text
+    assert "Version             1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
     assert "test_output" in capture_logs.text
-    assert "Min Quota Consumed: 500 units" in capture_logs.text
+    assert "Min Quota Consumed  500 units" in capture_logs.text
+    assert "test input description" in capture_logs.text
+    assert "test output description" in capture_logs.text
+
+
+def test_get_info_optional_inputs_displayed_correctly(capture_logs):
+    test_pipeline_name = "test_pipeline"
+    required_input_definition = PipelineUserProvidedInputDefinition(
+        name="required_input",
+        type="test_type",
+        description="required input description",
+        is_required=True,
+    )
+    optional_input_definition = PipelineUserProvidedInputDefinition(
+        name="optional_input",
+        type="test_type",
+        description="optional input description",
+        is_required=False,
+    )
+    test_output_definition = PipelineOutputDefinition(
+        name="test_output", type="test_type", description="test output description"
+    )
+    test_pipeline_quota = PipelineQuota(
+        pipeline_name="test_pipeline",
+        default_quota=1000,
+        min_quota_consumed=500,
+        quota_units="units",
+    )
+    test_pipeline = PipelineWithDetails(
+        pipeline_name=test_pipeline_name,
+        pipeline_version=1,
+        description="test_description",
+        display_name="test_display_name",
+        type="test_type",
+        inputs=[optional_input_definition, required_input_definition],
+        outputs=[test_output_definition],
+        pipeline_quota=test_pipeline_quota,
+    )
+
+    when(pipelines_commands.pipelines_logic).get_pipeline_info(
+        test_pipeline_name, None
+    ).thenReturn(test_pipeline)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        pipelines_commands.pipelines, ["details", test_pipeline_name]
+    )
+
+    assert result.exit_code == 0
+    verify(pipelines_commands.pipelines_logic).get_pipeline_info(
+        test_pipeline_name, None
+    )
+    assert "optional_input" in capture_logs.text
+    assert "(optional) optional input description" in capture_logs.text
+
+    # ensure optional input is listed after required input
+    assert capture_logs.text.index("required_input") < capture_logs.text.index(
+        "optional_input"
+    )
 
 
 def test_get_info_missing_argument():
