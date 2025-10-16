@@ -4,6 +4,7 @@ import os
 import tempfile
 import uuid
 import zoneinfo
+from unittest.mock import patch
 
 import pytest
 from mockito import mock, when
@@ -76,6 +77,53 @@ def test_is_valid_local_file():
 
     # nonexistent file returns False
     assert not (utils.is_valid_local_file("not a file"))
+
+
+def test_validate_file_size_within_limit():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        test_file_path = os.path.join(tmpdirname, "small_file.txt")
+
+        # Create a file with 10 MB (well under 1 GB limit)
+        file_size_mb = 10
+        with open(test_file_path, mode="wb") as f:
+            f.write(b"0" * (file_size_mb * 1024 * 1024))
+
+        # Should return None (no error)
+        result = utils.validate_file_size(test_file_path)
+        assert result is None
+
+
+@patch("terralab.constants.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
+def test_validate_file_size_at_limit():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        test_file_path = os.path.join(tmpdirname, "at_limit_file.txt")
+
+        # Create a file with exactly 1 MB
+        test_max_size = 1 * 1024 * 1024  # 1 MB
+        with open(test_file_path, "wb") as f:
+            f.write(b"0" * test_max_size)
+
+        # Should return None (no error) since it's exactly at the limit
+        result = utils.validate_file_size(test_file_path)
+        assert result is None
+
+
+@patch("terralab.constants.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
+def test_validate_file_size_exceeds_limit():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        test_file_path = os.path.join(tmpdirname, "large_file.txt")
+
+        # Create a file with 1 MB + 1 byte (over the limit)
+        test_max_size = 1 * 1024 * 1024  # 1 MB
+        with open(test_file_path, "wb") as f:
+            f.write(b"0" * (test_max_size + 1))
+
+        # Should return an error message
+        result = utils.validate_file_size(test_file_path)
+        assert result is not None
+        assert "Error: File" in result
+        assert "exceeds the maximum file size" in result
+        assert test_file_path in result
 
 
 def test_upload_file_with_signed_url_success(capture_logs):
