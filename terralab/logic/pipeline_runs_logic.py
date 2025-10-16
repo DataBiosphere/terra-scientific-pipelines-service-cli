@@ -138,7 +138,6 @@ def prepare_upload_start_pipeline_run(
 
     for input_name, signed_url in file_input_upload_urls.items():
         input_file_value = pipeline_inputs[input_name]
-
         LOGGER.info(
             f"Uploading file `{input_file_value}` for {pipeline_name} input `{input_name}`"
         )

@@ -89,7 +89,6 @@ def _validate_single_input(
         if not is_valid_local_file(input_value):
             return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
 
-        # Check file size
         if error := validate_file_size(input_value):
             return error
 
