@@ -1,7 +1,6 @@
 # logic/pipelines_logic.py
 
 import logging
-import os
 from typing import Any
 
 from teaspoons_client import (  # type: ignore[attr-defined]
@@ -15,10 +14,9 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 from terralab.client import ClientWrapper
 from terralab.constants import (
     FILE_TYPE_KEY,
-    MAX_FILE_UPLOAD_SIZE_BYTES,
 )
 from terralab.log import join_lines, add_blankline_before
-from terralab.utils import is_valid_local_file
+from terralab.utils import is_valid_local_file, validate_file_size
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,10 +90,7 @@ def _validate_single_input(
             return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
 
         # Check file size
-        file_size = os.path.getsize(input_value)
-        if file_size > MAX_FILE_UPLOAD_SIZE_BYTES:
-            max_size_gb = MAX_FILE_UPLOAD_SIZE_BYTES / (1024 * 1024 * 1024)
-            file_size_gb = file_size / (1024 * 1024 * 1024)
-            return f"Error: File '{input_value}' ({file_size_gb:.2f} GB) exceeds the maximum file size of {max_size_gb:.0f} GB."
+        if error := validate_file_size(input_value):
+            return error
 
     return None
