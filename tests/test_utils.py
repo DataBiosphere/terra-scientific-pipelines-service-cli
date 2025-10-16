@@ -79,7 +79,7 @@ def test_is_valid_local_file():
     assert not (utils.is_valid_local_file("not a file"))
 
 
-@patch("terralab.constants.MAX_FILE_UPLOAD_SIZE_BYTES", 2 * 1024 * 1024)
+@patch("terralab.utils.MAX_FILE_UPLOAD_SIZE_BYTES", 2 * 1024 * 1024)
 def test_validate_file_size_within_limit():
     with tempfile.TemporaryDirectory() as tmpdirname:
         test_file_path = os.path.join(tmpdirname, "small_file.txt")
@@ -94,7 +94,7 @@ def test_validate_file_size_within_limit():
         assert result is None
 
 
-@patch("terralab.constants.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
+@patch("terralab.utils.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
 def test_validate_file_size_at_limit():
     with tempfile.TemporaryDirectory() as tmpdirname:
         test_file_path = os.path.join(tmpdirname, "at_limit_file.txt")
@@ -109,7 +109,7 @@ def test_validate_file_size_at_limit():
         assert result is None
 
 
-@patch("terralab.constants.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
+@patch("terralab.utils.MAX_FILE_UPLOAD_SIZE_BYTES", 1 * 1024 * 1024)  # 1 MB
 def test_validate_file_size_exceeds_limit():
     with tempfile.TemporaryDirectory() as tmpdirname:
         test_file_path = os.path.join(tmpdirname, "large_file.txt")
