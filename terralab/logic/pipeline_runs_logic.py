@@ -1,7 +1,6 @@
 # logic/pipeline_runs_logic.py
 
 import logging
-import os
 import uuid
 from typing import Any
 
@@ -16,7 +15,6 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 )
 
 from terralab.client import ClientWrapper
-from terralab.constants import MAX_FILE_UPLOAD_SIZE_BYTES
 from terralab.log import indented, add_blankline_before
 from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
 
@@ -140,20 +138,6 @@ def prepare_upload_start_pipeline_run(
 
     for input_name, signed_url in file_input_upload_urls.items():
         input_file_value = pipeline_inputs[input_name]
-
-        # Check file size before uploading
-        # TODO: do this check -BEFORE- prepare
-        if os.path.exists(input_file_value):
-            file_size = os.path.getsize(input_file_value)
-            if file_size > MAX_FILE_UPLOAD_SIZE_BYTES:
-                max_size_gb = MAX_FILE_UPLOAD_SIZE_BYTES / (1024 * 1024 * 1024)
-                file_size_gb = file_size / (1024 * 1024 * 1024)
-                LOGGER.error(
-                    add_blankline_before(
-                        f"File `{input_file_value}` ({file_size_gb:.2f} GB) exceeds the maximum upload size of {max_size_gb:.0f} GB"
-                    )
-                )
-                exit(1)
 
         LOGGER.info(
             f"Uploading file `{input_file_value}` for {pipeline_name} input `{input_name}`"
