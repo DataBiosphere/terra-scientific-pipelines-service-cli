@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [1.2.1] - 2025-10-16
+
+### Changed
+- Files uploaded while submitting a job are now limited to a maximum size of 50GB.
+
 ## [1.2.0] - 2025-10-09
 
 ### Changed
