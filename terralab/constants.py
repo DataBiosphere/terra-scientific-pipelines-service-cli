@@ -11,6 +11,9 @@ FILE_TYPE_KEY = "FILE"
 STRING_ARRAY_TYPE_KEY = "STRING_ARRAY"
 FILE_ARRAY_TYPE_KEY = "FILE_ARRAY"
 
+# file upload limits
+MAX_FILE_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024  # 10MB
+
 # support text
 SUPPORT_EMAIL = "scientific-services-support@broadinstitute.org"
 SUPPORT_EMAIL_TEXT = f"For help troubleshooting, email {SUPPORT_EMAIL}"
