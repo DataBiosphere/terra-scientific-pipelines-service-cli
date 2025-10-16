@@ -16,7 +16,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 from urllib3.exceptions import MaxRetryError
 
-from terralab.constants import SUPPORT_EMAIL_TEXT
+from terralab.constants import MAX_FILE_UPLOAD_SIZE_BYTES, SUPPORT_EMAIL_TEXT
 from terralab.log import add_blankline_before
 
 LOGGER = logging.getLogger(__name__)
@@ -151,8 +151,6 @@ def is_valid_local_file(local_file_path: str) -> bool:
 def validate_file_size(file_path: str) -> str | None:
     """Validate that a file does not exceed the maximum upload size.
     Returns error message if validation fails, None otherwise."""
-    from terralab.constants import MAX_FILE_UPLOAD_SIZE_BYTES
-
     file_size = os.path.getsize(file_path)
     if file_size > MAX_FILE_UPLOAD_SIZE_BYTES:
         max_size_gb = MAX_FILE_UPLOAD_SIZE_BYTES / (1024 * 1024 * 1024)
