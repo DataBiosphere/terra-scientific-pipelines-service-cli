@@ -51,62 +51,59 @@ def details(pipeline_name: str, version: int) -> None:
     """Get information about the PIPELINE_NAME pipeline"""
     pipeline_info = pipelines_logic.get_pipeline_info(pipeline_name, version)
 
-    if pipeline_info:
-        # Pipeline information table
-        pipeline_info_rows = [
-            ["Pipeline Name", pipeline_info.pipeline_name, ""],
-            ["Version", str(pipeline_info.pipeline_version), ""],
-            ["Description", pipeline_info.description or "", ""],
-            [
-                "Min Quota Consumed",
-                f"{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units}",
-                "",
-            ],
-        ]
-        LOGGER.info(format_table_no_header(pipeline_info_rows))
+    # Pipeline information table
+    pipeline_info_rows = [
+        ["Pipeline Name", pipeline_info.pipeline_name, ""],
+        ["Version", str(pipeline_info.pipeline_version), ""],
+        ["Description", pipeline_info.description or "", ""],
+        [
+            "Min Quota Consumed",
+            f"{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units}",
+            "",
+        ],
+    ]
+    LOGGER.info(format_table_no_header(pipeline_info_rows))
 
-        inputs_for_usage = []
-        optional_inputs = (
-            []
-        )  # we will display optional inputs at the end of the inputs list
-        inputs_and_output_rows = [
-            ["", "Name", "Type", "Description"],
-            ["Inputs", "", "", ""],
-        ]
-        for input_def in pipeline_info.inputs:
-            if not input_def.is_required:
-                optional_inputs.append(
-                    [
-                        "",
-                        input_def.name,
-                        input_def.type,
-                        (
-                            f"(optional) {input_def.description}"
-                            if input_def.description
-                            else "(optional)"
-                        ),
-                    ]
-                )
-            else:
-                inputs_for_usage.extend([f"--{input_def.name}", "YOUR_VALUE_HERE"])
-                inputs_and_output_rows.append(
-                    ["", input_def.name, input_def.type, input_def.description or ""]
-                )
-        if optional_inputs:
-            inputs_and_output_rows.extend(optional_inputs)
-
-        inputs_and_output_rows.extend([["Outputs", "", "", ""]])
-        for output_def in pipeline_info.outputs:
-            inputs_and_output_rows.append(
-                ["", output_def.name, output_def.type, output_def.description or ""]
+    inputs_for_usage = []
+    optional_inputs = (
+        []
+    )  # we will display optional inputs at the end of the inputs list
+    inputs_and_output_rows = [
+        ["", "Name", "Type", "Description"],
+        ["Inputs", "", "", ""],
+    ]
+    for input_def in pipeline_info.inputs:
+        if not input_def.is_required:
+            optional_inputs.append(
+                [
+                    "",
+                    input_def.name,
+                    input_def.type,
+                    (
+                        f"(optional) {input_def.description}"
+                        if input_def.description
+                        else "(optional)"
+                    ),
+                ]
             )
-        LOGGER.info(
-            add_blankline_before(format_table_no_header(inputs_and_output_rows))
+        else:
+            inputs_for_usage.extend([f"--{input_def.name}", "YOUR_VALUE_HERE"])
+            inputs_and_output_rows.append(
+                ["", input_def.name, input_def.type, input_def.description or ""]
+            )
+    if optional_inputs:
+        inputs_and_output_rows.extend(optional_inputs)
+
+    inputs_and_output_rows.extend([["Outputs", "", "", ""]])
+    for output_def in pipeline_info.outputs:
+        inputs_and_output_rows.append(
+            ["", output_def.name, output_def.type, output_def.description or ""]
         )
+    LOGGER.info(add_blankline_before(format_table_no_header(inputs_and_output_rows)))
 
     inputs_string_for_usage = " ".join(inputs_for_usage)
     LOGGER.info(
         add_blankline_before(
-            f"{pad_column("Example usage:", 20)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
+            f"{pad_column('Example usage:', 20)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
         )
     )

@@ -57,10 +57,17 @@ def test_list_pipelines(capture_logs):
 def test_get_info_success_no_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
-        name="test_input", type="test_type", description="test input description"
+        name="test_input",
+        displayName="Test Input",
+        type="test_type",
+        description="test input description",
+        is_required=True,
     )
     test_output_definition = PipelineOutputDefinition(
-        name="test_output", type="test_type", description="test output description"
+        name="test_output",
+        displayName="Test Output",
+        type="test_type",
+        description="test output description",
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -105,10 +112,17 @@ def test_get_info_success_no_version(capture_logs):
 def test_get_info_success_version(capture_logs):
     test_pipeline_name = "test_pipeline"
     test_input_definition = PipelineUserProvidedInputDefinition(
-        name="test_input", type="test_type", description="test input description"
+        name="test_input",
+        displayName="Test Input",
+        type="test_type",
+        description="test input description",
+        is_required=True,
     )
     test_output_definition = PipelineOutputDefinition(
-        name="test_output", type="test_type", description="test output description"
+        name="test_output",
+        displayName="Test Output",
+        type="test_type",
+        description="test output description",
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
@@ -152,18 +166,23 @@ def test_get_info_optional_inputs_displayed_correctly(capture_logs):
     test_pipeline_name = "test_pipeline"
     required_input_definition = PipelineUserProvidedInputDefinition(
         name="required_input",
+        displayName="Required Input",
         type="test_type",
         description="required input description",
         is_required=True,
     )
     optional_input_definition = PipelineUserProvidedInputDefinition(
         name="optional_input",
+        displayName="Optional Input",
         type="test_type",
         description="optional input description",
         is_required=False,
     )
     test_output_definition = PipelineOutputDefinition(
-        name="test_output", type="test_type", description="test output description"
+        name="test_output",
+        displayName="Test Output",
+        type="test_type",
+        description="test output description",
     )
     test_pipeline_quota = PipelineQuota(
         pipeline_name="test_pipeline",
