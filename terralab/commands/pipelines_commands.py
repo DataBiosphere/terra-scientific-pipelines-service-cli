@@ -109,6 +109,6 @@ def details(pipeline_name: str, version: int) -> None:
     inputs_string_for_usage = " ".join(inputs_for_usage)
     LOGGER.info(
         add_blankline_before(
-            f"{pad_column('Example usage:', 20)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
+            f"{pad_column('Example usage', 20)}terralab submit {pipeline_info.pipeline_name} {inputs_string_for_usage} --description 'YOUR JOB DESCRIPTION HERE'"
         )
     )
