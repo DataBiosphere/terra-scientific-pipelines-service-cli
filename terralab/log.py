@@ -60,6 +60,19 @@ def format_table(
     )
 
 
+def format_table_no_header(
+    rows_list: list[list[str]], max_col_size: int = DEFAULT_MAX_COL_SIZE
+) -> str:
+    """Provided a list of list of strings representing rows to be formatted into a table,
+    with no headers; return the formatted (via tabulate package)
+    string to be logged as a table.
+    """
+
+    return tabulate(
+        rows_list, numalign="left", maxcolwidths=max_col_size, tablefmt="plain"
+    )
+
+
 def format_table_with_status(
     rows_list: list[list[str]],
     status_key: str = "Status",
