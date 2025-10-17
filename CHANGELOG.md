@@ -11,12 +11,12 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [1.3.0] - 2025-10-17
+## [1.2.0] - 2025-10-17
 
 ### Added
 - Added pipeline input and output descriptions to `terralab pipelines details` command.
 
-## [1.2.0] - 2025-10-09
+## [1.1.3] - 2025-10-09
 
 ### Changed
 - Updated the jobs list command to use the v2 API endpoint. The functionality of the command is unchanged.
