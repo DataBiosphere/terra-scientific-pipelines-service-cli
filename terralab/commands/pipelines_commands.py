@@ -58,7 +58,7 @@ def details(pipeline_name: str, version: int) -> None:
         ["Description", pipeline_info.description or "", ""],
         [
             "Min Quota Consumed",
-            f"{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units}",
+            f"{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units.lower()}",
             "",
         ],
     ]
@@ -78,7 +78,7 @@ def details(pipeline_name: str, version: int) -> None:
                 [
                     "",
                     input_def.name,
-                    input_def.type,
+                    input_def.type.lower(),
                     (
                         f"(optional) {input_def.description}"
                         if input_def.description
@@ -89,7 +89,12 @@ def details(pipeline_name: str, version: int) -> None:
         else:
             inputs_for_usage.extend([f"--{input_def.name}", "YOUR_VALUE_HERE"])
             inputs_and_output_rows.append(
-                ["", input_def.name, input_def.type, input_def.description or ""]
+                [
+                    "",
+                    input_def.name,
+                    input_def.type.lower(),
+                    input_def.description or "",
+                ]
             )
     if optional_inputs:
         inputs_and_output_rows.extend(optional_inputs)
@@ -97,7 +102,7 @@ def details(pipeline_name: str, version: int) -> None:
     inputs_and_output_rows.extend([["Outputs", "", "", ""]])
     for output_def in pipeline_info.outputs:
         inputs_and_output_rows.append(
-            ["", output_def.name, output_def.type, output_def.description or ""]
+            ["", output_def.name, output_def.type.lower(), output_def.description or ""]
         )
     LOGGER.info(add_blankline_before(format_table_no_header(inputs_and_output_rows)))
 
