@@ -11,12 +11,17 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [1.2.1] - 2025-10-16
+## [1.2.1] - 2025-10-20
 
 ### Changed
 - Files uploaded while submitting a job are now limited to a maximum size of 50GB.
 
-## [1.2.0] - 2025-10-09
+## [1.2.0] - 2025-10-17
+
+### Added
+- Added pipeline input and output descriptions to `terralab pipelines details` command.
+
+## [1.1.3] - 2025-10-09
 
 ### Changed
 - Updated the jobs list command to use the v2 API endpoint. The functionality of the command is unchanged.
