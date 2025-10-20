@@ -16,7 +16,7 @@ from terralab.constants import (
     FILE_TYPE_KEY,
 )
 from terralab.log import join_lines, add_blankline_before
-from terralab.utils import is_valid_local_file
+from terralab.utils import is_valid_local_file, validate_file_size
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +85,11 @@ def _validate_single_input(
     if input_value is None:
         return f"Error: Missing value for input '{input_name}'."
 
-    if input_def.type == FILE_TYPE_KEY and not is_valid_local_file(input_value):
-        return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
+    if input_def.type == FILE_TYPE_KEY:
+        if not is_valid_local_file(input_value):
+            return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
+
+        if error := validate_file_size(input_value):
+            return error
 
     return None
