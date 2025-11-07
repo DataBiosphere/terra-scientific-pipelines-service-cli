@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [1.2.2] - 2025-11-07
+
+### Added
+- `terralab jobs list` output will now include Output Expiration date for jobs (when available).
+
 ## [1.2.1] - 2025-10-20
 
 ### Changed

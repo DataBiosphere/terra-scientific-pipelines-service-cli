@@ -33,8 +33,8 @@ For example, to list the pipelines you can run using Terralab, run the following
 terralab pipelines list
 ```
 
-## Development
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+## For Developers
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on local development setup.
 
 ## Changelog
 See [CHANGELOG.md](https://github.com/DataBiosphere/terra-scientific-pipelines-service-cli/blob/main/CHANGELOG.md)

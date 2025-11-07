@@ -151,6 +151,7 @@ def list_command(num_results: int) -> None:
                 "Submitted",
                 "Completed",
                 "Description",
+                "Output Expiration Date"
             ]
         ]
         for pipeline_run in results:
@@ -163,6 +164,7 @@ def list_command(num_results: int) -> None:
                     format_timestamp(pipeline_run.time_submitted),
                     format_timestamp(pipeline_run.time_completed),
                     pipeline_run.description or "",
+                    format_timestamp(pipeline_run.output_expiration_date)
                 ]
             )
 
