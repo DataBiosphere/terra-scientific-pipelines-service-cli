@@ -120,17 +120,17 @@ poetry install
 
 By default the CLI points to the **production** [instance](https://teaspoons.dsde-prod.broadinstitute.org) of Teaspoons.
 
-To run the CLI against your **locally** running instance of Teaspoons:
+To run the CLI against your **locally** running instance of Teaspoons, which by default runs against **dev** Terra services:
 1. Follow [the instructions in the Teaspoons repo for running the service locally](https://github.com/DataBiosphere/terra-scientific-pipelines-service/blob/main/README.md#local-development). 
 2. In this repo, edit the `terralab/.terralab-cli-config` file:
    1. Point the `TEASPOONS_API_URL` to `http://localhost:8080` instead of the live environment deployment of Teaspoons.
-   2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment (These values can be found in GSM)
-   3. Update this value: `REMOTE_OAUTH_REDIRECT_URI=https://bvdp-saturn-dev.appspot.com/pipelines/cli-auth`
+   2. Set `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment, typically dev (these values can be found in GSM)
+   3. Set `REMOTE_OAUTH_REDIRECT_URI` to the appropriate value for your target environment (local Teaspoons typically runs against dev, so this would be `https://bvdp-saturn-dev.appspot.com/pipelines/cli-auth`).
 3. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
 
-To run the CLI against the **dev** instance of Teaspoons:
+To run the CLI against the **dev** or **staging** instance of Teaspoons:
 1. In this repo, edit the `terralab/.terralab-cli-config` file:
-   1. Point the `TEASPOONS_API_URL` to `https://teaspoons.dsde-dev.broadinstitute.org` instead of the live environment deployment of Teaspoons.
-   2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment (These values can be found in GSM)
-   3. Update this value: `REMOTE_OAUTH_REDIRECT_URI=https://bvdp-saturn-dev.appspot.com/pipelines/cli-auth`
+   1. Point the `TEASPOONS_API_URL` to `https://teaspoons.dsde-{ENV}.broadinstitute.org` instead of the prod environment deployment of Teaspoons.
+   2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the target environment (These values can be found in GSM)
+   3. Set `REMOTE_OAUTH_REDIRECT_URI` to the appropriate value for your target environment: `https://bvdp-saturn-{ENV}.appspot.com/pipelines/cli-auth`
 2. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
