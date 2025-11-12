@@ -126,6 +126,7 @@ To run the CLI against your **locally** running instance of Teaspoons, which by 
    1. Point the `TEASPOONS_API_URL` to `http://localhost:8080` instead of the live environment deployment of Teaspoons.
    2. Set `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the local environment, typically dev (these values can be found in GSM)
    3. Set `REMOTE_OAUTH_REDIRECT_URI` to the appropriate value for your target environment (local Teaspoons typically runs against dev, so this would be `https://bvdp-saturn-dev.appspot.com/pipelines/cli-auth`).
+   4. Optional: to keep non-prod and prod auth separate, set `LOCAL_STORAGE_PATH=.terralab-dev`
 3. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
 
 To run the CLI against the **dev** or **staging** instance of Teaspoons:
@@ -133,4 +134,5 @@ To run the CLI against the **dev** or **staging** instance of Teaspoons:
    1. Point the `TEASPOONS_API_URL` to `https://teaspoons.dsde-{ENV}.broadinstitute.org` instead of the prod environment deployment of Teaspoons.
    2. Set the `OAUTH_OPENID_CONFIGURATION_URI` and `OAUTH_CLIENT_ID` to point to the appropriate values for the target environment (These values can be found in GSM)
    3. Set `REMOTE_OAUTH_REDIRECT_URI` to the appropriate value for your target environment: `https://bvdp-saturn-{ENV}.appspot.com/pipelines/cli-auth`
+   4. Optional: to keep non-prod and prod auth separate, set `LOCAL_STORAGE_PATH=.terralab-dev`
 2. That's it! Run your CLI commands and test until you're confident it's all working as you'd like.
