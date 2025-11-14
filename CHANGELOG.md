@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [1.2.2] - 2025-11-07
+## [1.2.2] - 2025-11-14
 
 ### Changed
 - `terralab jobs list` output improvements:
