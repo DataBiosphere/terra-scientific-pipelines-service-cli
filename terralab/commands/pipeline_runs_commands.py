@@ -156,7 +156,7 @@ def list_command(num_results: int) -> None:
             row_list.append(
                 [
                     pipeline_run.job_id,
-                    f"{pipeline_run.pipeline_name}{f' v{pipeline_run.pipeline_version}' if pipeline_run.pipeline_version else ''}",
+                    f"{pipeline_run.pipeline_name} v{pipeline_run.pipeline_version}",
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted, "%Y-%m-%d %H:%M"),
                     format_timestamp(pipeline_run.output_expiration_date, "%Y-%m-%d %H:%M"),

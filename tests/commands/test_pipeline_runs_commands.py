@@ -266,18 +266,6 @@ def test_list_jobs(capture_logs):
                 "output_expiration_date": None,
             }
         ),
-        mock(
-            {
-                "job_id": str(uuid.uuid4()),
-                "pipeline_name": "test_pipeline3",
-                "pipeline_version": None,
-                "status": FAILED_KEY,
-                "time_submitted": "2024-01-02T12:00:00Z",
-                "time_completed": "2024-01-02T12:30:00Z",
-                "description": "test description 3",
-                "output_expiration_date": None,
-            }
-        ),
     ]
 
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_runs(10).thenReturn(
@@ -296,11 +284,6 @@ def test_list_jobs(capture_logs):
     assert test_pipeline_runs[1].job_id in capture_logs.text
     assert f"{test_pipeline_runs[1].pipeline_name} v{test_pipeline_runs[1].pipeline_version}" in capture_logs.text
     assert "Failed" in capture_logs.text
-
-    # assert pipeline with version "None" doesn't appear in logs
-    assert test_pipeline_runs[2].job_id in capture_logs.text
-    assert f"{test_pipeline_runs[2].pipeline_name} v" not in capture_logs.text
-    assert test_pipeline_runs[2].pipeline_name in capture_logs.text
 
 
 def test_list_jobs_custom_limit(capture_logs):
