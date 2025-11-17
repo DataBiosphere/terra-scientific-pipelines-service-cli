@@ -148,7 +148,7 @@ def list_command(num_results: int) -> None:
                 "Pipeline",
                 "Status",
                 "Submitted",
-                "Output Expiration Date",
+                "Output Expires",
                 "Description",
             ]
         ]

@@ -11,11 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [1.2.2] - 2025-11-14
+## [2.0.0] - 2025-11-17
 
 ### Changed
 - `terralab jobs list` output improvements:
-  - Added Output Expiration Date (when available)
+  - Added output expiration date which will be displayed under Output Expires column (when available)
   - Removed the Completed timestamp
   - Pipeline Name and Version columns combined into a single Pipeline column
   - Simplified timestamp formatting by removing seconds and explicit timezone information.
