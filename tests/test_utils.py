@@ -255,30 +255,30 @@ format_timestamp_testdata = [
     (
         "2024-11-20T21:05:57.907184Z",
         "America/Detroit",
-        "2024-11-20 16:05:57 EST",
+        "2024-11-20 16:05 EST",
     ),  # basic case: detroit
     (
         "2024-11-20T21:05:57.907184Z",
         "US/Eastern",
-        "2024-11-20 16:05:57 EST",
+        "2024-11-20 16:05 EST",
     ),  # basic case: eastern
     (
         "2024-11-20T21:05:57.907184Z",
         "America/Los_Angeles",
-        "2024-11-20 13:05:57 PST",
+        "2024-11-20 13:05 PST",
     ),  # different timezone
     (
         "2024-06-20T21:05:57.907184Z",
         "America/Detroit",
-        "2024-06-20 17:05:57 EDT",
+        "2024-06-20 17:05 EDT",
     ),  # daylight savings time
     ("", None, ""),  # empty string
     (None, None, ""),  # None value
-    ("2023-01-01T00:00:00Z", "America/Detroit", "2022-12-31 19:00:00 EST"),  # midnight
+    ("2023-01-01T00:00:00Z", "America/Detroit", "2022-12-31 19:00 EST"),  # midnight
     (
         "2023-06-15T13:30:45.123456+00:00",
         "UTC",
-        "2023-06-15 13:30:45 UTC",
+        "2023-06-15 13:30 UTC",
     ),  # with timezone offset
 ]
 
@@ -290,7 +290,7 @@ def test_format_timestamp(timestamp, local_timezone, expected, unstub):
             zoneinfo.ZoneInfo(key=local_timezone)
         )
 
-    formatted = utils.format_timestamp(timestamp)
+    formatted = utils.format_timestamp(timestamp, "%Y-%m-%d %H:%M %Z")
     # Only check the date/time portion since timezone will vary by system
     assert formatted == expected
 

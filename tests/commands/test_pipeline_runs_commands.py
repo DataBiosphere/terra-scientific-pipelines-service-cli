@@ -279,7 +279,7 @@ def test_list_jobs(capture_logs):
     assert test_pipeline_runs[0].job_id in capture_logs.text
     assert f"{test_pipeline_runs[0].pipeline_name} v{test_pipeline_runs[0].pipeline_version}" in capture_logs.text
     assert "Succeeded" in capture_logs.text
-    assert str(format_timestamp(test_pipeline_runs[0].output_expiration_date, "%Y-%m-%d %H:%M")) in capture_logs.text
+    assert str(format_timestamp(test_pipeline_runs[0].output_expiration_date)) in capture_logs.text
 
     assert test_pipeline_runs[1].job_id in capture_logs.text
     assert f"{test_pipeline_runs[1].pipeline_name} v{test_pipeline_runs[1].pipeline_version}" in capture_logs.text

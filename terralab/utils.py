@@ -266,8 +266,8 @@ def validate_job_id(job_id: str) -> uuid.UUID:
         exit(1)
 
 
-def format_timestamp(timestamp_string: str | None, timestamp_format: str = "%Y-%m-%d %H:%M:%S %Z") -> str:
-    """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string in the caller's timezone.
+def format_timestamp(timestamp_string: str | None, timestamp_format: str = "%Y-%m-%d %H:%M") -> str:
+    """Formats a timestamp like 2024-11-20T21:05:57.907184Z to a nicely formatted string based on passed format.
     If timestamp_str is None or empty, return an empty string."""
     if not (timestamp_string):
         return ""
