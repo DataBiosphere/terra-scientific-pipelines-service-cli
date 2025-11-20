@@ -14,6 +14,7 @@ from teaspoons_client import (
 
 from terralab.commands import pipeline_runs_commands
 from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
+from terralab.utils import format_timestamp
 from tests.conftest import capture_logs
 
 LOGGER = logging.getLogger(__name__)
@@ -250,6 +251,7 @@ def test_list_jobs(capture_logs):
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description 1",
                 "quota_consumed": 127911,
+                "output_expiration_date": "2024-01-15T12:30:00Z",
             }
         ),
         mock(
@@ -261,6 +263,7 @@ def test_list_jobs(capture_logs):
                 "time_submitted": "2024-01-02T12:00:00Z",
                 "time_completed": "2024-01-02T12:30:00Z",
                 "description": "test description 2",
+                "output_expiration_date": None,
             }
         ),
     ]
@@ -274,13 +277,13 @@ def test_list_jobs(capture_logs):
     assert result.exit_code == 0
     # Check that job details are in output
     assert test_pipeline_runs[0].job_id in capture_logs.text
-    assert test_pipeline_runs[0].pipeline_name in capture_logs.text
-    assert str(test_pipeline_runs[0].pipeline_version) in capture_logs.text
+    assert f"{test_pipeline_runs[0].pipeline_name} v{test_pipeline_runs[0].pipeline_version}" in capture_logs.text
     assert "Succeeded" in capture_logs.text
+    assert str(format_timestamp(test_pipeline_runs[0].output_expiration_date)) in capture_logs.text
+
     assert test_pipeline_runs[1].job_id in capture_logs.text
-    assert test_pipeline_runs[1].pipeline_name in capture_logs.text
+    assert f"{test_pipeline_runs[1].pipeline_name} v{test_pipeline_runs[1].pipeline_version}" in capture_logs.text
     assert "Failed" in capture_logs.text
-    assert str(test_pipeline_runs[1].pipeline_version) in capture_logs.text
 
 
 def test_list_jobs_custom_limit(capture_logs):
@@ -296,6 +299,7 @@ def test_list_jobs_custom_limit(capture_logs):
                 "time_submitted": "2024-01-01T12:00:00Z",
                 "time_completed": "2024-01-01T12:30:00Z",
                 "description": "test description",
+                "output_expiration_date": "2024-01-05T12:30:00Z",
             }
         )
     ]

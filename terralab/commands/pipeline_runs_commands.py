@@ -90,6 +90,7 @@ def jobs() -> None:
 def details(job_id: str) -> None:
     """Get the status and details of a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
+    timestamp_format: str = "%Y-%m-%d %H:%M %Z"
 
     response: AsyncPipelineRunResponse = pipeline_runs_logic.get_pipeline_run_status(
         job_id_uuid
@@ -113,18 +114,18 @@ def details(job_id: str) -> None:
         indented(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
     )
     LOGGER.info(
-        indented(f"Submitted: {format_timestamp(response.job_report.submitted)}")
+        indented(f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}")
     )
     if response.job_report.completed:
         LOGGER.info(
-            indented(f"Completed: {format_timestamp(response.job_report.completed)}")
+            indented(f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}")
         )
         quota_consumed = response.pipeline_run_report.quota_consumed or 0
         LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
     if response.job_report.status == SUCCEEDED_KEY:
         LOGGER.info(
             indented(
-                f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date)}"
+                f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
             )
         )
     LOGGER.info(indented(f"Description: {response.job_report.description}"))
@@ -145,11 +146,10 @@ def list_command(num_results: int) -> None:
         row_list = [
             [
                 "Job ID",
-                "Pipeline Name",
-                "Version",
+                "Pipeline",
                 "Status",
                 "Submitted",
-                "Completed",
+                "Output Expires",
                 "Description",
             ]
         ]
@@ -157,11 +157,10 @@ def list_command(num_results: int) -> None:
             row_list.append(
                 [
                     pipeline_run.job_id,
-                    pipeline_run.pipeline_name,
-                    str(pipeline_run.pipeline_version),
+                    f"{pipeline_run.pipeline_name} v{pipeline_run.pipeline_version}",
                     pipeline_run.status,
                     format_timestamp(pipeline_run.time_submitted),
-                    format_timestamp(pipeline_run.time_completed),
+                    format_timestamp(pipeline_run.output_expiration_date),
                     pipeline_run.description or "",
                 ]
             )
