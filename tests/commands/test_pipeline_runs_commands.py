@@ -9,7 +9,11 @@ from teaspoons_client import (
     AsyncPipelineRunResponse,
     JobReport,
     ErrorReport,
+    PipelineOutputDefinition,
+    PipelineQuota,
     PipelineRunReport,
+    PipelineUserProvidedInputDefinition,
+    PipelineWithDetails,
 )
 
 from terralab.commands import pipeline_runs_commands
@@ -22,11 +26,18 @@ LOGGER = logging.getLogger(__name__)
 # common constants for tests
 TEST_PIPELINE_NAME = "test_pipeline"
 TEST_INPUT_KEY = "--foo_key"
+TEST_INPUT_KEY_STRIPPED = TEST_INPUT_KEY.lstrip("--")
 TEST_INPUT_VALUE = "foo_value"
 TEST_INPUTS_TUPLE = (TEST_INPUT_KEY, TEST_INPUT_VALUE)
-TEST_INPUTS_DICT = {TEST_INPUT_KEY.lstrip("--"): TEST_INPUT_VALUE}
+TEST_INPUTS_DICT = {TEST_INPUT_KEY_STRIPPED: TEST_INPUT_VALUE}
 TEST_DESCRIPTION = "user description"
 TEST_JOB_ID = uuid.uuid4()
+TEST_QUOTA_CONSUMED = 500
+TEST_INPUT_SIZE = 100
+TEST_INPUT_UNIT = "samples"
+OPTIONAL_INPUT_NAME = "optional_input"
+OPTIONAL_INPUT_DEFAULT = "default_value"
+TEST_PIPELINE_VERSION = 1
 
 
 def test_submit(capture_logs):
@@ -145,15 +156,61 @@ def test_download_bad_job_id(capture_logs):
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
-def test_details_running_job(capture_logs, unstub):
+def test_details_running_job_with_optional_input_defined(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    user_defined_optional_input_value = "user_value"
+    test_inputs_dict_with_optional = {
+        TEST_INPUT_KEY.lstrip("--"): TEST_INPUT_VALUE,
+        OPTIONAL_INPUT_NAME: user_defined_optional_input_value,
+    }
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING", include_input_size=True
+    )
+    test_response.pipeline_run_report.user_inputs = test_inputs_dict_with_optional
+
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    test_pipeline = create_test_pipeline_with_inputs()
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(test_pipeline)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" not in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert (
+        f"{OPTIONAL_INPUT_NAME}: {user_defined_optional_input_value}"
+        in capture_logs.text
+    )
+
+    unstub()
+
+
+def test_details_running_job_with_optional_input_default(capture_logs, unstub):
     runner = CliRunner()
 
     test_job_id_str = str(TEST_JOB_ID)
 
     test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING"
+        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING", include_input_size=True
     )
 
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
         TEST_JOB_ID
     ).thenReturn(test_response)
@@ -166,6 +223,75 @@ def test_details_running_job(capture_logs, unstub):
     )
     assert "Status:" in capture_logs.text
     assert "Completed:" not in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert (
+        f"{OPTIONAL_INPUT_NAME}: {OPTIONAL_INPUT_DEFAULT} (default)"
+        in capture_logs.text
+    )
+
+    unstub()
+
+
+def test_details_running_job_with_input_size(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING", include_input_size=True
+    )
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" not in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+
+    unstub()
+
+
+def test_details_running_job_without_input_size(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING", include_input_size=False
+    )
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" not in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" not in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
 
     unstub()
 
@@ -176,9 +302,12 @@ def test_details_succeeded_job(capture_logs, unstub):
     test_job_id_str = str(TEST_JOB_ID)
 
     test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY, include_input_size=True
     )
 
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
     when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
         TEST_JOB_ID
     ).thenReturn(test_response)
@@ -192,21 +321,28 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "Status:" in capture_logs.text
     assert "Completed:" in capture_logs.text
     assert "File Download Expiration:" in capture_logs.text
-    assert "Quota Consumed: 500" in capture_logs.text
+    assert f"Quota Consumed: {TEST_QUOTA_CONSUMED}" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
 
     unstub()
 
 
-def test_details_failed_job(capture_logs, unstub):
+def test_details_failed_job_with_input_size(capture_logs, unstub):
     runner = CliRunner()
 
     test_job_id_str = str(TEST_JOB_ID)
     test_error_message = "Something went wrong"
 
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
     test_response = create_test_pipeline_run_response(
         TEST_PIPELINE_NAME,
         test_job_id_str,
         FAILED_KEY,
+        include_input_size=True,
         error_message=test_error_message,
     )
 
@@ -222,6 +358,45 @@ def test_details_failed_job(capture_logs, unstub):
     assert SUPPORT_EMAIL_TEXT in capture_logs.text
     assert "Completed:" in capture_logs.text
     assert "Quota Consumed: 0" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+
+    unstub()
+
+
+def test_details_failed_job_without_input_size(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_error_message = "Something went wrong"
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME,
+        test_job_id_str,
+        FAILED_KEY,
+        include_input_size=False,
+        error_message=test_error_message,
+    )
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    assert "Status:" in capture_logs.text
+    assert test_error_message in capture_logs.text
+    assert SUPPORT_EMAIL_TEXT in capture_logs.text
+    assert "Completed:" in capture_logs.text
+    assert "Quota Consumed: 0" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" not in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
 
     unstub()
 
@@ -277,12 +452,21 @@ def test_list_jobs(capture_logs):
     assert result.exit_code == 0
     # Check that job details are in output
     assert test_pipeline_runs[0].job_id in capture_logs.text
-    assert f"{test_pipeline_runs[0].pipeline_name} v{test_pipeline_runs[0].pipeline_version}" in capture_logs.text
+    assert (
+        f"{test_pipeline_runs[0].pipeline_name} v{test_pipeline_runs[0].pipeline_version}"
+        in capture_logs.text
+    )
     assert "Succeeded" in capture_logs.text
-    assert str(format_timestamp(test_pipeline_runs[0].output_expiration_date)) in capture_logs.text
+    assert (
+        str(format_timestamp(test_pipeline_runs[0].output_expiration_date))
+        in capture_logs.text
+    )
 
     assert test_pipeline_runs[1].job_id in capture_logs.text
-    assert f"{test_pipeline_runs[1].pipeline_name} v{test_pipeline_runs[1].pipeline_version}" in capture_logs.text
+    assert (
+        f"{test_pipeline_runs[1].pipeline_name} v{test_pipeline_runs[1].pipeline_version}"
+        in capture_logs.text
+    )
     assert "Failed" in capture_logs.text
 
 
@@ -353,8 +537,12 @@ def test_list_jobs_request_too_low():
 
 
 def create_test_pipeline_run_response(
-    pipeline_name: str, job_id: str, status: str, error_message: str = None
-):
+    pipeline_name: str,
+    job_id: str,
+    status: str,
+    include_input_size: bool = False,
+    error_message: str = None,
+) -> AsyncPipelineRunResponse:
     """Helper function for creating AsyncPipelineRunResponse objects used in tests"""
     status_code = 200
     if status == "RUNNING":
@@ -374,13 +562,64 @@ def create_test_pipeline_run_response(
         job_report.completed = "2024-01-01T15:00:00Z"
 
     pipeline_run_report = PipelineRunReport(
-        pipelineName=pipeline_name, pipelineVersion=1, toolVersion="1.0.0"
+        pipelineName=pipeline_name,
+        pipelineVersion=TEST_PIPELINE_VERSION,
+        toolVersion="1.0.0",
+        user_inputs=TEST_INPUTS_DICT,
     )
     if status == SUCCEEDED_KEY:
-        pipeline_run_report.quota_consumed = 500
+        pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
+
+    if include_input_size:
+        pipeline_run_report.input_size = TEST_INPUT_SIZE
+        pipeline_run_report.input_size_units = TEST_INPUT_UNIT
 
     return AsyncPipelineRunResponse(
         jobReport=job_report,
         pipelineRunReport=pipeline_run_report,
         errorReport=error_report,
     )
+
+
+def create_test_pipeline_with_inputs() -> PipelineWithDetails:
+    """Helper function for creating PipelineWithDetails objects used in tests"""
+    test_pipeline_name = TEST_PIPELINE_NAME
+    test_input_definition = PipelineUserProvidedInputDefinition(
+        name=TEST_INPUT_KEY.lstrip("--"),
+        displayName="Test Input",
+        type="test_type",
+        description="test input description",
+        isRequired=True,
+    )
+    test_input_definition_optional = PipelineUserProvidedInputDefinition(
+        name=OPTIONAL_INPUT_NAME,
+        displayName="Optional Input",
+        type="test_type",
+        description="optional input description",
+        defaultValue=OPTIONAL_INPUT_DEFAULT,
+        isRequired=False,
+    )
+    test_output_definition = PipelineOutputDefinition(
+        name="test_output",
+        displayName="Test Output",
+        type="test_type",
+        description="test output description",
+    )
+    test_pipeline_quota = PipelineQuota(
+        pipelineName="test_pipeline",
+        defaultQuota=1000,
+        minQuotaConsumed=500,
+        quotaUnits="units",
+    )
+    test_pipeline = PipelineWithDetails(
+        pipelineName=test_pipeline_name,
+        pipelineVersion=1,
+        description="test_description",
+        displayName="test_display_name",
+        type="test_type",
+        inputs=[test_input_definition, test_input_definition_optional],
+        outputs=[test_output_definition],
+        pipelineQuota=test_pipeline_quota,
+    )
+
+    return test_pipeline

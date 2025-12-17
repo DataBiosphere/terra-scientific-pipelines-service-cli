@@ -4,7 +4,7 @@ import logging
 import uuid
 
 import click
-from teaspoons_client import AsyncPipelineRunResponse, PipelineRun  # type: ignore[attr-defined]
+from teaspoons_client import AsyncPipelineRunResponse, PipelineRun, PipelineWithDetails  # type: ignore[attr-defined]
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
 from terralab.log import (
@@ -96,6 +96,11 @@ def details(job_id: str) -> None:
         job_id_uuid
     )
 
+    pipeline_response: PipelineWithDetails = pipelines_logic.get_pipeline_info(
+        response.pipeline_run_report.pipeline_name,
+        response.pipeline_run_report.pipeline_version,
+    )
+
     LOGGER.info(f"Status: {format_status(response.job_report.status)}")
 
     if response.error_report:
@@ -113,22 +118,43 @@ def details(job_id: str) -> None:
     LOGGER.info(
         indented(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
     )
+    LOGGER.info(indented(f"Description: {response.job_report.description}"))
+
+    LOGGER.info(indented("Inputs:"))
+    for input_def in pipeline_response.inputs:
+        input_name = input_def.name
+        input_value = response.pipeline_run_report.user_inputs.get(
+            input_name, f"{input_def.default_value} (default)"
+        )
+        LOGGER.info(indented(f"{input_name}: {input_value}", n_spaces=4))
+
+    if response.pipeline_run_report.input_size:
+        LOGGER.info(
+            indented(
+                f"Input size: {response.pipeline_run_report.input_size} {response.pipeline_run_report.input_size_units}"
+            )
+        )
+
     LOGGER.info(
-        indented(f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}")
+        indented(
+            f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}"
+        )
     )
     if response.job_report.completed:
         LOGGER.info(
-            indented(f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}")
+            indented(
+                f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}"
+            )
         )
         quota_consumed = response.pipeline_run_report.quota_consumed or 0
         LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
+
     if response.job_report.status == SUCCEEDED_KEY:
         LOGGER.info(
             indented(
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
             )
         )
-    LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
 @jobs.command(name="list", short_help="List your jobs")
