@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [2.1.0] - 2025-12-17
+
+### Added
+- `terralab jobs details` output now includes the input parameters provided by the user (including default values if optional inputs were not specified), as well as the input size, when available.
+
 ## [2.0.0] - 2025-11-17
 
 ### Changed
