@@ -93,6 +93,7 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
 
     response = pipelines_logic.get_pipeline_info(TEST_PIPELINE_NAME, None)
 
+    # note that this gets handled by @handle_api_exceptions in real usage; get_pipeline_info itself doesn't process the error response
     assert response.status == 400
     assert response.reason == "Pipeline not found"
 
