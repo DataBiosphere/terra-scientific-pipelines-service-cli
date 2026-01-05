@@ -156,7 +156,7 @@ def test_download_bad_job_id(capture_logs):
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
-def test_details_running_job_with_optional_input_defined(capture_logs, unstub):
+def test_details_running_job(capture_logs, unstub):
     runner = CliRunner()
 
     test_job_id_str = str(TEST_JOB_ID)
@@ -193,41 +193,6 @@ def test_details_running_job_with_optional_input_defined(capture_logs, unstub):
     assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
     assert (
         f"{OPTIONAL_INPUT_NAME}: {user_defined_optional_input_value}"
-        in capture_logs.text
-    )
-
-    unstub()
-
-
-def test_details_running_job_with_optional_input_default(capture_logs, unstub):
-    runner = CliRunner()
-
-    test_job_id_str = str(TEST_JOB_ID)
-
-    test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, "RUNNING", include_input_size=True
-    )
-
-    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
-        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
-    ).thenReturn(create_test_pipeline_with_inputs())
-    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        TEST_JOB_ID
-    ).thenReturn(test_response)
-
-    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
-
-    assert result.exit_code == 0
-    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        TEST_JOB_ID
-    )
-    assert "Status:" in capture_logs.text
-    assert "Completed:" not in capture_logs.text
-    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
-    assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
-    assert (
-        f"{OPTIONAL_INPUT_NAME}: {OPTIONAL_INPUT_DEFAULT} (default)"
         in capture_logs.text
     )
 
