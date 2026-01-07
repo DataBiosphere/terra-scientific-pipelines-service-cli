@@ -4,7 +4,6 @@ import base64
 import logging
 import os
 import typing as t
-import urllib
 import webbrowser
 from collections.abc import Callable
 from prompt_toolkit import prompt
@@ -16,6 +15,7 @@ from oauth2_cli_auth import (
     get_auth_url,
 )
 from oauth2_cli_auth._urllib_util import _load_json
+from urllib import parse as urllibparse, request as urllibrequest, error as urlliberror
 
 from terralab.config import CliConfig
 
@@ -95,7 +95,7 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
 
     try:
         response_dict = _exchange_code_for_response(client_info, code)
-    except urllib.error.URLError:
+    except urlliberror.URLError:
         LOGGER.error(f"Failed to get tokens with code {code}")
         exit(1)
 
@@ -199,9 +199,9 @@ def _exchange_code_for_response(
         code_key: code,
         "grant_type": grant_type,
     }
-    encoded_data = urllib.parse.urlencode(data).encode("utf-8")
+    encoded_data = urllibparse.urlencode(data).encode("utf-8")
 
-    request = urllib.request.Request(
+    request = urllibrequest.Request(
         client_info.token_url, data=encoded_data, headers=headers
     )
 

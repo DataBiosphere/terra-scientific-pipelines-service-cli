@@ -89,10 +89,13 @@ def test_get_pipeline_info_bad_pipeline_name(mock_pipelines_api):
     test_get_info_request = GetPipelineDetailsRequestBody(pipelineVersion=None)
     when(mock_pipelines_api).get_pipeline_details(
         TEST_PIPELINE_NAME, test_get_info_request
-    ).thenRaise(ApiException(404, reason="Pipeline not found"))
+    ).thenReturn(ApiException(400, reason="Pipeline not found"))
 
-    with pytest.raises(ApiException):
-        pipelines_logic.get_pipeline_info(TEST_PIPELINE_NAME, None)
+    response = pipelines_logic.get_pipeline_info(TEST_PIPELINE_NAME, None)
+
+    # note that this gets handled by @handle_api_exceptions in real usage; get_pipeline_info itself doesn't process the error response
+    assert response.status == 400
+    assert response.reason == "Pipeline not found"
 
     verify(mock_pipelines_api).get_pipeline_details(
         TEST_PIPELINE_NAME, test_get_info_request

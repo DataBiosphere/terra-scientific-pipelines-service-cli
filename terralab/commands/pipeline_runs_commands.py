@@ -113,22 +113,39 @@ def details(job_id: str) -> None:
     LOGGER.info(
         indented(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
     )
+    LOGGER.info(indented(f"Description: {response.job_report.description}"))
+
+    LOGGER.info(indented("Inputs:"))
+    for input_name, input_value in response.pipeline_run_report.user_inputs.items():
+        LOGGER.info(indented(f"{input_name}: {input_value}", n_spaces=4))
+
+    if response.pipeline_run_report.input_size:
+        LOGGER.info(
+            indented(
+                f"Input size: {response.pipeline_run_report.input_size} {response.pipeline_run_report.input_size_units}"
+            )
+        )
+
     LOGGER.info(
-        indented(f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}")
+        indented(
+            f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}"
+        )
     )
     if response.job_report.completed:
         LOGGER.info(
-            indented(f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}")
+            indented(
+                f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}"
+            )
         )
         quota_consumed = response.pipeline_run_report.quota_consumed or 0
         LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
+
     if response.job_report.status == SUCCEEDED_KEY:
         LOGGER.info(
             indented(
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
             )
         )
-    LOGGER.info(indented(f"Description: {response.job_report.description}"))
 
 
 @jobs.command(name="list", short_help="List your jobs")

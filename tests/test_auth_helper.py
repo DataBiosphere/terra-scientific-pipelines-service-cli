@@ -357,13 +357,13 @@ def test_exchange_code_for_response_default_success():
 
     expected_json_response = {}
 
-    when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
+    when(auth_helper.urllibparse).urlencode(expected_data_dict).thenReturn(
         mock_urlencode_output
     )
     when(mock_urlencode_output).encode("utf-8").thenReturn(mock_encoded_data)
 
     mock_request_response = mock()
-    when(auth_helper.urllib.request).Request(
+    when(auth_helper.urllibrequest).Request(
         mock_token_url, data=mock_encoded_data, headers=expected_headers
     ).thenReturn(mock_request_response)
     when(auth_helper)._load_json(mock_request_response).thenReturn(
@@ -401,13 +401,13 @@ def test_exchange_code_for_response_default_error(capture_logs):
         "error_description": "more about the error",
     }
 
-    when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
+    when(auth_helper.urllibparse).urlencode(expected_data_dict).thenReturn(
         mock_urlencode_output
     )
     when(mock_urlencode_output).encode("utf-8").thenReturn(mock_encoded_data)
 
     mock_request_response = mock()
-    when(auth_helper.urllib.request).Request(
+    when(auth_helper.urllibrequest).Request(
         mock_token_url, data=mock_encoded_data, headers=expected_headers
     ).thenReturn(mock_request_response)
     when(auth_helper)._load_json(mock_request_response).thenReturn(
@@ -445,13 +445,13 @@ def test_exchange_code_for_response_refresh(capture_logs):
 
     expected_json_response = {}
 
-    when(auth_helper.urllib.parse).urlencode(expected_data_dict).thenReturn(
+    when(auth_helper.urllibparse).urlencode(expected_data_dict).thenReturn(
         mock_urlencode_output
     )
     when(mock_urlencode_output).encode("utf-8").thenReturn(mock_encoded_data)
 
     mock_request_response = mock()
-    when(auth_helper.urllib.request).Request(
+    when(auth_helper.urllibrequest).Request(
         mock_token_url, data=mock_encoded_data, headers=expected_headers
     ).thenReturn(mock_request_response)
     when(auth_helper)._load_json(mock_request_response).thenReturn(
