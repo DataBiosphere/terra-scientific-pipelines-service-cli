@@ -48,10 +48,11 @@ def handle_api_exceptions(func: Any) -> Any:
                     )
                 )
                 exit(1)
+            reason = f" ({e.reason})" if e.reason else ""
             formatted_message = (
-                f"API call failed with status code {e.status} ({e.reason}): {message}"
+                f"API call failed with status code {e.status}{reason}: {message}"
                 if message
-                else f"API call failed with status code {e.status} ({e.reason})"
+                else f"API call failed with status code {e.status}{reason}"
             )
             LOGGER.error(add_blankline_before(formatted_message))
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))

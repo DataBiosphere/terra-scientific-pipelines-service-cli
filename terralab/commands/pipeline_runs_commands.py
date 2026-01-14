@@ -4,7 +4,7 @@ import logging
 import uuid
 
 import click
-from teaspoons_client import AsyncPipelineRunResponse, PipelineRun  # type: ignore[attr-defined]
+from teaspoons_client import AsyncPipelineRunResponseV2, PipelineRun  # type: ignore[attr-defined]
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
 from terralab.log import (
@@ -71,7 +71,7 @@ def download(job_id: str, local_destination: str) -> None:
     """Download all output files from a job with JOB_ID identifier"""
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
 
-    pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
+    pipeline_runs_logic.get_signed_urls_and_download_pipeline_run_outputs(
         job_id_uuid, local_destination
     )
 
@@ -92,7 +92,7 @@ def details(job_id: str) -> None:
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
     timestamp_format: str = "%Y-%m-%d %H:%M %Z"
 
-    response: AsyncPipelineRunResponse = pipeline_runs_logic.get_pipeline_run_status(
+    response: AsyncPipelineRunResponseV2 = pipeline_runs_logic.get_pipeline_run_status(
         job_id_uuid
     )
 

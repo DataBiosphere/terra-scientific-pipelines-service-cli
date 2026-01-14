@@ -133,7 +133,7 @@ def test_download():
 
     when(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(
+    ).get_signed_urls_and_download_pipeline_run_outputs(
         TEST_JOB_ID, "."
     )  # do nothing, assume succeeded
 
@@ -142,7 +142,7 @@ def test_download():
     assert result.exit_code == 0
     verify(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(TEST_JOB_ID, ".")
+    ).get_signed_urls_and_download_pipeline_run_outputs(TEST_JOB_ID, ".")
 
 
 def test_download_bad_job_id(capture_logs):

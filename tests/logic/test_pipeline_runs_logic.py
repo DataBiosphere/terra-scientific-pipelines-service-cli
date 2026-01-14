@@ -5,6 +5,7 @@ import uuid
 import pytest
 from mockito import when, mock, verify
 from teaspoons_client import (
+    ApiException,
     PreparePipelineRunRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
@@ -219,14 +220,14 @@ def test_get_pipeline_run_status(mock_pipeline_runs_api):
     mock_job_report = mock({"id": test_job_id})
     mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
 
-    when(mock_pipeline_runs_api).get_pipeline_run_result(test_job_id_str).thenReturn(
+    when(mock_pipeline_runs_api).get_pipeline_run_result_v2(test_job_id_str).thenReturn(
         mock_async_pipeline_run_response
     )
 
     response = pipeline_runs_logic.get_pipeline_run_status(test_job_id)
 
     assert response == mock_async_pipeline_run_response
-    verify(mock_pipeline_runs_api).get_pipeline_run_result(test_job_id_str)
+    verify(mock_pipeline_runs_api).get_pipeline_run_result_v2(test_job_id_str)
 
 
 def test_get_pipeline_runs(mock_pipeline_runs_api):
@@ -326,22 +327,21 @@ def test_get_pipeline_runs_empty(mock_pipeline_runs_api):
     verify(mock_pipeline_runs_api).get_all_pipeline_runs_v2(page_number=1, page_size=10)
 
 
-def test_get_result_and_download_pipeline_run_outputs(capture_logs):
+def test_get_signed_urls_and_download_pipeline_run_outputs(capture_logs):
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
-    # mock successful job status
-    mock_job_report = mock({"status": "SUCCEEDED"})
+    # mock signed url response
     test_output_name = "output1"
     test_signed_url = "signed_url"
-    mock_pipeline_run_report = mock({"outputs": {test_output_name: test_signed_url}})
-    mock_async_pipeline_run_response = mock(
-        {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
+    pipeline_run_output_signed_urls = {test_output_name: test_signed_url}
+    pipeline_run_output_signed_urls_response = mock(
+        {"output_signed_urls": pipeline_run_output_signed_urls, "status": 200}
     )
 
-    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
-        mock_async_pipeline_run_response
-    )
+    when(pipeline_runs_logic).get_pipeline_run_output_signed_urls(
+        test_job_id
+    ).thenReturn(pipeline_run_output_signed_urls_response)
 
     expected_downloaded_file_paths = ["i am a file path"]
     when(pipeline_runs_logic).download_files_with_signed_urls(
@@ -350,112 +350,33 @@ def test_get_result_and_download_pipeline_run_outputs(capture_logs):
         expected_downloaded_file_paths
     )  # do nothing
 
-    pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
+    pipeline_runs_logic.get_signed_urls_and_download_pipeline_run_outputs(
         test_job_id, test_local_destination
     )
-    assert f"Getting results for job {test_job_id}" in capture_logs.text
+    assert f"Getting output signed URLs for job {test_job_id}" in capture_logs.text
     assert "All file outputs downloaded" in capture_logs.text
 
-    verify(pipeline_runs_logic).get_pipeline_run_status(test_job_id)
+    verify(pipeline_runs_logic).get_pipeline_run_output_signed_urls(test_job_id)
     verify(pipeline_runs_logic).download_files_with_signed_urls(
         test_local_destination, [test_signed_url]
     )
 
 
-get_result_and_download_pipeline_run_outputs_testdata = [
-    # value for pipeline_run_report.outputs
-    ({}),
-    (None),
-]
-
-
-@pytest.mark.parametrize(
-    "pipeline_report_outputs", get_result_and_download_pipeline_run_outputs_testdata
-)
-def test_get_result_and_download_expired_outputs(pipeline_report_outputs, capture_logs):
+def test_get_result_and_download_pipeline_run_outputs_error():
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
 
-    # mock successful job status
-    mock_job_report = mock({"status": "SUCCEEDED"})
+    when(pipeline_runs_logic).get_pipeline_run_output_signed_urls(
+        test_job_id
+    ).thenRaise(ApiException(400, reason="error message"))
 
-    mock_pipeline_run_report = mock(
-        {
-            "outputs": pipeline_report_outputs,
-        }
-    )
-    mock_async_pipeline_run_response = mock(
-        {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
-    )
-
-    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
-        mock_async_pipeline_run_response
-    )
-
-    with pytest.raises(SystemExit):
-        pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-            test_job_id, test_local_destination
-        )
-    assert f"Results for job {test_job_id} have expired" in capture_logs.text
-
-
-def test_get_result_and_download_pipeline_run_outputs_running(capture_logs):
-    test_job_id = uuid.uuid4()
-    test_local_destination = "local/path"
-
-    # mock running job status
-    mock_job_report = mock({"status": "RUNNING"})
-    test_output_name = "output1"
-    test_signed_url = "signed_url"
-    mock_pipeline_run_report = mock({"outputs": {test_output_name: test_signed_url}})
-    mock_async_pipeline_run_response = mock(
-        {"job_report": mock_job_report, "pipeline_run_report": mock_pipeline_run_report}
-    )
-
-    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
-        mock_async_pipeline_run_response
-    )
-
-    with pytest.raises(SystemExit):
-        pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
+    with pytest.raises(ApiException):
+        pipeline_runs_logic.get_signed_urls_and_download_pipeline_run_outputs(
             test_job_id, test_local_destination
         )
 
-    assert (
-        f"Results not available for job {test_job_id} with status RUNNING"
-        in capture_logs.text
-    )
-
-
-def test_get_result_and_download_pipeline_run_outputs_failed(capture_logs):
-    test_job_id = uuid.uuid4()
-    test_local_destination = "local/path"
-
-    # mock failed job status
-    mock_job_report = mock({"status": "FAILED"})
-    mock_pipeline_run_report = mock()
-    mock_error_report = mock({"status_code": 500, "message": "something went wrong"})
-    mock_async_pipeline_run_response = mock(
-        {
-            "job_report": mock_job_report,
-            "pipeline_run_report": mock_pipeline_run_report,
-            "error_report": mock_error_report,
-        }
-    )
-
-    when(pipeline_runs_logic).get_pipeline_run_status(test_job_id).thenReturn(
-        mock_async_pipeline_run_response
-    )
-
-    with pytest.raises(SystemExit):
-        pipeline_runs_logic.get_result_and_download_pipeline_run_outputs(
-            test_job_id, test_local_destination
-        )
-
-    assert (
-        f"Results not available for job {test_job_id} with status FAILED"
-        in capture_logs.text
-    )
+    # note that the error gets handled by @handle_api_exceptions, outside of this function
+    verify(pipeline_runs_logic).get_pipeline_run_output_signed_urls(test_job_id)
 
 
 def create_mock_pipeline_run_result(
