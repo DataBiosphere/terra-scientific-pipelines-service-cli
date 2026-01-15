@@ -99,10 +99,8 @@ def get_pipeline_run_output_signed_urls(
                 if (
                     "output signed URLs can only be retrieved for complete and successful runs"
                     in message
+                    or "output signed URLs are not available for failed runs" in message
                 ):
-                    LOGGER.error(add_blankline_before(message))
-                    exit(1)
-                elif "have expired and are no longer available for download" in message:
                     LOGGER.error(add_blankline_before(message))
                     exit(1)
             raise
