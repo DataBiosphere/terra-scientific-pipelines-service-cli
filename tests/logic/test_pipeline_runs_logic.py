@@ -28,7 +28,9 @@ def mock_client_wrapper(unstub):
     client = mock()
     # Make the mock support context manager protocol
     when(client).__enter__().thenReturn(client)
-    when(client).__exit__(None, None, None).thenReturn(None)
+    when(client).__exit__(...).thenReturn(
+        None
+    )  # accept any arguments for __exit__, i.e. support exit(1)
 
     when(pipeline_runs_logic).ClientWrapper(...).thenReturn(client)
     yield client
@@ -228,6 +230,65 @@ def test_get_pipeline_run_status(mock_pipeline_runs_api):
 
     assert response == mock_async_pipeline_run_response
     verify(mock_pipeline_runs_api).get_pipeline_run_result_v2(test_job_id_str)
+
+
+def test_get_pipeline_run_output_signed_urls(mock_pipeline_runs_api):
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    test_output_name = "output1"
+    test_signed_url = "signed_url"
+    pipeline_run_output_signed_urls = {test_output_name: test_signed_url}
+    mock_pipeline_run_output_signed_urls_response = mock(
+        {"output_signed_urls": pipeline_run_output_signed_urls, "status": 200}
+    )
+
+    when(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(
+        test_job_id_str
+    ).thenReturn(mock_pipeline_run_output_signed_urls_response)
+
+    response = pipeline_runs_logic.get_pipeline_run_output_signed_urls(test_job_id)
+
+    assert response == mock_pipeline_run_output_signed_urls_response
+    verify(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(test_job_id_str)
+
+
+def test_get_pipeline_run_output_signed_urls_not_complete(
+    mock_pipeline_runs_api, capture_logs
+):
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    error_message = f"Pipeline run {test_job_id_str} has state RUNNING; output signed URLs can only be retrieved for complete and successful runs"
+
+    when(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(
+        test_job_id_str
+    ).thenRaise(ApiException(400, body=error_message))
+
+    with pytest.raises(SystemExit):
+        pipeline_runs_logic.get_pipeline_run_output_signed_urls(test_job_id)
+
+    assert error_message in capture_logs.text
+    verify(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(test_job_id_str)
+
+
+def test_get_pipeline_run_output_signed_urls_outputs_expired(
+    mock_pipeline_runs_api, capture_logs
+):
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    error_message = f"Outputs for pipeline run {test_job_id_str} have expired and are no longer available for download"
+
+    when(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(
+        test_job_id_str
+    ).thenRaise(ApiException(400, body=error_message))
+
+    with pytest.raises(SystemExit):
+        pipeline_runs_logic.get_pipeline_run_output_signed_urls(test_job_id)
+
+    assert error_message in capture_logs.text
+    verify(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(test_job_id_str)
 
 
 def test_get_pipeline_runs(mock_pipeline_runs_api):
