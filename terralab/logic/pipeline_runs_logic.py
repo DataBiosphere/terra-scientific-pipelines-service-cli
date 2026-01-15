@@ -5,6 +5,7 @@ import uuid
 from typing import Any
 
 from teaspoons_client import (  # type: ignore[attr-defined]
+    ApiException,
     AsyncPipelineRunResponseV2,
     JobControl,
     PipelineRun,
@@ -17,7 +18,12 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 
 from terralab.client import ClientWrapper
 from terralab.log import indented
-from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
+from terralab.utils import (  # type: ignore[attr-defined]
+    upload_file_with_signed_url,
+    download_files_with_signed_urls,
+    get_message_from_api_exception,
+    add_blankline_before,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +91,21 @@ def get_pipeline_run_output_signed_urls(
     """Call the getPipelineRunResult Teaspoons endpoint and return the output signed URLs."""
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_pipeline_run_output_signed_urls(str(job_id))
+        try:
+            return pipeline_runs_client.get_pipeline_run_output_signed_urls(str(job_id))
+        except ApiException as e:
+            message = get_message_from_api_exception(e)
+            if message and e.status == 400:
+                if (
+                    "output signed URLs can only be retrieved for complete and successful runs"
+                    in message
+                ):
+                    LOGGER.error(add_blankline_before(message))
+                    exit(1)
+                elif "have expired and are no longer available for download" in message:
+                    LOGGER.error(add_blankline_before(message))
+                    exit(1)
+            raise
 
 
 def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:

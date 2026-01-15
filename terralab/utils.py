@@ -28,12 +28,7 @@ def handle_api_exceptions(func: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except ApiException as e:
-            message = None
-            if e.body is not None:
-                try:
-                    message = json.loads(e.body)["message"]
-                except json.JSONDecodeError:
-                    message = e.body
+            message = get_message_from_api_exception(e)
             if e.status == 401 and message == "User not found":
                 LOGGER.error(
                     add_blankline_before(
@@ -72,6 +67,16 @@ def handle_api_exceptions(func: Any) -> Any:
             exit(1)
 
     return wrapper
+
+
+def get_message_from_api_exception(e: ApiException) -> str | None:
+    """Extracts the message from an ApiException, if present."""
+    if e.body is not None:
+        try:
+            return str(json.loads(e.body).get("message"))
+        except json.JSONDecodeError:
+            return str(e.body)
+    return None
 
 
 def process_inputs_to_dict(
