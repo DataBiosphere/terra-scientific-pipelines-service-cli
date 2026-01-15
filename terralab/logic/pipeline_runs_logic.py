@@ -17,12 +17,11 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 )
 
 from terralab.client import ClientWrapper
-from terralab.log import indented
-from terralab.utils import (  # type: ignore[attr-defined]
+from terralab.log import indented, add_blankline_before
+from terralab.utils import (
     upload_file_with_signed_url,
     download_files_with_signed_urls,
     get_message_from_api_exception,
-    add_blankline_before,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -88,7 +87,7 @@ def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponseV2:
 def get_pipeline_run_output_signed_urls(
     job_id: uuid.UUID,
 ) -> PipelineRunOutputSignedUrlsResponse:
-    """Call the getPipelineRunResult Teaspoons endpoint and return the output signed URLs."""
+    """Call the getPipelineRunOutputSignedUrls Teaspoons endpoint and return the response object containing output signed URLs."""
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         try:
