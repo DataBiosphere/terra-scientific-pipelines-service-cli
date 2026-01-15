@@ -95,15 +95,18 @@ def get_pipeline_run_output_signed_urls(
             return pipeline_runs_client.get_pipeline_run_output_signed_urls(str(job_id))
         except ApiException as e:
             message = get_message_from_api_exception(e)
-            if message and e.status == 400:
-                if (
+            if (
+                message
+                and e.status == 400
+                and (
                     "output signed URLs can only be retrieved for complete and successful runs"
                     in message
                     or "have expired and are no longer available for download"
                     in message
-                ):
-                    LOGGER.error(add_blankline_before(message))
-                    exit(1)
+                )
+            ):
+                LOGGER.error(add_blankline_before(message))
+                exit(1)
             raise
 
 

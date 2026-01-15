@@ -291,13 +291,31 @@ def test_get_pipeline_run_output_signed_urls_outputs_expired(
     verify(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(test_job_id_str)
 
 
+def test_get_pipeline_run_output_signed_urls_unrecognized_400_error(
+    mock_pipeline_runs_api,
+):
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+
+    error_message = "Some other 400 error"
+
+    when(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(
+        test_job_id_str
+    ).thenRaise(ApiException(400, body=error_message))
+
+    with pytest.raises(ApiException):
+        pipeline_runs_logic.get_pipeline_run_output_signed_urls(test_job_id)
+
+    verify(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(test_job_id_str)
+
+
 def test_get_pipeline_run_output_signed_urls_other_error(
     mock_pipeline_runs_api,
 ):
     test_job_id = uuid.uuid4()
     test_job_id_str = str(test_job_id)
 
-    error_message = "Some other error"
+    error_message = "Some non-400 error"
 
     when(mock_pipeline_runs_api).get_pipeline_run_output_signed_urls(
         test_job_id_str
