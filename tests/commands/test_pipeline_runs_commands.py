@@ -156,6 +156,25 @@ def test_download_bad_job_id(capture_logs):
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
+def test_download_api_error(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    when(
+        pipeline_runs_commands.pipeline_runs_logic
+    ).get_signed_urls_and_download_pipeline_run_outputs(TEST_JOB_ID, ".").thenRaise(
+        Exception("API error")
+    )
+
+    result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
+
+    assert result.exit_code == 1
+    assert "API error" in capture_logs.text
+
+    unstub()
+
+
 def test_details_running_job(capture_logs, unstub):
     runner = CliRunner()
 
