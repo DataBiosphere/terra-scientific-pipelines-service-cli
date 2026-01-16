@@ -6,12 +6,12 @@ import uuid
 from click.testing import CliRunner
 from mockito import when, verify, mock
 from teaspoons_client import (
-    AsyncPipelineRunResponse,
+    AsyncPipelineRunResponseV2,
     JobReport,
     ErrorReport,
     PipelineOutputDefinition,
     PipelineQuota,
-    PipelineRunReport,
+    PipelineRunReportV2,
     PipelineUserProvidedInputDefinition,
     PipelineWithDetails,
 )
@@ -133,7 +133,7 @@ def test_download():
 
     when(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(
+    ).get_signed_urls_and_download_pipeline_run_outputs(
         TEST_JOB_ID, "."
     )  # do nothing, assume succeeded
 
@@ -142,7 +142,7 @@ def test_download():
     assert result.exit_code == 0
     verify(
         pipeline_runs_commands.pipeline_runs_logic
-    ).get_result_and_download_pipeline_run_outputs(TEST_JOB_ID, ".")
+    ).get_signed_urls_and_download_pipeline_run_outputs(TEST_JOB_ID, ".")
 
 
 def test_download_bad_job_id(capture_logs):
@@ -154,6 +154,25 @@ def test_download_bad_job_id(capture_logs):
 
     assert result.exit_code == 1
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
+
+
+def test_download_api_error(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    when(
+        pipeline_runs_commands.pipeline_runs_logic
+    ).get_signed_urls_and_download_pipeline_run_outputs(TEST_JOB_ID, ".").thenRaise(
+        Exception("API error")
+    )
+
+    result = runner.invoke(pipeline_runs_commands.download, [test_job_id_str])
+
+    assert result.exit_code == 1
+    assert "API error" in capture_logs.text
+
+    unstub()
 
 
 def test_details_running_job(capture_logs, unstub):
@@ -507,7 +526,7 @@ def create_test_pipeline_run_response(
     status: str,
     include_input_size: bool = False,
     error_message: str = None,
-) -> AsyncPipelineRunResponse:
+) -> AsyncPipelineRunResponseV2:
     """Helper function for creating AsyncPipelineRunResponse objects used in tests"""
     status_code = 200
     if status == "RUNNING":
@@ -526,7 +545,7 @@ def create_test_pipeline_run_response(
     if status in [SUCCEEDED_KEY, FAILED_KEY]:
         job_report.completed = "2024-01-01T15:00:00Z"
 
-    pipeline_run_report = PipelineRunReport(
+    pipeline_run_report = PipelineRunReportV2(
         pipelineName=pipeline_name,
         pipelineVersion=TEST_PIPELINE_VERSION,
         toolVersion="1.0.0",
@@ -539,7 +558,7 @@ def create_test_pipeline_run_response(
         pipeline_run_report.input_size = TEST_INPUT_SIZE
         pipeline_run_report.input_size_units = TEST_INPUT_UNIT
 
-    return AsyncPipelineRunResponse(
+    return AsyncPipelineRunResponseV2(
         jobReport=job_report,
         pipelineRunReport=pipeline_run_report,
         errorReport=error_report,

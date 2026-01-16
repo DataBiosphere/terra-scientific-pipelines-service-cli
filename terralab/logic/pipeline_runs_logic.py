@@ -5,9 +5,10 @@ import uuid
 from typing import Any
 
 from teaspoons_client import (  # type: ignore[attr-defined]
-    AsyncPipelineRunResponse,
+    AsyncPipelineRunResponseV2,
     JobControl,
     PipelineRun,
+    PipelineRunOutputSignedUrlsResponse,
     PipelineRunsApi,
     PreparePipelineRunRequestBody,
     PreparePipelineRunResponse,
@@ -15,8 +16,11 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 )
 
 from terralab.client import ClientWrapper
-from terralab.log import indented, add_blankline_before
-from terralab.utils import upload_file_with_signed_url, download_files_with_signed_urls
+from terralab.log import indented
+from terralab.utils import (
+    upload_file_with_signed_url,
+    download_files_with_signed_urls,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,12 +74,21 @@ def start_pipeline_run(job_id: str) -> str:
         ).job_report.id
 
 
-def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponse:
+def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponseV2:
     """Call the getPipelineRunResult Teaspoons endpoint and return the Async Pipeline Run Response."""
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_pipeline_run_result(str(job_id))
+        return pipeline_runs_client.get_pipeline_run_result_v2(str(job_id))
+
+
+def get_pipeline_run_output_signed_urls(
+    job_id: uuid.UUID,
+) -> PipelineRunOutputSignedUrlsResponse:
+    """Call the getPipelineRunOutputSignedUrls Teaspoons endpoint and return the response object containing output signed URLs."""
+    with ClientWrapper() as api_client:
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+        return pipeline_runs_client.get_pipeline_run_output_signed_urls(str(job_id))
 
 
 def get_pipeline_runs(n_results_requested: int) -> list[PipelineRun]:
@@ -153,34 +166,18 @@ def prepare_upload_start_pipeline_run(
 ## download action
 
 
-def get_result_and_download_pipeline_run_outputs(
+def get_signed_urls_and_download_pipeline_run_outputs(
     job_id: uuid.UUID, local_destination: str
 ) -> None:
-    """Retrieve pipeline run result, download all output files."""
+    """Retrieve pipeline run output signed URLs, download all output files."""
     LOGGER.info(
-        f"Getting results for job {job_id} and downloading to {local_destination}"
+        f"Getting output signed URLs for job {job_id} and downloading to {local_destination}"
     )
-    result: AsyncPipelineRunResponse = get_pipeline_run_status(job_id)
-    job_status: str = result.job_report.status
-    LOGGER.debug(f"Job {job_id} status is {job_status}")
-    if job_status != "SUCCEEDED":
-        LOGGER.error(
-            add_blankline_before(
-                f"Results not available for job {job_id} with status {job_status}"
-            )
-        )
-        exit(1)
+    response = get_pipeline_run_output_signed_urls(job_id)
 
-    if not result.pipeline_run_report.outputs:
-        LOGGER.error(
-            add_blankline_before(
-                f"Results for job {job_id} have expired. No results available."
-            )
-        )
-        exit(1)
-
+    signed_urls_dict: dict[str, str] = response.output_signed_urls
     # extract output signed urls and download them all
-    signed_url_list: list[str] = list(result.pipeline_run_report.outputs.values())
+    signed_url_list: list[str] = list(signed_urls_dict.values())
     downloaded_files: list[str] = download_files_with_signed_urls(
         local_destination, signed_url_list
     )

@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [3.0.0] - 2026-01-15
+
+### Changed
+- `terralab download` error messages for non-successful runs and runs with expired outputs have changed. This change was part of updating the CLI to use new service API versions: `api/pipelineruns/v2/result/{jobId}` and `api/pipelineruns/v2/result/{jobId}/output/signed-urls`, as `api/pipelineruns/v1/result/{jobId}` is now deprecated.
+
 ## [2.1.0] - 2025-12-17
 
 ### Added
