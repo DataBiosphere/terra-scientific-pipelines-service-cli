@@ -16,7 +16,7 @@ on:
         required: false
         type: string
       e2e-test-version-ref:
-        description: 'Name of branch or commit hash in the dsp-reusable-workflows repo to use. defaults to main'
+        description: 'Name of branch or commit hash in the terra-github-workflows repo to use. Defaults to main'
         required: false
         type: string
       wdl-method-version:
