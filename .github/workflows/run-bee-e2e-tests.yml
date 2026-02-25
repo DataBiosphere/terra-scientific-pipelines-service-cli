@@ -147,7 +147,7 @@ jobs:
           workflow: teaspoons-bee-e2e-cli-test
           run-name: "teaspoons-bee-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/sps_move_tsps_e2e_tests # TODO - change this to main
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           inputs: '{ 
