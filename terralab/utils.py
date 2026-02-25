@@ -80,7 +80,7 @@ def get_message_from_api_exception(e: ApiException) -> str | None:
 
 
 def process_inputs_to_dict(
-    inputs: tuple[str, ...]
+    inputs: tuple[str, ...],
 ) -> dict[str, str | list[str] | None]:
     """Process command line arguments (input as a tuple) into a dictionary.
 

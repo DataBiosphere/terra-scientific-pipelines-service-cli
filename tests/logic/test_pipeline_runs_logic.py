@@ -45,7 +45,7 @@ def mock_pipeline_runs_api(mock_client_wrapper, unstub):
     unstub()
 
 
-def test_prepare_pipeline_run(mock_pipeline_runs_api):
+def test_prepare_pipeline_run_local_input(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"
     test_pipeline_version = 1
@@ -70,7 +70,7 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
             "file_input_upload_urls": test_file_input_upload_urls_dict,
         }
     )
-    when(mock_pipeline_runs_api).prepare_pipeline_run(
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
         test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
@@ -83,12 +83,12 @@ def test_prepare_pipeline_run(mock_pipeline_runs_api):
     )
 
     assert result == {test_input_name: test_signed_url}
-    verify(mock_pipeline_runs_api).prepare_pipeline_run(
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
         test_prepare_pipeline_run_request_body
     )
 
 
-def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
+def test_prepare_pipeline_run_local_input_no_description(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
     test_pipeline_name = "foobar"
     test_pipeline_version = 1
@@ -113,7 +113,7 @@ def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
             "file_input_upload_urls": test_file_input_upload_urls_dict,
         }
     )
-    when(mock_pipeline_runs_api).prepare_pipeline_run(
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
         test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
@@ -126,7 +126,7 @@ def test_prepare_pipeline_run_no_description(mock_pipeline_runs_api):
     )
 
     assert result == {test_input_name: test_signed_url}
-    verify(mock_pipeline_runs_api).prepare_pipeline_run(
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
         test_prepare_pipeline_run_request_body
     )
 

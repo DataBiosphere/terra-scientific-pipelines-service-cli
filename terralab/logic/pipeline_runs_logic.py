@@ -11,7 +11,7 @@ from teaspoons_client import (  # type: ignore[attr-defined]
     PipelineRunOutputSignedUrlsResponse,
     PipelineRunsApi,
     PreparePipelineRunRequestBody,
-    PreparePipelineRunResponse,
+    PreparePipelineRunResponseV2,
     StartPipelineRunRequestBody,
 )
 
@@ -35,7 +35,7 @@ def prepare_pipeline_run(
     pipeline_version: int,
     pipeline_inputs: dict[str, Any],
     description: str,
-) -> dict[str, str]:
+) -> dict[str, str] | None:
     """Call the preparePipelineRun Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url}."""
     prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
@@ -50,16 +50,20 @@ def prepare_pipeline_run(
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        response: PreparePipelineRunResponse = (
-            pipeline_runs_client.prepare_pipeline_run(prepare_pipeline_run_request_body)
+        response: PreparePipelineRunResponseV2 = (
+            pipeline_runs_client.prepare_pipeline_run_v2(
+                prepare_pipeline_run_request_body
+            )
         )
 
         result = response.file_input_upload_urls
 
-        return {
-            input_name: signed_url_dict[SIGNED_URL_KEY]
-            for input_name, signed_url_dict in result.items()
-        }
+        if result:
+            return {
+                input_name: signed_url_dict[SIGNED_URL_KEY]
+                for input_name, signed_url_dict in result.items()
+            }
+        return None
 
 
 def start_pipeline_run(job_id: str) -> str:
@@ -145,18 +149,19 @@ def prepare_upload_start_pipeline_run(
     job_id = str(uuid.uuid4())
     LOGGER.info(f"Generated job_id {job_id}")
 
-    file_input_upload_urls: dict[str, str] = prepare_pipeline_run(
+    file_input_upload_urls: dict[str, str] | None = prepare_pipeline_run(
         pipeline_name, job_id, pipeline_version, pipeline_inputs, description
     )
 
-    for input_name, signed_url in file_input_upload_urls.items():
-        input_file_value = pipeline_inputs[input_name]
-        LOGGER.info(
-            f"Uploading file `{input_file_value}` for {pipeline_name} input `{input_name}`"
-        )
-        LOGGER.debug(f"Found signed url: {signed_url}")
+    if file_input_upload_urls:
+        for input_name, signed_url in file_input_upload_urls.items():
+            input_file_value = pipeline_inputs[input_name]
+            LOGGER.info(
+                f"Uploading file `{input_file_value}` for {pipeline_name} input `{input_name}`"
+            )
+            LOGGER.debug(f"Found signed url: {signed_url}")
 
-        upload_file_with_signed_url(input_file_value, signed_url)
+            upload_file_with_signed_url(input_file_value, signed_url)
 
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
