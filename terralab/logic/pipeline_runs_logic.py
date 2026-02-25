@@ -36,8 +36,9 @@ def prepare_pipeline_run(
     pipeline_inputs: dict[str, Any],
     description: str,
 ) -> dict[str, str] | None:
-    """Call the preparePipelineRun Teaspoons endpoint.
-    Return a dictionary of {input_name: signed_url}."""
+    """Call the preparePipelineRunV2 Teaspoons endpoint.
+    Return a dictionary of {input_name: signed_url} if inputs are local, else (cloud inputs) return None.
+    """
     prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
         PreparePipelineRunRequestBody(
             jobId=job_id,
@@ -143,7 +144,7 @@ def prepare_upload_start_pipeline_run(
     pipeline_inputs: dict[str, Any],
     description: str,
 ) -> str:
-    """Prepare pipeline run, upload input files, and start pipeline run.
+    """Prepare pipeline run, upload input files if input files are local, and start pipeline run.
     Returns the uuid of the job."""
     # generate a job id for the user
     job_id = str(uuid.uuid4())
