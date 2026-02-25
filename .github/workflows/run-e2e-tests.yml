@@ -47,7 +47,7 @@ jobs:
     outputs:
         is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v6
         - name: Skip version bump merges
           id: skiptest
           uses: ./.github/actions/bump-skip
@@ -67,7 +67,7 @@ jobs:
       e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
       version-template: '${{ steps.extract-inputs-and-generate-params.outputs.version-template }}'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Get inputs or use defaults, generate other parameters
@@ -121,7 +121,7 @@ jobs:
       id-token: write
     steps:
       - name: Get actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: dispatch to terra-github-workflows
         id: FirstAttemptCreateBee

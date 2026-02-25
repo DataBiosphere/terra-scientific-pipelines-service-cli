@@ -29,7 +29,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
@@ -61,7 +61,7 @@ jobs:
           echo ::set-output name=force-without-changes::FORCE_WITHOUT_CHANGES
 
       - name: Checkout current code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.controls.outputs.checkout-branch }}
           token: ${{ secrets.BROADBOT_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.tag-job.outputs.tag }}
 
