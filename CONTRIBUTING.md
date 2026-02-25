@@ -8,7 +8,6 @@ To install the CLI locally, run the following commands from the root project dir
 poetry lock      # only needed if you updated dependencies in pyproject.toml
 poetry install
 ```
-Note: We are currently using Poetry version 1.8.5 - You may need to revert your installed version of Poetry to this version.
 
 You do not need to re-run these commands each time you update code locally, unless you've added dependencies in pyproject.toml.
 
