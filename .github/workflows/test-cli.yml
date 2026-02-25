@@ -23,7 +23,7 @@ jobs:
     outputs:
       is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Skip version bump merges
         id: skiptest
         uses: ./.github/actions/bump-skip
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.bump-check.outputs.is-bump == 'no'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # disable shallow clone, needed for sonar
       
