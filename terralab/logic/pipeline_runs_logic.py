@@ -57,8 +57,7 @@ def prepare_pipeline_run(
             )
         )
 
-        result = response.file_input_upload_urls
-        if result:
+        if result := response.file_input_upload_urls:
             return {
                 input_name: signed_url_dict[SIGNED_URL_KEY]
                 for input_name, signed_url_dict in result.items()

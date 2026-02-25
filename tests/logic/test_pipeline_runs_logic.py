@@ -3,7 +3,7 @@
 import uuid
 
 import pytest
-from mockito import when, mock, verify
+from mockito import when, mock, verify, times
 from teaspoons_client import (
     ApiException,
     PreparePipelineRunRequestBody,
@@ -14,17 +14,18 @@ from teaspoons_client import (
 from terralab.logic import pipeline_runs_logic
 from tests.conftest import capture_logs
 
+pytestmark = pytest.mark.usefixtures("unstub_fixture")
+
 
 @pytest.fixture
-def mock_cli_config(unstub):
+def mock_cli_config():
     config = mock({"token_file": "mock_token_file"})
     when(pipeline_runs_logic).load_config(...).thenReturn(config)
     yield config
-    unstub()
 
 
 @pytest.fixture
-def mock_client_wrapper(unstub):
+def mock_client_wrapper():
     client = mock()
     # Make the mock support context manager protocol
     when(client).__enter__().thenReturn(client)
@@ -34,15 +35,13 @@ def mock_client_wrapper(unstub):
 
     when(pipeline_runs_logic).ClientWrapper(...).thenReturn(client)
     yield client
-    unstub()
 
 
 @pytest.fixture
-def mock_pipeline_runs_api(mock_client_wrapper, unstub):
+def mock_pipeline_runs_api(mock_client_wrapper):
     api = mock()
     when(pipeline_runs_logic).PipelineRunsApi(...).thenReturn(api)
     yield api
-    unstub()
 
 
 def test_prepare_pipeline_run_local_input(mock_pipeline_runs_api):
@@ -214,7 +213,7 @@ def test_start_pipeline_run_error_response(mock_pipeline_runs_api):
     )
 
 
-def test_prepare_upload_start_pipeline_run():
+def test_prepare_upload_start_pipeline_run_local_input():
     test_pipeline_name = "foobar"
     test_pipeline_version = 0
     test_input_name = "input_name"
@@ -249,6 +248,38 @@ def test_prepare_upload_start_pipeline_run():
     )
 
     assert response == test_job_id
+
+
+def test_prepare_upload_start_pipeline_run_cloud_input():
+    test_pipeline_name = "foobar"
+    test_pipeline_version = 0
+    test_input_name = "input_name"
+    test_input_value = "gs://bucket/cloud_value"
+    test_inputs = {test_input_name: test_input_value}
+    test_description = "user-provided description"
+
+    test_job_id = uuid.uuid4()
+    test_job_id_str = str(test_job_id)
+    when(pipeline_runs_logic.uuid).uuid4().thenReturn(test_job_id)
+
+    when(pipeline_runs_logic).prepare_pipeline_run(
+        test_pipeline_name,
+        test_job_id_str,
+        test_pipeline_version,
+        test_inputs,
+        test_description,
+    ).thenReturn()
+
+    when(pipeline_runs_logic).start_pipeline_run(test_job_id_str).thenReturn(
+        test_job_id
+    )
+
+    response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
+        test_pipeline_name, test_pipeline_version, test_inputs, test_description
+    )
+
+    assert response == test_job_id
+    verify(pipeline_runs_logic, times(0)).upload_file_with_signed_url(...)
 
 
 def test_get_pipeline_run_status(mock_pipeline_runs_api):

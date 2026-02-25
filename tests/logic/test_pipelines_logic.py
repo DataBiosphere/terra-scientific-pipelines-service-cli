@@ -112,7 +112,7 @@ MISSING_INPUT_MSG = "Error: Missing input '{key}'."
 TEST_VERSION = 1
 
 validate_pipeline_inputs_testdata = [
-    # input dict, include_file boolean, list(error messages) if failure (None = validates)
+    # input dict, list(error messages) if failure (None = validates)
     ({STRING_INPUT_KEY: "foo", STRING_ARRAY_INPUT_KEY: ["foo", "bar"]}, None),
     (
         {
@@ -202,6 +202,11 @@ def test_validate_pipeline_inputs(input: dict, error_messages: list[str], captur
 validate_pipeline_inputs_file_testdata = [
     # input dict, file_to_create (or None), list(error messages) if failure (None = validates)
     ({STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: "test_file"}, "test_file", None),
+    (
+        {STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: "gs://bucket/cloud_test_file"},
+        None,
+        None,
+    ),
     # failures:
     (
         {STRING_INPUT_KEY: "foo", FILE_INPUT_KEY: "test_file"},
