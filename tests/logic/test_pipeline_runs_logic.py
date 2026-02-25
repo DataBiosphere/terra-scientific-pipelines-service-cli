@@ -131,6 +131,42 @@ def test_prepare_pipeline_run_local_input_no_description(mock_pipeline_runs_api)
     )
 
 
+def test_prepare_pipeline_run_cloud_input(mock_pipeline_runs_api):
+    test_job_id = str(uuid.uuid4())
+    test_pipeline_name = "foobar"
+    test_pipeline_version = 1
+    test_input_name = "test_input"
+    test_input_value = "gs://bucket/file"
+    test_pipeline_inputs = {test_input_name: test_input_value}
+    test_description = "i am a description"
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+        jobId=test_job_id,
+        pipelineName=test_pipeline_name,
+        pipelineVersion=test_pipeline_version,
+        pipelineInputs=test_pipeline_inputs,
+        description=test_description,
+    )
+
+    mock_pipeline_run_response = mock({"job_id": test_job_id})
+    mock_pipeline_run_response.file_input_upload_urls = None  # service should not return signed urls when inputs are cloud files; this seems odd to have to mock a None value rather than the key not existing, which is what happens in the service, but this is how the mockito library handles missing keys
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+        test_prepare_pipeline_run_request_body
+    ).thenReturn(mock_pipeline_run_response)
+
+    result = pipeline_runs_logic.prepare_pipeline_run(
+        test_pipeline_name,
+        test_job_id,
+        test_pipeline_version,
+        test_pipeline_inputs,
+        test_description,
+    )
+
+    assert result is None
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+        test_prepare_pipeline_run_request_body
+    )
+
+
 def test_start_pipeline_run_running(mock_pipeline_runs_api):
     test_job_id = str(uuid.uuid4())
 

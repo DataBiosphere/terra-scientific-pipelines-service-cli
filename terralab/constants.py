@@ -11,6 +11,9 @@ FILE_TYPE_KEY = "FILE"
 STRING_ARRAY_TYPE_KEY = "STRING_ARRAY"
 FILE_ARRAY_TYPE_KEY = "FILE_ARRAY"
 
+# supported cloud file input prefixes
+GCS_PREFIX = "gs://"
+
 # file upload size limit
 MAX_FILE_UPLOAD_SIZE_BYTES = 50 * 1025 * 1024 * 1024  # 50GB
 
