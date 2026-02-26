@@ -14,6 +14,7 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 from terralab.client import ClientWrapper
 from terralab.constants import (
     FILE_TYPE_KEY,
+    GCS_PREFIX,
 )
 from terralab.log import join_lines, add_blankline_before
 from terralab.utils import is_valid_local_file, validate_file_size
@@ -86,6 +87,8 @@ def _validate_single_input(
         return f"Error: Missing value for input '{input_name}'."
 
     if input_def.type == FILE_TYPE_KEY:
+        if input_value.startswith(GCS_PREFIX):
+            return None  # assume cloud file inputs are valid, service will check existence and access
         if not is_valid_local_file(input_value):
             return f"Error: Could not find provided file for input '{input_name}': '{input_value}'."
 

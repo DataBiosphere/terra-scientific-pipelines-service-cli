@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [3.1.0] - 2026-02-25
+
+### Added
+- `terralab submit` now accepts either local or Google Cloud Storage hosted input files. 
+
 ## [3.0.0] - 2026-01-15
 
 ### Changed
