@@ -17,6 +17,7 @@ on:
         type: string
       e2e-test-version-ref:
         description: 'Name of branch or commit hash in the terra-github-workflows repo to use. Defaults to main'
+        default: 'TSPS-810_update_e2e_tests'
         required: false
         type: string
       wdl-method-version:
@@ -36,6 +37,11 @@ on:
           - dev
           - staging
           - prod
+      pipeline-version:
+        description: 'version of the pipeline to run. default to 1.'
+        default: '1'
+        required: false
+        type: string
 
 env:
   BEE_NAME: 'teaspoons-cli-${{ github.run_id }}-${{ github.run_attempt}}-dev'
@@ -66,6 +72,7 @@ jobs:
       cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
       e2e-test-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.e2e-test-version-ref }}'
       version-template: '${{ steps.extract-inputs-and-generate-params.outputs.version-template }}'
+      pipeline-version: '${{ steps.extract-inputs-and-generate-params.outputs.pipeline-version }}'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -111,6 +118,13 @@ jobs:
           else
             echo "version-template=${{ inputs.version-template }}" >> $GITHUB_OUTPUT
           fi
+          if [ -z ${{ inputs.pipeline-version }} ]; then
+            echo "using default pipeline-version: 1"
+            echo "pipeline-version=1" >> $GITHUB_OUTPUT
+          else
+            echo "using custom pipeline-version: ${{ inputs.pipeline-version }}"
+            echo "pipeline-version=${{ inputs.pipeline-version }}" >> $GITHUB_OUTPUT
+          fi
 
   create-bee-workflow:
     runs-on: ubuntu-latest
@@ -147,7 +161,7 @@ jobs:
           workflow: teaspoons-bee-e2e-cli-test
           run-name: "teaspoons-bee-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/main
+          ref: refs/heads/TSPS-810_update_e2e_tests
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           inputs: '{ 
@@ -156,7 +170,8 @@ jobs:
               "bee-name": "${{ needs.init-github-context-and-params-gen.outputs.bee-name }}", 
               "e2e-test-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.e2e-test-version-ref }}", 
               "wdl-method-version": "${{ needs.init-github-context-and-params-gen.outputs.wdl-method-version }}", 
-              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}" 
+              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
+              "pipeline-version": "${{ needs.init-github-context-and-params-gen.outputs.pipeline-version }}"
             }'
 
   destroy-bee-workflow:
