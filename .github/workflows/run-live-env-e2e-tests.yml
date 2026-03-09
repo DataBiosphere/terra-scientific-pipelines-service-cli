@@ -73,6 +73,7 @@ jobs:
           ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
+          wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{ 
               "run-name": "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}",
               "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}", 
