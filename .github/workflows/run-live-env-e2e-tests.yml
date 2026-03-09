@@ -37,7 +37,6 @@ on:
 
 jobs:
   init-github-context-and-params-gen:
-    needs: [ bump-check ]
     runs-on: ubuntu-latest
     outputs:
       cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
