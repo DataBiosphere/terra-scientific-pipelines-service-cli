@@ -80,6 +80,7 @@ jobs:
 #                        "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
 #                        "env-name": "${{inputs.env-name}}",
 #                        "input-vcf-file-name": "${{inputs.input-vcf-file-name}}",
+#                        "use-cloud-input": "${{inputs.use-cloud-input}}",
 #                        "pipeline-version": "${{ inputs.pipeline-version }}"
 #                      }'
           inputs: '{ 
@@ -88,6 +89,7 @@ jobs:
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "dev",
               "input-vcf-file-name": "NA12878_10_samples_chr1_chr20.vcf.gz",
+              "use-cloud-input": "true",
               "pipeline-version": "1"
             }'
 
