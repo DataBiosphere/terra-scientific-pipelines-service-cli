@@ -1,6 +1,5 @@
 name: Run Terralab CLI e2e tests in a live environment using GCP workspace
 on:
-  pull_request: {}
   workflow_dispatch:
     inputs:
       e2e-test-version-ref:
@@ -74,23 +73,14 @@ jobs:
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
-#          inputs: '{
-#                        "run-name": "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}",
-#                        "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
-#                        "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
-#                        "env-name": "${{inputs.env-name}}",
-#                        "input-vcf-file-name": "${{inputs.input-vcf-file-name}}",
-#                        "use-cloud-input": "${{inputs.use-cloud-input}}",
-#                        "pipeline-version": "${{ inputs.pipeline-version }}"
-#                      }'
-          inputs: '{ 
+          inputs: '{
               "run-name": "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "js_TSPS-844", 
+              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
-              "env-name": "dev",
-              "input-vcf-file-name": "NA12878_10_samples_chr1_chr20.vcf.gz",
-              "use-cloud-input": "true",
-              "pipeline-version": "1"
+              "env-name": "${{inputs.env-name}}",
+              "input-vcf-file-name": "${{inputs.input-vcf-file-name}}",
+              "use-cloud-input": "${{inputs.use-cloud-input}}",
+              "pipeline-version": "${{ inputs.pipeline-version }}"
             }'
 
   report-workflow:
