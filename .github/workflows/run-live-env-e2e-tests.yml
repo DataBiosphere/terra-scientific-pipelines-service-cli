@@ -12,7 +12,7 @@ on:
         required: false
         type: string
       env-name:
-        description: 'version template to copy. defaults to staging'
+        description: 'Live environment to run the test against (dev or staging)'
         default: 'staging'
         required: true
         type: choice
