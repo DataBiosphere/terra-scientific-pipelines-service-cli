@@ -1,5 +1,6 @@
 name: Run Terralab CLI e2e tests in a live environment using GCP workspace
 on:
+  pull_request: {}
   workflow_dispatch:
     inputs:
       e2e-test-version-ref:
