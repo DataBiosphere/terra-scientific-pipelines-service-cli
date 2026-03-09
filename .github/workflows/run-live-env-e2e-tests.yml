@@ -1,0 +1,93 @@
+name: Run Terralab CLI e2e tests in a live environment using GCP workspace
+on:
+  workflow_dispatch:
+    inputs:
+      e2e-test-version-ref:
+        description: 'Name of branch or commit hash in the terra-github-workflows repo to use. Defaults to main'
+        default: 'main'
+        required: true
+        type: string
+      cli-version-ref:
+        description: 'Branch or semantic version (git tag) of CLI repo to use. defaults to latest published tag.'
+        required: false
+        type: string
+      env-name:
+        description: 'version template to copy. defaults to staging'
+        default: 'staging'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+      input_vcf_file_name:
+        description: 'Name of the input VCF file to use in the test (just the file name and not the entire path)'
+        required: true
+        default: 'NA12878_10_samples_chr1_chr20.vcf.gz' # small VCF file with 10 samples, chr1 and chr20 data only
+        type: string
+      use-cloud-input:
+        description: 'Whether to use a cloud input file or a local file for the test. Default true.'
+        required: true
+        default: 'true'
+        type: string
+      pipeline-version:
+        description: 'version of the pipeline to run. default to 1.'
+        default: '1'
+        required: true
+        type: string
+
+jobs:
+  init-github-context-and-params-gen:
+    needs: [ bump-check ]
+    runs-on: ubuntu-latest
+    outputs:
+      cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Get inputs or use defaults, generate other parameters
+        id: extract-inputs-and-generate-params
+        run: |
+          # assign values without defaults
+          if [ -z ${{ inputs.cli-version-ref }} ]; then
+            echo "using latest cli version as cli-version-ref: $(git describe --tags $(git rev-list --tags --max-count=1))"
+            echo "cli-version-ref=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_OUTPUT
+          else
+            echo "using custom cli version: ${{ inputs.cli-version-ref }}"
+            echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
+          fi
+
+  run-live-env-e2e-test-job:
+    runs-on: ubuntu-latest
+    needs: [ init-github-context-and-params-gen ]
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Dispatch to terra-github-workflows to run e2e test
+        uses: broadinstitute/workflow-dispatch@v4.0.0
+        with:
+          workflow: teaspoons-live-env-e2e-cli-test
+          run-name: "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}"
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/main
+          wait-for-completion: true
+          token: '${{ secrets.BROADBOT_TOKEN }}'
+          inputs: '{ 
+              "run-name": "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}",
+              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}", 
+              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
+              "env-name": "${{inputs.env-name}}",
+              "input-vcf-file-name": "${{inputs.input-vcf-file-name}}",
+              "pipeline-version": "${{ inputs.pipeline-version }}"
+            }'
+
+  report-workflow:
+    uses: broadinstitute/sherlock/.github/workflows/client-report-workflow.yaml@main
+    if: github.ref == 'refs/heads/main'
+    with:
+      relates-to-chart-releases: "teaspoons-${{ inputs.env-name }}"
+      notify-slack-channels-upon-workflow-completion: ${{ inputs.env-name == 'staging' && '#terra-teaspoons-alerts,#dsde-qa' || '#terra-teaspoons-alerts' }}
+      notify-slack-custom-icon: ":tsps-logo:"
+    permissions:
+      id-token: write
