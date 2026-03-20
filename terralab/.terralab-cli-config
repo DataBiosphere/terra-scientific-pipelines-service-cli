@@ -1,6 +1,9 @@
 # Teaspoons service API URL
 TEASPOONS_API_URL=https://teaspoons.dsde-prod.broadinstitute.org
 
+# Sam service API URL
+SAM_API_URL=https://sam.dsde-prod.broadinstitute.org
+
 # Port to use for local server (for auth)
 SERVER_PORT=10444
 
@@ -11,3 +14,6 @@ REMOTE_OAUTH_REDIRECT_URI=https://services.terra.bio/pipelines/cli-auth
 
 # Terralab storage (absolute path or relative to user's home directory)
 LOCAL_STORAGE_PATH=.terralab
+
+# Teaspoons service share-group (for cloud integration)
+TEASPOONS_SHARE_GROUP=broad-scientific-services@firecloud.org
