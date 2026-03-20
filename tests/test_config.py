@@ -25,6 +25,7 @@ def test_config():
         test_config.oauth_access_token_file == f"{Path.home()}/.cool/oauth_access_token"
     )
     assert test_config.remote_oauth_redirect_uri == "https://something/redirect"
+    assert test_config.teaspoons_share_group == "test-share-group@test.org"
 
     assert test_config.server_port == 12345
     assert test_config.client_info == mock_client_info
@@ -67,4 +68,18 @@ def test_config_missing_redirect_uri():
     with pytest.raises(RuntimeError):
         config.load_config(
             config_file=".test.missing_redirect_uri.config", package="tests"
+        )
+
+
+def test_config_missing_share_group():
+    mock_client_info = mock()
+    when(config.OAuth2ClientInfo).from_oidc_endpoint(
+        "https://dontcare",
+        client_id="whatever",
+        scopes=["offline_access+email+profile+whatever"],
+    ).thenReturn(mock_client_info)
+
+    with pytest.raises(RuntimeError):
+        config.load_config(
+            config_file=".test.missing_share_group.config", package="tests"
         )

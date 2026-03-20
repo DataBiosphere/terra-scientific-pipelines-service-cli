@@ -8,6 +8,7 @@ import click
 
 from terralab import __version__, log
 from terralab.version_utils import check_version
+from terralab.commands.account_commands import cloud_info
 from terralab.commands.auth_commands import logout, login_with_oauth, login
 from terralab.commands.pipeline_runs_commands import (
     submit,
@@ -85,6 +86,7 @@ cli.add_command(list_pipelines, name="  pipelines list")
 cli.add_command(details_pipelines, name="  pipelines details")
 
 cli.add_command(quota)
+cli.add_command(cloud_info)
 cli.add_command(login)
 cli.add_command(logout)
 
