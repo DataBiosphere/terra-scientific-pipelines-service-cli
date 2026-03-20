@@ -24,6 +24,7 @@ class CliConfig:
     oauth_access_token_file: str
     remote_oauth_redirect_uri: str
     teaspoons_share_group: str
+    sam_api_url: str
 
 
 def load_config(
@@ -50,6 +51,9 @@ def load_config(
     if (teaspoons_share_group := config.get("TEASPOONS_SHARE_GROUP")) is None:
         raise RuntimeError("Expected config value for share group not found")
 
+    if (sam_api_url := config.get("SAM_API_URL")) is None:
+        raise RuntimeError("Expected config value for SAM API URL not found")
+
     return CliConfig(
         client_info=OAuth2ClientInfo.from_oidc_endpoint(
             config["OAUTH_OPENID_CONFIGURATION_URI"],
@@ -65,4 +69,5 @@ def load_config(
         oauth_access_token_file=f'{Path.home()}/{config["LOCAL_STORAGE_PATH"]}/oauth_access_token',
         remote_oauth_redirect_uri=remote_oauth_redirect_uri,
         teaspoons_share_group=teaspoons_share_group,
+        sam_api_url=sam_api_url,
     )
