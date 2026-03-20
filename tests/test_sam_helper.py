@@ -1,5 +1,6 @@
 # tests/test_sam_helper.py
 
+import json
 import pytest
 from mockito import mock, when, verify
 from urllib.error import URLError
@@ -21,8 +22,65 @@ def mock_cli_config():
     return config
 
 
+# --- get_user_email tests ---
+
+
+def test_get_user_email_success(mock_cli_config):
+    mock_response = mock()
+    when(mock_response).read().thenReturn(
+        json.dumps({"userEmail": TEST_EMAIL}).encode("utf-8")
+    )
+    when(mock_response).__enter__().thenReturn(mock_response)
+    when(mock_response).__exit__(None, None, None).thenReturn(None)
+    when(sam_helper.urllibrequest).urlopen(...).thenReturn(mock_response)
+
+    result = sam_helper.get_user_email(mock_cli_config, TEST_ACCESS_TOKEN)
+
+    assert result == TEST_EMAIL
+
+
+def test_get_user_email_builds_correct_url(mock_cli_config):
+    mock_response = mock()
+    when(mock_response).read().thenReturn(
+        json.dumps({"userEmail": TEST_EMAIL}).encode("utf-8")
+    )
+    when(mock_response).__enter__().thenReturn(mock_response)
+    when(mock_response).__exit__(None, None, None).thenReturn(None)
+
+    captured_requests = []
+
+    def capture_request(req):
+        captured_requests.append(req)
+        return mock_response
+
+    when(sam_helper.urllibrequest).urlopen(...).thenAnswer(capture_request)
+
+    sam_helper.get_user_email(mock_cli_config, TEST_ACCESS_TOKEN)
+
+    assert len(captured_requests) == 1
+    req = captured_requests[0]
+    assert req.full_url == f"{TEST_SAM_API_URL}/api/users/v1/self"
+    assert req.get_header("Authorization") == f"Bearer {TEST_ACCESS_TOKEN}"
+
+
+def test_get_user_email_url_error(mock_cli_config, capture_logs):
+    when(sam_helper.urllibrequest).urlopen(...).thenRaise(
+        URLError("connection refused")
+    )
+
+    with pytest.raises(URLError):
+        sam_helper.get_user_email(mock_cli_config, TEST_ACCESS_TOKEN)
+
+    assert "Failed to retrieve user info from Sam" in capture_logs.text
+
+
+# --- get_user_proxy_group tests ---
+
+
 def test_get_user_proxy_group_success(mock_cli_config):
-    when(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
+    when(sam_helper).get_user_email(mock_cli_config, TEST_ACCESS_TOKEN).thenReturn(
+        TEST_EMAIL
+    )
 
     mock_response = mock()
     when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode("utf-8"))
@@ -33,11 +91,13 @@ def test_get_user_proxy_group_success(mock_cli_config):
     result = sam_helper.get_user_proxy_group(mock_cli_config, TEST_ACCESS_TOKEN)
 
     assert result == TEST_PROXY_GROUP
-    verify(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN)
+    verify(sam_helper).get_user_email(mock_cli_config, TEST_ACCESS_TOKEN)
 
 
 def test_get_user_proxy_group_builds_correct_url(mock_cli_config):
-    when(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
+    when(sam_helper).get_user_email(mock_cli_config, TEST_ACCESS_TOKEN).thenReturn(
+        TEST_EMAIL
+    )
 
     mock_response = mock()
     when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode("utf-8"))
@@ -63,7 +123,9 @@ def test_get_user_proxy_group_builds_correct_url(mock_cli_config):
 
 
 def test_get_user_proxy_group_url_error(mock_cli_config, capture_logs):
-    when(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
+    when(sam_helper).get_user_email(mock_cli_config, TEST_ACCESS_TOKEN).thenReturn(
+        TEST_EMAIL
+    )
     when(sam_helper.urllibrequest).urlopen(...).thenRaise(
         URLError("connection refused")
     )
@@ -72,21 +134,3 @@ def test_get_user_proxy_group_url_error(mock_cli_config, capture_logs):
         sam_helper.get_user_proxy_group(mock_cli_config, TEST_ACCESS_TOKEN)
 
     assert "Failed to retrieve proxy group from Sam" in capture_logs.text
-
-
-def test_get_email_from_token():
-    # build a real (unsigned) JWT with an email claim
-    import base64
-    import json
-
-    header = base64.urlsafe_b64encode(b'{"alg":"none"}').rstrip(b"=").decode()
-    payload = (
-        base64.urlsafe_b64encode(json.dumps({"email": TEST_EMAIL}).encode())
-        .rstrip(b"=")
-        .decode()
-    )
-    token = f"{header}.{payload}."
-
-    result = sam_helper._get_email_from_token(token)
-
-    assert result == TEST_EMAIL
