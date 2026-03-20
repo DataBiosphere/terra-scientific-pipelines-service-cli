@@ -8,7 +8,7 @@ from terralab.config import CliConfig
 
 LOGGER = logging.getLogger(__name__)
 
-SELF_INFO_ENDPOINT = "/api/users/v1/self"
+SELF_INFO_ENDPOINT = "/api/users/v2/self"
 PROXY_GROUP_ENDPOINT = "/api/google/v1/user/proxyGroup/{email}"
 
 
@@ -29,7 +29,7 @@ def get_user_email(cli_config: CliConfig, access_token: str) -> str:
     try:
         with urllibrequest.urlopen(req) as response:
             data = json.loads(response.read().decode("utf-8"))
-            email: str = data["userEmail"]
+            email: str = data["email"]
             return email
     except urlliberror.URLError as e:
         LOGGER.error(f"Failed to retrieve user info from Sam: {e}")

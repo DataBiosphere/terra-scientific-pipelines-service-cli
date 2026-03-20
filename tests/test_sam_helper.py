@@ -28,7 +28,7 @@ def mock_cli_config():
 def test_get_user_email_success(mock_cli_config):
     mock_response = mock()
     when(mock_response).read().thenReturn(
-        json.dumps({"userEmail": TEST_EMAIL}).encode("utf-8")
+        json.dumps({"email": TEST_EMAIL}).encode("utf-8")
     )
     when(mock_response).__enter__().thenReturn(mock_response)
     when(mock_response).__exit__(None, None, None).thenReturn(None)
@@ -42,7 +42,7 @@ def test_get_user_email_success(mock_cli_config):
 def test_get_user_email_builds_correct_url(mock_cli_config):
     mock_response = mock()
     when(mock_response).read().thenReturn(
-        json.dumps({"userEmail": TEST_EMAIL}).encode("utf-8")
+        json.dumps({"email": TEST_EMAIL}).encode("utf-8")
     )
     when(mock_response).__enter__().thenReturn(mock_response)
     when(mock_response).__exit__(None, None, None).thenReturn(None)
@@ -59,7 +59,7 @@ def test_get_user_email_builds_correct_url(mock_cli_config):
 
     assert len(captured_requests) == 1
     req = captured_requests[0]
-    assert req.full_url == f"{TEST_SAM_API_URL}/api/users/v1/self"
+    assert req.full_url == f"{TEST_SAM_API_URL}/api/users/v2/self"
     assert req.get_header("Authorization") == f"Bearer {TEST_ACCESS_TOKEN}"
 
 
