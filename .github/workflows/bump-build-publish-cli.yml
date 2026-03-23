@@ -144,3 +144,6 @@ jobs:
       BROADBOT_TOKEN: ${{ secrets.BROADBOT_TOKEN }}
     with:
       cli-version-ref: ${{ needs.tag-job.outputs.checkout-ref }}
+      version-template: 'dev'
+      pipeline-version: '1'
+      e2e-test-version-ref: 'main'
