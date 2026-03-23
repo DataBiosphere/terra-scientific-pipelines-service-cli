@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 @click.command(name="cloud-info")
 def cloud_info() -> None:
-    """Get cloud integration information for your account"""
+    """Get cloud sharing information for your account"""
     config = load_config()
     access_token = get_or_refresh_access_token(config)
     proxy_group = get_user_proxy_group(config, access_token)
