@@ -9,6 +9,25 @@ on:
         description: 'Branch or semantic version (git tag) of CLI repo to use.'
         required: true
         type: string
+      e2e-test-version-ref:
+        description: 'Name of branch or commit hash in the terra-github-workflows repo to use. Defaults to main'
+        default: 'main'
+        required: true
+        type: string
+      version-template:
+        description: 'version template to copy. defaults to dev'
+        default: 'dev'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      pipeline-version:
+        description: 'version of the pipeline to run. default to 1.'
+        default: '1'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       custom-app-version:
@@ -103,13 +122,6 @@ jobs:
           else
             echo "using custom cli version: ${{ inputs.cli-version-ref }}"
             echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
-          fi
-          if [ -z ${{ inputs.e2e-test-version-ref }} ]; then
-            echo "using e2e-test-version-ref: main"
-            echo "e2e-test-version-ref=main" >> $GITHUB_OUTPUT
-          else
-            echo "using custom e2e-test-version-ref: ${{ inputs.e2e-test-version-ref }}"
-            echo "e2e-test-version-ref=${{ inputs.e2e-test-version-ref }}" >> $GITHUB_OUTPUT
           fi
 
           # log values of required inputs
