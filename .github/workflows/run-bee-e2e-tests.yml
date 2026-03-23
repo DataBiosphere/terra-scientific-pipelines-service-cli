@@ -18,11 +18,7 @@ on:
         description: 'version template to copy. defaults to dev'
         default: 'dev'
         required: true
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
+        type: string
       pipeline-version:
         description: 'version of the pipeline to run. default to 1.'
         default: '1'
