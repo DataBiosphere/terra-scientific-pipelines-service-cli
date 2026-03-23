@@ -7,6 +7,7 @@ from urllib.error import URLError
 
 from terralab.commands import account_commands
 from terralab.config import CliConfig
+from terralab.logic import account_logic
 from tests.conftest import capture_logs
 
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
@@ -14,6 +15,10 @@ pytestmark = pytest.mark.usefixtures("unstub_fixture")
 TEST_ACCESS_TOKEN = "test_access_token"
 TEST_SHARE_GROUP = "broad-scientific-services@example.com"
 TEST_PROXY_GROUP = "PROXY_1234567890@example.com"
+TEST_ROWS = [
+    ["Service Account", TEST_SHARE_GROUP],
+    ["Your Proxy Group", TEST_PROXY_GROUP],
+]
 
 
 @pytest.fixture
@@ -38,16 +43,16 @@ def test_cloud_info_success(mock_cli_config, capture_logs):
     when(account_commands).get_or_refresh_access_token(mock_cli_config).thenReturn(
         TEST_ACCESS_TOKEN
     )
-    when(account_commands).get_user_proxy_group(
-        mock_cli_config, TEST_ACCESS_TOKEN
-    ).thenReturn(TEST_PROXY_GROUP)
+    when(account_logic).get_cloud_info(mock_cli_config, TEST_ACCESS_TOKEN).thenReturn(
+        TEST_ROWS
+    )
 
     runner = CliRunner()
     result = runner.invoke(account_commands.cloud_info)
 
     assert result.exit_code == 0
     verify(account_commands).get_or_refresh_access_token(mock_cli_config)
-    verify(account_commands).get_user_proxy_group(mock_cli_config, TEST_ACCESS_TOKEN)
+    verify(account_logic).get_cloud_info(mock_cli_config, TEST_ACCESS_TOKEN)
     assert (
         "To ensure that your cloud resources can be properly accessed by Broad Scientific Services"
         in capture_logs.text
@@ -60,9 +65,9 @@ def test_cloud_info_sam_error(mock_cli_config, capture_logs):
     when(account_commands).get_or_refresh_access_token(mock_cli_config).thenReturn(
         TEST_ACCESS_TOKEN
     )
-    when(account_commands).get_user_proxy_group(
-        mock_cli_config, TEST_ACCESS_TOKEN
-    ).thenRaise(URLError("connection refused"))
+    when(account_logic).get_cloud_info(mock_cli_config, TEST_ACCESS_TOKEN).thenRaise(
+        URLError("connection refused")
+    )
 
     runner = CliRunner()
     result = runner.invoke(account_commands.cloud_info)
