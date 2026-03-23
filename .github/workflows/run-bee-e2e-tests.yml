@@ -10,18 +10,15 @@ on:
         required: true
         type: string
       e2e-test-version-ref:
-        description: 'Name of branch or commit hash in the terra-github-workflows repo to use. Defaults to main'
-        default: 'main'
+        description: 'Name of branch or commit hash in the terra-github-workflows repo to use'
         required: true
         type: string
       version-template:
-        description: 'version template to copy. defaults to dev'
-        default: 'dev'
+        description: 'version template to copy'
         required: true
         type: string
       pipeline-version:
-        description: 'version of the pipeline to run. default to 1.'
-        default: '1'
+        description: 'version of the pipeline to run'
         required: true
         type: string
   workflow_dispatch:
