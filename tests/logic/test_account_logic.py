@@ -16,6 +16,10 @@ TEST_PROXY_GROUP = "PROXY_1234567890@example.com"
 @pytest.fixture
 def mock_cli_config():
     config = mock({"teaspoons_share_group": TEST_SHARE_GROUP})
+    when(account_logic).load_config().thenReturn(config)
+    when(account_logic).get_or_refresh_access_token(config).thenReturn(
+        TEST_ACCESS_TOKEN
+    )
     return config
 
 
@@ -24,7 +28,7 @@ def test_get_cloud_info_success(mock_cli_config):
         mock_cli_config, TEST_ACCESS_TOKEN
     ).thenReturn(TEST_PROXY_GROUP)
 
-    result = account_logic.get_cloud_info(mock_cli_config, TEST_ACCESS_TOKEN)
+    result = account_logic.get_cloud_info()
 
     assert result == [
         ["Service Account", TEST_SHARE_GROUP],
@@ -38,4 +42,4 @@ def test_get_cloud_info_sam_error(mock_cli_config):
     ).thenRaise(URLError("connection refused"))
 
     with pytest.raises(URLError):
-        account_logic.get_cloud_info(mock_cli_config, TEST_ACCESS_TOKEN)
+        account_logic.get_cloud_info()
