@@ -10,7 +10,10 @@ from terralab.logic import account_logic
 LOGGER = logging.getLogger(__name__)
 
 
-@click.command(name="cloud-info")
+@click.command(
+    name="cloud-info",
+    short_help="Get information about sharing cloud resources with Broad Scientific Services",
+)
 def cloud_info() -> None:
     """Get cloud sharing information for your account"""
     rows = account_logic.get_cloud_info()
