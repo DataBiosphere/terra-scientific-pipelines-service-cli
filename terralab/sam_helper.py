@@ -5,6 +5,7 @@ import logging
 from urllib import request as urllibrequest, error as urlliberror
 
 from terralab.config import CliConfig
+from terralab.constants import SUPPORT_EMAIL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +33,10 @@ def get_user_email(cli_config: CliConfig, access_token: str) -> str:
             email: str = data["email"]
             return email
     except urlliberror.URLError as e:
-        LOGGER.error(f"Failed to retrieve user info from Sam: {e}")
+        LOGGER.debug(f"Failed to retrieve user info from Sam: {e}")
+        LOGGER.error(
+            f"Failed to retrieve user info, please try again or contact support at {SUPPORT_EMAIL}"
+        )
         raise
 
 
@@ -56,5 +60,8 @@ def get_user_proxy_group(cli_config: CliConfig, access_token: str) -> str:
             proxy_group: str = response.read().decode("utf-8").strip('"')
             return proxy_group
     except urlliberror.URLError as e:
-        LOGGER.error(f"Failed to retrieve proxy group from Sam: {e}")
+        LOGGER.debug(f"Failed to retrieve proxy group from Sam: {e}")
+        LOGGER.error(
+            f"Failed to retrieve user info, please try again or contact support at {SUPPORT_EMAIL}"
+        )
         raise

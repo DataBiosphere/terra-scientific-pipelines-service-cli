@@ -6,6 +6,7 @@ from mockito import mock, when, verify
 from urllib.error import URLError
 
 from terralab import sam_helper
+from terralab.constants import SUPPORT_EMAIL
 from tests.conftest import capture_logs
 
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
@@ -71,7 +72,10 @@ def test_get_user_email_url_error(mock_cli_config, capture_logs):
     with pytest.raises(URLError):
         sam_helper.get_user_email(mock_cli_config, TEST_ACCESS_TOKEN)
 
-    assert "Failed to retrieve user info from Sam" in capture_logs.text
+    assert (
+        f"Failed to retrieve user info, please try again or contact support at {SUPPORT_EMAIL}"
+        in capture_logs.text
+    )
 
 
 # --- get_user_proxy_group tests ---
@@ -133,4 +137,7 @@ def test_get_user_proxy_group_url_error(mock_cli_config, capture_logs):
     with pytest.raises(URLError):
         sam_helper.get_user_proxy_group(mock_cli_config, TEST_ACCESS_TOKEN)
 
-    assert "Failed to retrieve proxy group from Sam" in capture_logs.text
+    assert (
+        f"Failed to retrieve user info, please try again or contact support at {SUPPORT_EMAIL}"
+        in capture_logs.text
+    )
