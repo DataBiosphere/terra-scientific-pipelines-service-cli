@@ -18,7 +18,6 @@ def cloud_info() -> None:
     """Get cloud sharing information for your account"""
     rows = account_logic.get_cloud_info()
     LOGGER.info(
-        "To ensure that your cloud resources can be properly accessed by Broad Scientific Services, please share them with the following accounts:"
+        "To ensure that your cloud resources can be properly accessed by Broad Scientific Services, please share them with the following accounts:\n"
     )
-    LOGGER.info("")
     LOGGER.info(format_table_no_header(rows))
