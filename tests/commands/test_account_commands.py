@@ -33,6 +33,7 @@ def test_cloud_info_success(capture_logs):
     )
     assert TEST_SHARE_GROUP in capture_logs.text
     assert TEST_PROXY_GROUP in capture_logs.text
+    assert f"Copy all: {TEST_SHARE_GROUP}, {TEST_PROXY_GROUP}" in capture_logs.text
 
 
 def test_cloud_info_sam_error():

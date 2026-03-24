@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @click.command(
-    name="cloud-info",
+    name="account",
     short_help="Get information about sharing cloud resources with Broad Scientific Services",
 )
 def cloud_info() -> None:
@@ -21,3 +21,5 @@ def cloud_info() -> None:
         "To ensure that your cloud resources can be properly accessed by Broad Scientific Services, please share them with the following accounts:\n"
     )
     LOGGER.info(format_table_no_header(rows))
+    emails = ", ".join(row[1] for row in rows)
+    LOGGER.info(f"\nCopy all: {emails}")
