@@ -10,12 +10,9 @@ from terralab.logic import account_logic
 LOGGER = logging.getLogger(__name__)
 
 
-@click.command(
-    name="account",
-    short_help="Get information about your account",
-)
-def cloud_info() -> None:
-    """Get cloud sharing information for your account"""
+@click.command()
+def account() -> None:
+    """Get information about your account"""
     account_info = account_logic.get_account_info()
     LOGGER.info("Your Account")
     LOGGER.info(add_blankline_before(format_table_no_header(account_info)))
