@@ -9,6 +9,8 @@ from terralab.logic import account_logic
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
 
 TEST_ACCESS_TOKEN = "test_access_token"
+TEST_NAME = "Test User"
+TEST_EMAIL = "test@example.com"
 TEST_SHARE_GROUP = "broad-scientific-services@example.com"
 TEST_PROXY_GROUP = "PROXY_1234567890@example.com"
 
@@ -21,6 +23,20 @@ def mock_cli_config():
         TEST_ACCESS_TOKEN
     )
     return config
+
+
+def test_get_account_info_success(mock_cli_config):
+    when(account_logic)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
+    when(account_logic.jwt).decode(...).thenReturn(
+        {"name": TEST_NAME, "email": TEST_EMAIL}
+    )
+
+    result = account_logic.get_account_info()
+
+    assert result == [
+        ["Name", TEST_NAME],
+        ["Email Address", TEST_EMAIL],
+    ]
 
 
 def test_get_cloud_info_success(mock_cli_config):

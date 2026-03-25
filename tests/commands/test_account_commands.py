@@ -6,13 +6,18 @@ from mockito import when, verify
 from urllib.error import URLError
 
 from terralab.commands import account_commands
-from terralab.logic import account_logic
 from tests.conftest import capture_logs
 
 pytestmark = pytest.mark.usefixtures("unstub_fixture")
 
+TEST_NAME = "Test User"
+TEST_EMAIL = "test@example.com"
 TEST_SHARE_GROUP = "broad-scientific-services@example.com"
 TEST_PROXY_GROUP = "PROXY_1234567890@example.com"
+TEST_ACCOUNT_ROWS = [
+    ["Name", TEST_NAME],
+    ["Email Address", TEST_EMAIL],
+]
 TEST_ROWS = [
     ["Service Account", TEST_SHARE_GROUP],
     ["Your Proxy Group", TEST_PROXY_GROUP],
@@ -20,13 +25,19 @@ TEST_ROWS = [
 
 
 def test_cloud_info_success(capture_logs):
-    when(account_logic).get_cloud_info().thenReturn(TEST_ROWS)
+    when(account_commands.account_logic).get_account_info().thenReturn(
+        TEST_ACCOUNT_ROWS
+    )
+    when(account_commands.account_logic).get_cloud_info().thenReturn(TEST_ROWS)
 
     runner = CliRunner()
     result = runner.invoke(account_commands.cloud_info)
 
     assert result.exit_code == 0
-    verify(account_logic).get_cloud_info()
+    verify(account_commands.account_logic).get_account_info()
+    verify(account_commands.account_logic).get_cloud_info()
+    assert TEST_NAME in capture_logs.text
+    assert TEST_EMAIL in capture_logs.text
     assert (
         "To ensure that your cloud resources can be properly accessed by Broad Scientific Services"
         in capture_logs.text
@@ -37,7 +48,12 @@ def test_cloud_info_success(capture_logs):
 
 
 def test_cloud_info_sam_error():
-    when(account_logic).get_cloud_info().thenRaise(URLError("connection refused"))
+    when(account_commands.account_logic).get_account_info().thenReturn(
+        TEST_ACCOUNT_ROWS
+    )
+    when(account_commands.account_logic).get_cloud_info().thenRaise(
+        URLError("connection refused")
+    )
 
     runner = CliRunner()
     result = runner.invoke(account_commands.cloud_info)
