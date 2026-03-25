@@ -31,7 +31,7 @@ def test_cloud_info_success(capture_logs):
     when(account_commands.account_logic).get_cloud_info().thenReturn(TEST_ROWS)
 
     runner = CliRunner()
-    result = runner.invoke(account_commands.cloud_info)
+    result = runner.invoke(account_commands.account)
 
     assert result.exit_code == 0
     verify(account_commands.account_logic).get_account_info()
@@ -56,6 +56,6 @@ def test_cloud_info_sam_error():
     )
 
     runner = CliRunner()
-    result = runner.invoke(account_commands.cloud_info)
+    result = runner.invoke(account_commands.account)
 
     assert result.exit_code != 0
