@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [3.1.5] - 2026-03-25
+
+### Added
+- A new `terralab account` command will show your account details, including information about using cloud-based inputs with the service.
+
 ## [3.1.0] - 2026-02-25
 
 ### Added
