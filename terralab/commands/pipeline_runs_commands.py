@@ -143,8 +143,7 @@ def details(job_id: str) -> None:
         LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
 
     if response.job_report.status == SUCCEEDED_KEY:
-        if response.pipeline_run_report.outputs:
-            display_outputs(response.pipeline_run_report.outputs)
+        display_outputs(response.pipeline_run_report.outputs)
         LOGGER.info(
             indented(
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
@@ -152,7 +151,9 @@ def details(job_id: str) -> None:
         )
 
 
-def display_outputs(outputs: dict[str, dict[str, Any]]) -> None:
+def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
+    if not outputs:
+        return
     LOGGER.info(indented("Outputs:"))
     for (
         output_name,

@@ -310,7 +310,9 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "Inputs:" in capture_logs.text
     assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
     assert "Outputs:" in capture_logs.text
-    assert "output1: gs://bucket/path/to/output1 (1.0 MiB)" in capture_logs.text
+    assert (
+        "output1: gs://bucket/path/to/output1 (1.0 MiB)" in capture_logs.text
+    )  # input size is 1048576 bytes
     assert "output2: gs://bucket/path/to/output2" in capture_logs.text
 
     unstub()
