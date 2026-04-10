@@ -127,6 +127,16 @@ def test_validate_file_size_exceeds_limit():
         assert test_file_path in result
 
 
+def test_convert_file_size_to_human_readable():
+    assert utils.convert_file_size_to_human_readable(0) == "0 B"
+    assert utils.convert_file_size_to_human_readable(500) == "500 B"
+    assert utils.convert_file_size_to_human_readable(1024) == "1.0 KiB"
+    assert utils.convert_file_size_to_human_readable(1536) == "1.5 KiB"
+    assert utils.convert_file_size_to_human_readable(1048576) == "1.0 MiB"
+    assert utils.convert_file_size_to_human_readable(1073741824) == "1.0 GiB"
+    assert utils.convert_file_size_to_human_readable(1099511627776) == "1.0 TiB"
+
+
 def test_upload_file_with_signed_url_success(capture_logs):
     test_signed_url = "signed_url"
 

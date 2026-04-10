@@ -15,6 +15,7 @@ from terralab.log import (
 )
 from terralab.logic import pipeline_runs_logic, pipelines_logic
 from terralab.utils import (
+    convert_file_size_to_human_readable,
     handle_api_exceptions,
     process_inputs_to_dict,
     validate_job_id,
@@ -141,6 +142,25 @@ def details(job_id: str) -> None:
         LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
 
     if response.job_report.status == SUCCEEDED_KEY:
+        if response.pipeline_run_report.outputs:
+            LOGGER.info(indented("Outputs:"))
+            for (
+                output_name,
+                output_value,
+            ) in response.pipeline_run_report.outputs.items():
+                if (
+                    "metadata" in output_value
+                    and "sizeInBytes" in output_value["metadata"]
+                ):
+                    output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
+                else:
+                    output_size_string = ""
+                LOGGER.info(
+                    indented(
+                        f"{output_name}: {output_value['value']} {output_size_string}",
+                        n_spaces=4,
+                    )
+                )
         LOGGER.info(
             indented(
                 f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
