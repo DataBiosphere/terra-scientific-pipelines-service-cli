@@ -309,6 +309,11 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
     assert "Inputs:" in capture_logs.text
     assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert "Outputs:" in capture_logs.text
+    assert (
+        "output1: gs://bucket/path/to/output1 (1.0 MiB)" in capture_logs.text
+    )  # input size is 1048576 bytes
+    assert "output2: gs://bucket/path/to/output2" in capture_logs.text
 
     unstub()
 
@@ -552,6 +557,13 @@ def create_test_pipeline_run_response(
         user_inputs=TEST_INPUTS_DICT,
     )
     if status == SUCCEEDED_KEY:
+        pipeline_run_report.outputs = {
+            "output1": {
+                "value": "gs://bucket/path/to/output1",
+                "metadata": {"sizeInBytes": 1048576},
+            },
+            "output2": {"value": "gs://bucket/path/to/output2"},
+        }
         pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
 
     if include_input_size:

@@ -3,6 +3,7 @@
 import datetime
 import json
 import logging
+import math
 import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -163,6 +164,17 @@ def validate_file_size(file_path: str) -> str | None:
         file_size_gb = file_size / (1024 * 1024 * 1024)
         return f"Error: File '{file_path}' ({file_size_gb:.2f} GB) exceeds the maximum file size of {max_size_gb:.0f} GB."
     return None
+
+
+def convert_file_size_to_human_readable(size_bytes: int) -> str:
+    """Convert a file size in bytes to a human-readable string with appropriate units."""
+    if size_bytes == 0:
+        return "0 B"
+    size_name = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 1) if p > 1 else size_bytes
+    return "%s %s" % (s, size_name[i])
 
 
 ## upload and download methods

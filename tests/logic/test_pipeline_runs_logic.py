@@ -289,14 +289,14 @@ def test_get_pipeline_run_status(mock_pipeline_runs_api):
     mock_job_report = mock({"id": test_job_id})
     mock_async_pipeline_run_response = mock({"job_report": mock_job_report})
 
-    when(mock_pipeline_runs_api).get_pipeline_run_result_v2(test_job_id_str).thenReturn(
+    when(mock_pipeline_runs_api).get_pipeline_run_result_v3(test_job_id_str).thenReturn(
         mock_async_pipeline_run_response
     )
 
     response = pipeline_runs_logic.get_pipeline_run_status(test_job_id)
 
     assert response == mock_async_pipeline_run_response
-    verify(mock_pipeline_runs_api).get_pipeline_run_result_v2(test_job_id_str)
+    verify(mock_pipeline_runs_api).get_pipeline_run_result_v3(test_job_id_str)
 
 
 def test_get_pipeline_run_output_signed_urls(mock_pipeline_runs_api):
