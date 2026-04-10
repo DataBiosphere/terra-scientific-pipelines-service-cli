@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [3.2.0] - 2026-04-10
+
+### Added
+- The `terralab jobs details` returns pipeline outputs and their file sizes, when available. 
+
 ## [3.1.5] - 2026-03-25
 
 ### Added
