@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [3.2.0] - 2026-04-10
+## [3.2.0] - 2026-04-13
 
 ### Added
 - The `terralab jobs details` returns pipeline outputs and their file sizes, when available. This change was part of updating the CLI to use the new service API version `api/pipelineruns/v3/result/{jobId}`, as `api/pipelineruns/v2/result/{jobId}` is now deprecated.

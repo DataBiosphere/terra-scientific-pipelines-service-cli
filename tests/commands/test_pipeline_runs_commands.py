@@ -209,12 +209,10 @@ def test_details_running_job(capture_logs, unstub):
     assert "Completed:" not in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
-    assert (
-        f"{OPTIONAL_INPUT_NAME}: {user_defined_optional_input_value}"
-        in capture_logs.text
-    )
-
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
+    assert f"{OPTIONAL_INPUT_NAME}:" in capture_logs.text
+    assert user_defined_optional_input_value in capture_logs.text
     unstub()
 
 
@@ -244,7 +242,8 @@ def test_details_running_job_with_input_size(capture_logs, unstub):
     assert "Completed:" not in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
 
     unstub()
 
@@ -275,7 +274,8 @@ def test_details_running_job_without_input_size(capture_logs, unstub):
     assert "Completed:" not in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" not in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
 
     unstub()
 
@@ -308,12 +308,15 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert f"Quota Consumed: {TEST_QUOTA_CONSUMED}" in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
     assert "Outputs:" in capture_logs.text
+    assert "output1:" in capture_logs.text
     assert (
-        "output1: gs://bucket/path/to/output1 (1.0 MiB)" in capture_logs.text
+        "gs://bucket/path/to/output1 (1.0 MiB)" in capture_logs.text
     )  # input size is 1048576 bytes
-    assert "output2: gs://bucket/path/to/output2" in capture_logs.text
+    assert "output2:" in capture_logs.text
+    assert "gs://bucket/path/to/output2" in capture_logs.text
 
     unstub()
 
@@ -349,7 +352,8 @@ def test_details_failed_job_with_input_size(capture_logs, unstub):
     assert "Quota Consumed: 0" in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
 
     unstub()
 
@@ -385,7 +389,8 @@ def test_details_failed_job_without_input_size(capture_logs, unstub):
     assert "Quota Consumed: 0" in capture_logs.text
     assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" not in capture_logs.text
     assert "Inputs:" in capture_logs.text
-    assert f"{TEST_INPUT_KEY_STRIPPED}: {TEST_INPUT_VALUE}" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
 
     unstub()
 

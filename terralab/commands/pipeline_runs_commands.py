@@ -119,7 +119,8 @@ def details(job_id: str) -> None:
 
     LOGGER.info(indented("Inputs:"))
     for input_name, input_value in response.pipeline_run_report.user_inputs.items():
-        LOGGER.info(indented(f"{input_name}: {input_value}", n_spaces=4))
+        LOGGER.info(indented(f"{input_name}:", n_spaces=4))
+        LOGGER.info(indented(input_value, n_spaces=6))
 
     if response.pipeline_run_report.input_size:
         LOGGER.info(
@@ -165,8 +166,14 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
             output_size_string = ""
         LOGGER.info(
             indented(
-                f"{output_name}: {output_value['value']} {output_size_string}",
+                f"{output_name}:",
                 n_spaces=4,
+            )
+        )
+        LOGGER.info(
+            indented(
+                f"{output_value['value']} {output_size_string}",
+                n_spaces=6,
             )
         )
 
