@@ -82,7 +82,7 @@ def get_pipeline_run_status(job_id: uuid.UUID) -> AsyncPipelineRunResponseV2:
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
-        return pipeline_runs_client.get_pipeline_run_result_v2(str(job_id))
+        return pipeline_runs_client.get_pipeline_run_result_v3(str(job_id))
 
 
 def get_pipeline_run_output_signed_urls(
