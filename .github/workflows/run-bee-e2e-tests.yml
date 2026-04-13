@@ -50,8 +50,8 @@ on:
           - staging
           - prod
       pipeline-version:
-        description: 'version of the pipeline to run. default to 1.'
-        default: '1'
+        description: 'version of the pipeline to run. default to 2.'
+        default: '2'
         required: true
         type: string
 
@@ -157,7 +157,7 @@ jobs:
           workflow: teaspoons-bee-e2e-cli-test
           run-name: "teaspoons-bee-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/js_TSPS-742
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           inputs: '{ 
