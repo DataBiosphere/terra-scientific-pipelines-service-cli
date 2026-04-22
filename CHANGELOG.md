@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [3.3.0] - 2026-04-22
+
+### Added
+- The `terralab deliver <JOB ID> <GCS_DESTINATION>` command allows users to move pipeline outputs to a specified Google Cloud Storage location.
+
 ## [3.2.0] - 2026-04-13
 
 ### Added
