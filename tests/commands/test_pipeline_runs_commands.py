@@ -156,6 +156,61 @@ def test_download_bad_job_id(capture_logs):
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
+def test_deliver(capture_logs):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_destination = "gs://my-bucket/my-destination"
+
+    when(pipeline_runs_commands.pipeline_runs_logic).deliver_pipeline_run_to_cloud(
+        TEST_JOB_ID, test_destination
+    )  # do nothing
+
+    result = runner.invoke(
+        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
+    )
+
+    assert result.exit_code == 0
+    assert (
+        f"Successfully initiated data delivery for job {test_job_id_str} to {test_destination}"
+        in capture_logs.text
+    )
+    verify(pipeline_runs_commands.pipeline_runs_logic).deliver_pipeline_run_to_cloud(
+        TEST_JOB_ID, test_destination
+    )
+
+
+def test_deliver_bad_job_id(capture_logs):
+    runner = CliRunner()
+
+    result = runner.invoke(
+        pipeline_runs_commands.deliver, ["not a uuid", "gs://my-bucket/destination"]
+    )
+
+    assert result.exit_code == 1
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
+
+
+def test_deliver_api_error(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_destination = "gs://my-bucket/my-destination"
+
+    when(pipeline_runs_commands.pipeline_runs_logic).deliver_pipeline_run_to_cloud(
+        TEST_JOB_ID, test_destination
+    ).thenRaise(Exception("API error"))
+
+    result = runner.invoke(
+        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
+    )
+
+    assert result.exit_code == 1
+    assert "API error" in capture_logs.text
+
+    unstub()
+
+
 def test_download_api_error(capture_logs, unstub):
     runner = CliRunner()
 

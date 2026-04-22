@@ -7,11 +7,13 @@ from typing import Any
 from teaspoons_client import (  # type: ignore[attr-defined]
     AsyncPipelineRunResponseV2,
     JobControl,
+    JobReport,
     PipelineRun,
     PipelineRunOutputSignedUrlsResponse,
     PipelineRunsApi,
     PreparePipelineRunRequestBody,
     PreparePipelineRunResponseV2,
+    StartDataDeliveryRequestBody,
     StartPipelineRunRequestBody,
 )
 
@@ -165,6 +167,23 @@ def prepare_upload_start_pipeline_run(
     LOGGER.debug(f"Starting {pipeline_name} job {job_id}")
 
     return start_pipeline_run(job_id)
+
+
+## deliver action
+
+
+def deliver_pipeline_run_to_cloud(
+    job_id: uuid.UUID, destination_gcs_path: str
+) -> JobReport:
+    """Call the deliverPipelineRunOutputFilesToCloud Teaspoons endpoint and return the JobReport."""
+    start_data_delivery_request_body = StartDataDeliveryRequestBody(
+        destinationGcsPath=destination_gcs_path
+    )
+    with ClientWrapper() as api_client:
+        pipeline_runs_client = PipelineRunsApi(api_client=api_client)
+        return pipeline_runs_client.deliver_pipeline_run_output_files_to_cloud(
+            str(job_id), start_data_delivery_request_body
+        )
 
 
 ## download action

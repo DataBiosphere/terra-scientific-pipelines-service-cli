@@ -78,6 +78,24 @@ def download(job_id: str, local_destination: str) -> None:
     )
 
 
+@click.command(short_help="Deliver output files from a job to a cloud destination")
+@click.argument("job_id", type=str)
+@click.argument("destination", type=str)
+@handle_api_exceptions
+def deliver(job_id: str, destination: str) -> None:
+    """Deliver output files from a job with JOB_ID identifier to a DESTINATION GCS path.
+
+    Note: delivering your data to a cloud destination will disable the existing download functionality.
+    """
+    job_id_uuid: uuid.UUID = validate_job_id(job_id)
+
+    pipeline_runs_logic.deliver_pipeline_run_to_cloud(job_id_uuid, destination)
+
+    LOGGER.info(
+        f"Successfully initiated data delivery for job {job_id} to {destination}"
+    )
+
+
 # JOBS group
 
 
