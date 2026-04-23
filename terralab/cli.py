@@ -63,10 +63,7 @@ def cli(debug: bool) -> None:
 
     For more information about the required inputs for a pipeline, run `terralab pipelines details PIPELINE_NAME`
 
-    To list available pipelines, run `terralab pipelines list`
-
-    To deliver job outputs to a cloud destination, run `terralab deliver start JOB_ID DESTINATION`
-    """
+    To list available pipelines, run `terralab pipelines list`"""
     log.configure_logging(debug)
     LOGGER.debug(
         "Log level set to: %s", logging.getLevelName(logging.getLogger().level)
