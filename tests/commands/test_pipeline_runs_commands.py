@@ -3,10 +3,12 @@
 import logging
 import uuid
 
+import pytest
 from click.testing import CliRunner
 from mockito import when, verify, mock
 from teaspoons_client import (
     AsyncPipelineRunResponseV2,
+    DataDeliveryReport,
     JobReport,
     ErrorReport,
     PipelineOutputDefinition,
@@ -17,7 +19,12 @@ from teaspoons_client import (
 )
 
 from terralab.commands import pipeline_runs_commands
-from terralab.constants import SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY, FAILED_KEY
+from terralab.constants import (
+    SUPPORT_EMAIL_TEXT,
+    SUCCEEDED_KEY,
+    FAILED_KEY,
+    RUNNING_KEY,
+)
 from terralab.utils import format_timestamp
 from tests.conftest import capture_logs
 
@@ -167,12 +174,16 @@ def test_deliver(capture_logs):
     )  # do nothing
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
+        pipeline_runs_commands.deliver, ["start", test_job_id_str, test_destination]
     )
 
     assert result.exit_code == 0
     assert (
         f"Successfully initiated data delivery for job {test_job_id_str} to {test_destination}"
+        in capture_logs.text
+    )
+    assert (
+        f"You can check the status of the delivery with `terralab deliver status {test_job_id_str}`"
         in capture_logs.text
     )
     verify(pipeline_runs_commands.pipeline_runs_logic).deliver_pipeline_run_to_cloud(
@@ -184,11 +195,23 @@ def test_deliver_bad_job_id(capture_logs):
     runner = CliRunner()
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, ["not a uuid", "gs://my-bucket/destination"]
+        pipeline_runs_commands.deliver,
+        ["start", "not a uuid", "gs://my-bucket/destination"],
     )
 
     assert result.exit_code == 1
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
+
+
+def test_deliver_bad_destination(capture_logs):
+    runner = CliRunner()
+
+    result = runner.invoke(
+        pipeline_runs_commands.deliver, ["start", str(TEST_JOB_ID), "not-a-gcs-path"]
+    )
+
+    assert result.exit_code == 1
+    assert "Error: 'not-a-gcs-path' is not a valid GCS path" in capture_logs.text
 
 
 def test_deliver_api_error(capture_logs, unstub):
@@ -202,13 +225,98 @@ def test_deliver_api_error(capture_logs, unstub):
     ).thenRaise(Exception("API error"))
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
+        pipeline_runs_commands.deliver, ["start", test_job_id_str, test_destination]
     )
 
     assert result.exit_code == 1
     assert "API error" in capture_logs.text
 
     unstub()
+
+
+def test_deliver_status_with_report(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_destination = "gs://my-bucket/my-destination"
+    test_delivery_status = "SUCCEEDED"
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME,
+        test_job_id_str,
+        SUCCEEDED_KEY,
+        delivery_status=test_delivery_status,
+        delivery_destination=test_destination,
+    )
+
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
+
+    assert result.exit_code == 0
+    assert "Delivery Status: Succeeded" in capture_logs.text
+    assert f"Destination: {test_destination}" in capture_logs.text
+
+    unstub()
+
+
+@pytest.mark.parametrize("delivery_status", [SUCCEEDED_KEY, FAILED_KEY, RUNNING_KEY])
+def test_deliver_status_all_statuses(capture_logs, unstub, delivery_status):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_destination = "gs://my-bucket/my-destination"
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME,
+        test_job_id_str,
+        SUCCEEDED_KEY,
+        delivery_status=delivery_status,
+        delivery_destination=test_destination,
+    )
+
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
+
+    assert result.exit_code == 0
+    assert f"Delivery Status: {delivery_status.capitalize()}" in capture_logs.text
+
+    unstub()
+
+
+def test_deliver_status_no_report(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY
+    )
+
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
+
+    assert result.exit_code == 0
+    assert "Data delivery has not been initiated for this job." in capture_logs.text
+
+    unstub()
+
+
+def test_deliver_status_bad_job_id(capture_logs):
+    runner = CliRunner()
+
+    result = runner.invoke(pipeline_runs_commands.deliver, ["status", "not a uuid"])
+
+    assert result.exit_code == 1
+    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
 def test_download_api_error(capture_logs, unstub):
@@ -591,6 +699,8 @@ def create_test_pipeline_run_response(
     status: str,
     include_input_size: bool = False,
     error_message: str = None,
+    delivery_status: str = None,
+    delivery_destination: str = None,
 ) -> AsyncPipelineRunResponseV2:
     """Helper function for creating AsyncPipelineRunResponse objects used in tests"""
     status_code = 200
@@ -629,6 +739,11 @@ def create_test_pipeline_run_response(
     if include_input_size:
         pipeline_run_report.input_size = TEST_INPUT_SIZE
         pipeline_run_report.input_size_units = TEST_INPUT_UNIT
+
+    if delivery_status and delivery_destination:
+        pipeline_run_report.data_delivery_report = DataDeliveryReport(
+            destination=delivery_destination, status=delivery_status
+        )
 
     return AsyncPipelineRunResponseV2(
         jobReport=job_report,

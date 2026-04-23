@@ -284,6 +284,18 @@ def validate_job_id(job_id: str) -> uuid.UUID:
         exit(1)
 
 
+def validate_gcs_path(gcs_path: str) -> str:
+    """Validates that the provided string is a valid GCS path (gs://bucket/...).
+
+    Returns the path if valid, otherwise logs an error and exits."""
+    if not gcs_path.startswith("gs://") or len(gcs_path) <= len("gs://"):
+        LOGGER.error(
+            f"Error: '{gcs_path}' is not a valid GCS path. GCS paths must start with 'gs://' followed by a bucket name."
+        )
+        exit(1)
+    return gcs_path
+
+
 def format_timestamp(
     timestamp_string: str | None, timestamp_format: str = "%Y-%m-%d %H:%M"
 ) -> str:

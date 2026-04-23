@@ -14,6 +14,8 @@ from terralab.commands.pipeline_runs_commands import (
     submit,
     download,
     deliver,
+    start as deliver_start,
+    status as deliver_status,
     jobs,
     details as details_jobs,
     list_command as list_jobs,
@@ -61,7 +63,10 @@ def cli(debug: bool) -> None:
 
     For more information about the required inputs for a pipeline, run `terralab pipelines details PIPELINE_NAME`
 
-    To list available pipelines, run `terralab pipelines list`"""
+    To list available pipelines, run `terralab pipelines list`
+
+    To deliver job outputs to a cloud destination, run `terralab deliver start JOB_ID DESTINATION`
+    """
     log.configure_logging(debug)
     LOGGER.debug(
         "Log level set to: %s", logging.getLevelName(logging.getLogger().level)
@@ -74,7 +79,11 @@ def cli(debug: bool) -> None:
 # the order in which these are added determines the order in which they show up in the --help output
 cli.add_command(submit)
 cli.add_command(download)
+
+# deliver
 cli.add_command(deliver)
+cli.add_command(deliver_start, name="  deliver start")
+cli.add_command(deliver_status, name="  deliver status")
 
 # jobs
 cli.add_command(jobs)
