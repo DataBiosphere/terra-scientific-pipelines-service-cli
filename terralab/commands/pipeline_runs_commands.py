@@ -152,6 +152,8 @@ def details(job_id: str) -> None:
             )
         )
 
+    display_data_delivery(response.pipeline_run_report.data_delivery_report)
+
 
 def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
     if not outputs:
@@ -177,6 +179,18 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
                 n_spaces=6,
             )
         )
+
+
+def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:
+    if not data_delivery_report:
+        return
+    try:
+        formatted_status = format_status(data_delivery_report.status)
+    except KeyError:
+        formatted_status = data_delivery_report.status
+    LOGGER.info(add_blankline_before("Data Delivery:"))
+    LOGGER.info(indented(f"Status: {formatted_status}"))
+    LOGGER.info(indented(f"Destination: {data_delivery_report.destination}"))
 
 
 @jobs.command(name="list", short_help="List your jobs")
@@ -219,17 +233,12 @@ def list_command(num_results: int) -> None:
 # DELIVER group
 
 
-@click.group()
-def deliver() -> None:
-    """Deliver job output files to a cloud destination"""
-
-
-@deliver.command(short_help="Deliver output files from a job to a cloud destination")
+@click.command(short_help="Deliver output files from a job to a cloud destination")
 @click.argument("job_id", type=str)
 @click.argument("destination", type=str)
 @handle_api_exceptions
-def start(job_id: str, destination: str) -> None:
-    """Initiate delivery of output files from a job with JOB_ID identifier to a DESTINATION GCS path.
+def deliver(job_id: str, destination: str) -> None:
+    """Deliver output files from a job with JOB_ID identifier to a DESTINATION GCS path.
 
     Note: delivering your data to a cloud destination will disable the existing download functionality.
     """
@@ -245,34 +254,6 @@ def start(job_id: str, destination: str) -> None:
     )
     LOGGER.info(
         add_blankline_before(
-            f"You can check the status of the delivery with `terralab deliver status {job_id}`."
+            f"You can check the status of the delivery with `terralab jobs details {job_id}`."
         )
     )
-
-
-@deliver.command(short_help="Get the status of a data delivery for a job")
-@click.argument("job_id", type=str)
-@handle_api_exceptions
-def status(job_id: str) -> None:
-    """Get the status of a data delivery for a job with JOB_ID identifier"""
-    job_id_uuid: uuid.UUID = validate_job_id(job_id)
-
-    response: AsyncPipelineRunResponseV2 = pipeline_runs_logic.get_pipeline_run_status(
-        job_id_uuid
-    )
-
-    data_delivery_report: DataDeliveryReport | None = (
-        response.pipeline_run_report.data_delivery_report
-    )
-
-    if not data_delivery_report:
-        LOGGER.info("Data delivery has not been initiated for this job.")
-        return
-
-    try:
-        formatted_status = format_status(data_delivery_report.status)
-    except KeyError:
-        formatted_status = data_delivery_report.status
-
-    LOGGER.info(f"Delivery Status: {formatted_status}")
-    LOGGER.info(f"Destination: {data_delivery_report.destination}")

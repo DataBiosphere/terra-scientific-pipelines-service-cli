@@ -14,8 +14,6 @@ from terralab.commands.pipeline_runs_commands import (
     submit,
     download,
     deliver,
-    start as deliver_start,
-    status as deliver_status,
     jobs,
     details as details_jobs,
     list_command as list_jobs,
@@ -79,8 +77,6 @@ cli.add_command(download)
 
 # deliver
 cli.add_command(deliver)
-cli.add_command(deliver_start, name="  deliver start")
-cli.add_command(deliver_status, name="  deliver status")
 
 # jobs
 cli.add_command(jobs)

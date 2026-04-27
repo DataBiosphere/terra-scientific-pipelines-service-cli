@@ -23,7 +23,6 @@ from terralab.constants import (
     SUPPORT_EMAIL_TEXT,
     SUCCEEDED_KEY,
     FAILED_KEY,
-    RUNNING_KEY,
 )
 from terralab.utils import format_timestamp
 from tests.conftest import capture_logs
@@ -174,7 +173,7 @@ def test_deliver(capture_logs):
     )  # do nothing
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, ["start", test_job_id_str, test_destination]
+        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
     )
 
     assert result.exit_code == 0
@@ -183,7 +182,7 @@ def test_deliver(capture_logs):
         in capture_logs.text
     )
     assert (
-        f"You can check the status of the delivery with `terralab deliver status {test_job_id_str}`"
+        f"You can check the status of the delivery with `terralab jobs details {test_job_id_str}`"
         in capture_logs.text
     )
     verify(pipeline_runs_commands.pipeline_runs_logic).deliver_pipeline_run_to_cloud(
@@ -196,7 +195,7 @@ def test_deliver_bad_job_id(capture_logs):
 
     result = runner.invoke(
         pipeline_runs_commands.deliver,
-        ["start", "not a uuid", "gs://my-bucket/destination"],
+        ["not a uuid", "gs://my-bucket/destination"],
     )
 
     assert result.exit_code == 1
@@ -207,7 +206,7 @@ def test_deliver_bad_destination(capture_logs):
     runner = CliRunner()
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, ["start", str(TEST_JOB_ID), "not-a-gcs-path"]
+        pipeline_runs_commands.deliver, [str(TEST_JOB_ID), "not-a-gcs-path"]
     )
 
     assert result.exit_code == 1
@@ -225,98 +224,13 @@ def test_deliver_api_error(capture_logs, unstub):
     ).thenRaise(Exception("API error"))
 
     result = runner.invoke(
-        pipeline_runs_commands.deliver, ["start", test_job_id_str, test_destination]
+        pipeline_runs_commands.deliver, [test_job_id_str, test_destination]
     )
 
     assert result.exit_code == 1
     assert "API error" in capture_logs.text
 
     unstub()
-
-
-def test_deliver_status_with_report(capture_logs, unstub):
-    runner = CliRunner()
-
-    test_job_id_str = str(TEST_JOB_ID)
-    test_destination = "gs://my-bucket/my-destination"
-    test_delivery_status = "SUCCEEDED"
-
-    test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME,
-        test_job_id_str,
-        SUCCEEDED_KEY,
-        delivery_status=test_delivery_status,
-        delivery_destination=test_destination,
-    )
-
-    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        TEST_JOB_ID
-    ).thenReturn(test_response)
-
-    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
-
-    assert result.exit_code == 0
-    assert "Delivery Status: Succeeded" in capture_logs.text
-    assert f"Destination: {test_destination}" in capture_logs.text
-
-    unstub()
-
-
-@pytest.mark.parametrize("delivery_status", [SUCCEEDED_KEY, FAILED_KEY, RUNNING_KEY])
-def test_deliver_status_all_statuses(capture_logs, unstub, delivery_status):
-    runner = CliRunner()
-
-    test_job_id_str = str(TEST_JOB_ID)
-    test_destination = "gs://my-bucket/my-destination"
-
-    test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME,
-        test_job_id_str,
-        SUCCEEDED_KEY,
-        delivery_status=delivery_status,
-        delivery_destination=test_destination,
-    )
-
-    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        TEST_JOB_ID
-    ).thenReturn(test_response)
-
-    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
-
-    assert result.exit_code == 0
-    assert f"Delivery Status: {delivery_status.capitalize()}" in capture_logs.text
-
-    unstub()
-
-
-def test_deliver_status_no_report(capture_logs, unstub):
-    runner = CliRunner()
-
-    test_job_id_str = str(TEST_JOB_ID)
-
-    test_response = create_test_pipeline_run_response(
-        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY
-    )
-
-    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
-        TEST_JOB_ID
-    ).thenReturn(test_response)
-
-    result = runner.invoke(pipeline_runs_commands.deliver, ["status", test_job_id_str])
-
-    assert result.exit_code == 0
-    assert "Data delivery has not been initiated for this job." in capture_logs.text
-
-    unstub()
-
-
-def test_deliver_status_bad_job_id(capture_logs):
-    runner = CliRunner()
-
-    result = runner.invoke(pipeline_runs_commands.deliver, ["status", "not a uuid"])
-
-    assert result.exit_code == 1
-    assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
 def test_download_api_error(capture_logs, unstub):
@@ -480,6 +394,39 @@ def test_details_succeeded_job(capture_logs, unstub):
     )  # input size is 1048576 bytes
     assert "output2:" in capture_logs.text
     assert "gs://bucket/path/to/output2" in capture_logs.text
+    assert "Data Delivery:" not in capture_logs.text
+
+    unstub()
+
+
+def test_details_succeeded_job_with_delivery(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+    test_delivery_destination = "gs://my-bucket/my-destination"
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME,
+        test_job_id_str,
+        SUCCEEDED_KEY,
+        include_input_size=True,
+        delivery_status=SUCCEEDED_KEY,
+        delivery_destination=test_delivery_destination,
+    )
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    assert "Data Delivery:" in capture_logs.text
+    assert "Status: Succeeded" in capture_logs.text
+    assert f"Destination: {test_delivery_destination}" in capture_logs.text
 
     unstub()
 
