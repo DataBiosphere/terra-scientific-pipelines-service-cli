@@ -14,8 +14,8 @@ All notable changes to this project will be documented in this file with the fol
 ## [3.3.0] - 2026-04-22
 
 ### Added
-- The `terralab deliver start <JOB ID> <GCS_DESTINATION>` command allows users to deliver pipeline outputs to a specified Google Cloud Storage location.
-- The `terralab deliver status <JOB ID>` command allows users to check the status of an existing data delivery job.
+- The `terralab deliver <JOB ID> <GCS_DESTINATION>` command allows users to deliver pipeline outputs to a specified Google Cloud Storage location.
+- The `terralab jobs details <JOB ID>` command has been updated to display information about data delivery.
 
 ## [3.2.0] - 2026-04-13
 
