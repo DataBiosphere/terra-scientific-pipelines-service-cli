@@ -124,7 +124,7 @@ def format_status_in_table_row(
 
 
 def format_status(status_str: str) -> str:
-    return COLORFUL_STATUS[status_str]
+    return COLORFUL_STATUS.get(status_str, status_str)
 
 
 # This filter makes the retry messages from urllib3 more user-friendly.

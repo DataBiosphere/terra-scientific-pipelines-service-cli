@@ -184,12 +184,8 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
 def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:
     if not data_delivery_report:
         return
-    try:
-        formatted_status = format_status(data_delivery_report.status)
-    except KeyError:
-        formatted_status = data_delivery_report.status
     LOGGER.info(add_blankline_before("Data Delivery:"))
-    LOGGER.info(indented(f"Status: {formatted_status}"))
+    LOGGER.info(indented(f"Status: {format_status(data_delivery_report.status)}"))
     LOGGER.info(indented(f"Destination: {data_delivery_report.destination}"))
 
 
