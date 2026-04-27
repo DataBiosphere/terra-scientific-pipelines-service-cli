@@ -17,7 +17,11 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 from urllib3.exceptions import MaxRetryError
 
-from terralab.constants import MAX_FILE_UPLOAD_SIZE_BYTES, SUPPORT_EMAIL_TEXT
+from terralab.constants import (
+    MAX_FILE_UPLOAD_SIZE_BYTES,
+    SUPPORT_EMAIL_TEXT,
+    GCS_PREFIX,
+)
 from terralab.log import add_blankline_before
 
 LOGGER = logging.getLogger(__name__)
@@ -288,9 +292,9 @@ def validate_gcs_path(gcs_path: str) -> str:
     """Validates that the provided string is a valid GCS path (gs://bucket/...).
 
     Returns the path if valid, otherwise logs an error and exits."""
-    if not gcs_path.startswith("gs://") or len(gcs_path) <= len("gs://"):
+    if not gcs_path.startswith(GCS_PREFIX) or len(gcs_path) <= len(GCS_PREFIX):
         LOGGER.error(
-            f"Error: '{gcs_path}' is not a valid GCS path. GCS paths must start with 'gs://' followed by a bucket name."
+            f"Error: '{gcs_path}' is not a valid GCS path. GCS paths must start with '{GCS_PREFIX}' followed by a bucket name."
         )
         exit(1)
     return gcs_path
