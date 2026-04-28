@@ -189,6 +189,7 @@ format_status_testdata = [
     ("SUCCEEDED", "\033[1;37;42mSucceeded\033[0m"),
     ("RUNNING", "\033[0;30;46mRunning\033[0m"),
     ("PREPARING", "\033[0;30;43mPreparing\033[0m"),
+    ("UNKNOWN_STATUS", "UNKNOWN_STATUS"),  # unknown statuses are returned as-is
 ]
 
 

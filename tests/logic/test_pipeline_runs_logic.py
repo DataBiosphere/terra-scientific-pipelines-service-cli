@@ -7,6 +7,7 @@ from mockito import when, mock, verify, times
 from teaspoons_client import (
     ApiException,
     PreparePipelineRunRequestBody,
+    StartDataDeliveryRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
 )
@@ -501,3 +502,42 @@ def create_mock_pipeline_run_result(
         )
     else:  # PREPARING, RUNNING, or other status
         return mock({"job_report": mock_job_report, "pipeline_run_report": mock()})
+
+
+def test_deliver_pipeline_run_to_cloud(mock_pipeline_runs_api):
+    test_job_id = uuid.uuid4()
+    test_destination_gcs_path = "gs://my-bucket/my-destination"
+    test_request_body = StartDataDeliveryRequestBody(
+        destinationGcsPath=test_destination_gcs_path
+    )
+    mock_job_report = mock()
+
+    when(mock_pipeline_runs_api).deliver_pipeline_run_output_files_to_cloud(
+        str(test_job_id), test_request_body
+    ).thenReturn(mock_job_report)
+
+    result = pipeline_runs_logic.deliver_pipeline_run_to_cloud(
+        test_job_id, test_destination_gcs_path
+    )
+
+    assert result == mock_job_report
+    verify(mock_pipeline_runs_api).deliver_pipeline_run_output_files_to_cloud(
+        str(test_job_id), test_request_body
+    )
+
+
+def test_deliver_pipeline_run_to_cloud_error(mock_pipeline_runs_api):
+    test_job_id = uuid.uuid4()
+    test_destination_gcs_path = "gs://my-bucket/my-destination"
+    test_request_body = StartDataDeliveryRequestBody(
+        destinationGcsPath=test_destination_gcs_path
+    )
+
+    when(mock_pipeline_runs_api).deliver_pipeline_run_output_files_to_cloud(
+        str(test_job_id), test_request_body
+    ).thenRaise(ApiException(400, reason="error message"))
+
+    with pytest.raises(ApiException):
+        pipeline_runs_logic.deliver_pipeline_run_to_cloud(
+            test_job_id, test_destination_gcs_path
+        )

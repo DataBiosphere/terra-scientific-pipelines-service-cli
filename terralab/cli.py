@@ -13,6 +13,7 @@ from terralab.commands.auth_commands import logout, login_with_oauth, login
 from terralab.commands.pipeline_runs_commands import (
     submit,
     download,
+    deliver,
     jobs,
     details as details_jobs,
     list_command as list_jobs,
@@ -73,6 +74,9 @@ def cli(debug: bool) -> None:
 # the order in which these are added determines the order in which they show up in the --help output
 cli.add_command(submit)
 cli.add_command(download)
+
+# deliver
+cli.add_command(deliver)
 
 # jobs
 cli.add_command(jobs)

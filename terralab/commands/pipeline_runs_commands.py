@@ -5,7 +5,7 @@ from typing import Any
 import uuid
 
 import click
-from teaspoons_client import AsyncPipelineRunResponseV2, PipelineRun  # type: ignore[attr-defined]
+from teaspoons_client import AsyncPipelineRunResponseV2, DataDeliveryReport, PipelineRun  # type: ignore[attr-defined]
 
 from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
 from terralab.log import (
@@ -19,6 +19,7 @@ from terralab.utils import (
     convert_file_size_to_human_readable,
     handle_api_exceptions,
     process_inputs_to_dict,
+    validate_gcs_path,
     validate_job_id,
     format_timestamp,
 )
@@ -151,6 +152,8 @@ def details(job_id: str) -> None:
             )
         )
 
+    display_data_delivery(response.pipeline_run_report.data_delivery_report)
+
 
 def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
     if not outputs:
@@ -176,6 +179,14 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
                 n_spaces=6,
             )
         )
+
+
+def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:
+    if not data_delivery_report:
+        return
+    LOGGER.info(add_blankline_before("Data Delivery:"))
+    LOGGER.info(indented(f"Status: {format_status(data_delivery_report.status)}"))
+    LOGGER.info(indented(f"Destination: {data_delivery_report.destination}"))
 
 
 @jobs.command(name="list", short_help="List your jobs")
@@ -213,3 +224,32 @@ def list_command(num_results: int) -> None:
             )
 
         LOGGER.info(format_table_with_status(row_list))
+
+
+# DELIVER group
+
+
+@click.command(short_help="Deliver output files from a job to a cloud destination")
+@click.argument("job_id", type=str)
+@click.argument("destination", type=str)
+@handle_api_exceptions
+def deliver(job_id: str, destination: str) -> None:
+    """Deliver output files from a job with JOB_ID identifier to a DESTINATION GCS path.
+
+    Note: delivering your data to a cloud destination will disable downloading locally.
+    """
+    job_id_uuid: uuid.UUID = validate_job_id(job_id)
+    validated_destination: str = validate_gcs_path(destination)
+
+    pipeline_runs_logic.deliver_pipeline_run_to_cloud(
+        job_id_uuid, validated_destination
+    )
+
+    LOGGER.info(
+        f"Successfully initiated data delivery for job {job_id} to {validated_destination}. Delivery may take a few minutes to complete."
+    )
+    LOGGER.info(
+        add_blankline_before(
+            f"You can check the status of the delivery with `terralab jobs details {job_id}`."
+        )
+    )

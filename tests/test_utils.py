@@ -245,6 +245,32 @@ def test_validate_uuid(capture_logs):
     assert "Error: JOB_ID must be a valid uuid." in capture_logs.text
 
 
+def test_validate_gcs_path_valid():
+    valid_paths = [
+        "gs://my-bucket",
+        "gs://my-bucket/some/path",
+        "gs://my-bucket/path/to/file.txt",
+    ]
+    for path in valid_paths:
+        assert utils.validate_gcs_path(path) == path
+
+
+@pytest.mark.parametrize(
+    "bad_path",
+    [
+        "gs://",  # missing bucket name
+        "gs:/",  # malformed prefix
+        "s3://my-bucket",  # wrong cloud prefix
+        "my-bucket/path",  # no prefix at all
+        "",  # empty string
+    ],
+)
+def test_validate_gcs_path_invalid(capture_logs, bad_path):
+    with pytest.raises(SystemExit):
+        utils.validate_gcs_path(bad_path)
+    assert f"Error: '{bad_path}' is not a valid GCS path" in capture_logs.text
+
+
 def test_server_unavailable_error(capture_logs):
     @handle_api_exceptions
     def mock_retry_function():
