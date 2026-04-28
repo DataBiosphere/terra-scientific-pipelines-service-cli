@@ -236,7 +236,7 @@ def list_command(num_results: int) -> None:
 def deliver(job_id: str, destination: str) -> None:
     """Deliver output files from a job with JOB_ID identifier to a DESTINATION GCS path.
 
-    Note: delivering your data to a cloud destination will disable the existing download functionality.
+    Note: delivering your data to a cloud destination will disable downloading locally.
     """
     job_id_uuid: uuid.UUID = validate_job_id(job_id)
     validated_destination: str = validate_gcs_path(destination)
