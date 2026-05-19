@@ -23,6 +23,7 @@ from terralab.constants import (
     SUPPORT_EMAIL_TEXT,
     SUCCEEDED_KEY,
     FAILED_KEY,
+    TERMS_OF_SERVICE_URL,
 )
 from terralab.utils import format_timestamp
 from tests.conftest import capture_logs
@@ -117,7 +118,10 @@ def test_submit_no_agree_to_terms(capture_logs):
     )
 
     assert result.exit_code == 1
-    # it's tough to assert the error message because click handles it
+    assert (
+        f"You must agree to the terms of service ({TERMS_OF_SERVICE_URL}) to run a pipeline"
+        in capture_logs.text
+    )
 
 
 def test_submit_no_description(capture_logs):

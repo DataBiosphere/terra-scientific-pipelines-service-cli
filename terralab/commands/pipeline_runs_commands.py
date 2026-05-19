@@ -70,6 +70,14 @@ def submit(
     # validate inputs
     pipelines_logic.validate_pipeline_inputs(pipeline_name, version, inputs_dict)
 
+    if not agree_to_terms:
+        LOGGER.error(
+            add_blankline_before(
+                f"You must agree to the terms of service ({TERMS_OF_SERVICE_URL}) to run a pipeline. Use the --agreeToTerms flag to indicate your agreement."
+            )
+        )
+        exit(1)
+
     submitted_job_id = pipeline_runs_logic.prepare_upload_start_pipeline_run(
         pipeline_name, version, inputs_dict, description, agree_to_terms
     )
