@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [4.0.0] - 2026-05-19
+
+### Changed
+- The `terralab submit` command now requires the `--agreeToTerms` flag, indicating that the user has read and agreed to the Terms of Service (https://services.terra.bio/#pipelines/terms-of-service).
+
 ## [3.3.0] - 2026-04-27
 
 ### Added
