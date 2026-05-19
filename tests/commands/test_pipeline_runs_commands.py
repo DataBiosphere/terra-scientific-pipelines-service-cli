@@ -57,7 +57,7 @@ def test_submit(capture_logs):
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, TEST_DESCRIPTION
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, TEST_DESCRIPTION, True
     ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
@@ -68,6 +68,7 @@ def test_submit(capture_logs):
             TEST_INPUT_VALUE,
             "--description",
             TEST_DESCRIPTION,
+            "--agreeToTerms",
         ],
     )
 
@@ -76,6 +77,47 @@ def test_submit(capture_logs):
         f"Successfully started {TEST_PIPELINE_NAME} job {TEST_JOB_ID}"
         in capture_logs.text
     )
+
+
+def test_submit_with_prompt_to_agree_to_terms(capture_logs):
+    runner = CliRunner()
+
+    result = runner.invoke(
+        pipeline_runs_commands.submit,
+        [
+            TEST_PIPELINE_NAME,
+            TEST_INPUT_KEY,
+            TEST_INPUT_VALUE,
+            "--description",
+            TEST_DESCRIPTION,
+        ],
+        input="y\n",  # simulate user entering 'y' at the prompt
+    )
+
+    assert result.exit_code == 0
+    assert (
+        f"Successfully started {TEST_PIPELINE_NAME} job {TEST_JOB_ID}"
+        in capture_logs.text
+    )
+
+
+def test_submit_no_agree_to_terms(capture_logs):
+    runner = CliRunner()
+
+    result = runner.invoke(
+        pipeline_runs_commands.submit,
+        [
+            TEST_PIPELINE_NAME,
+            TEST_INPUT_KEY,
+            TEST_INPUT_VALUE,
+            "--description",
+            TEST_DESCRIPTION,
+        ],
+        input="n\n",  # simulate user entering 'n' at the prompt
+    )
+
+    assert result.exit_code == 1
+    # it's tough to assert the error message because click handles it
 
 
 def test_submit_no_description(capture_logs):
@@ -91,12 +133,12 @@ def test_submit_no_description(capture_logs):
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, ""
+        TEST_PIPELINE_NAME, None, TEST_INPUTS_DICT, "", True
     ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
-        [TEST_PIPELINE_NAME, TEST_INPUT_KEY, TEST_INPUT_VALUE],
+        [TEST_PIPELINE_NAME, TEST_INPUT_KEY, TEST_INPUT_VALUE, "--agreeToTerms"],
     )
 
     assert result.exit_code == 0
@@ -117,12 +159,19 @@ def test_submit_with_version(capture_logs):
     )  # do nothing
 
     when(pipeline_runs_commands.pipeline_runs_logic).prepare_upload_start_pipeline_run(
-        TEST_PIPELINE_NAME, 1, TEST_INPUTS_DICT, ""
+        TEST_PIPELINE_NAME, 1, TEST_INPUTS_DICT, "", True
     ).thenReturn(TEST_JOB_ID)
 
     result = runner.invoke(
         pipeline_runs_commands.submit,
-        [TEST_PIPELINE_NAME, TEST_INPUT_KEY, TEST_INPUT_VALUE, "--version", "1"],
+        [
+            TEST_PIPELINE_NAME,
+            TEST_INPUT_KEY,
+            TEST_INPUT_VALUE,
+            "--version",
+            "1",
+            "--agreeToTerms",
+        ],
     )
 
     assert result.exit_code == 0

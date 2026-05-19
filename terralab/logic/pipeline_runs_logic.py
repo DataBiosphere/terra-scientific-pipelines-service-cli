@@ -11,7 +11,7 @@ from teaspoons_client import (  # type: ignore[attr-defined]
     PipelineRun,
     PipelineRunOutputSignedUrlsResponse,
     PipelineRunsApi,
-    PreparePipelineRunRequestBody,
+    PreparePipelineRunRequestBodyV2,
     PreparePipelineRunResponseV2,
     StartDataDeliveryRequestBody,
     StartPipelineRunRequestBody,
@@ -37,24 +37,26 @@ def prepare_pipeline_run(
     pipeline_version: int,
     pipeline_inputs: dict[str, Any],
     description: str,
+    agree_to_terms: bool,
 ) -> dict[str, str] | None:
     """Call the preparePipelineRunV2 Teaspoons endpoint.
     Return a dictionary of {input_name: signed_url} if inputs are local, else (cloud inputs) return None.
     """
-    prepare_pipeline_run_request_body: PreparePipelineRunRequestBody = (
-        PreparePipelineRunRequestBody(
+    prepare_pipeline_run_request_body: PreparePipelineRunRequestBodyV2 = (
+        PreparePipelineRunRequestBodyV2(
             jobId=job_id,
             pipelineName=pipeline_name,
             pipelineVersion=pipeline_version,
             pipelineInputs=pipeline_inputs,
             description=description,
+            agreeToTerms=agree_to_terms,
         )
     )
 
     with ClientWrapper() as api_client:
         pipeline_runs_client = PipelineRunsApi(api_client=api_client)
         response: PreparePipelineRunResponseV2 = (
-            pipeline_runs_client.prepare_pipeline_run_v2(
+            pipeline_runs_client.prepare_pipeline_run_v3(
                 prepare_pipeline_run_request_body
             )
         )
@@ -143,6 +145,7 @@ def prepare_upload_start_pipeline_run(
     pipeline_version: int,
     pipeline_inputs: dict[str, Any],
     description: str,
+    agree_to_terms: bool,
 ) -> str:
     """Prepare pipeline run, upload input files if input files are local, and start pipeline run.
     Returns the uuid of the job."""
@@ -151,7 +154,12 @@ def prepare_upload_start_pipeline_run(
     LOGGER.info(f"Generated job_id {job_id}")
 
     file_input_upload_urls: dict[str, str] | None = prepare_pipeline_run(
-        pipeline_name, job_id, pipeline_version, pipeline_inputs, description
+        pipeline_name,
+        job_id,
+        pipeline_version,
+        pipeline_inputs,
+        description,
+        agree_to_terms,
     )
 
     if file_input_upload_urls:
