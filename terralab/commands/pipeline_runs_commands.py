@@ -73,7 +73,7 @@ def submit(
     if not agree_to_terms:
         LOGGER.error(
             add_blankline_before(
-                f"You must agree to the terms of service ({TERMS_OF_SERVICE_URL}) to run a pipeline. Use the --agreeToTerms flag to indicate your agreement."
+                "You must agree to the terms of service to run a pipeline. Use the --agreeToTerms flag to indicate your agreement."
             )
         )
         exit(1)
