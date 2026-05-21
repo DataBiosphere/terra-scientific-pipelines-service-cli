@@ -7,7 +7,12 @@ import uuid
 import click
 from teaspoons_client import AsyncPipelineRunResponseV2, DataDeliveryReport, PipelineRun  # type: ignore[attr-defined]
 
-from terralab.constants import FAILED_KEY, SUPPORT_EMAIL_TEXT, SUCCEEDED_KEY
+from terralab.constants import (
+    FAILED_KEY,
+    SUPPORT_EMAIL_TEXT,
+    SUCCEEDED_KEY,
+    TERMS_OF_SERVICE_URL,
+)
 from terralab.log import (
     indented,
     add_blankline_before,
@@ -38,10 +43,21 @@ LOGGER = logging.getLogger(__name__)
 @click.option(
     "--description", type=str, default="", help="optional description for the job"
 )
+@click.option(
+    "agree_to_terms",
+    "--agreeToTerms",
+    is_flag=True,
+    help=f"Agree to the terms of service ({TERMS_OF_SERVICE_URL}). This is required to run a pipeline.",
+    prompt=f"Please agree to the terms of service ({TERMS_OF_SERVICE_URL}) to run a pipeline. Do you agree?",
+)
 @click.argument("inputs", nargs=-1, type=click.UNPROCESSED)
 @handle_api_exceptions
 def submit(
-    pipeline_name: str, version: int, inputs: tuple[str, ...], description: str
+    pipeline_name: str,
+    version: int,
+    inputs: tuple[str, ...],
+    description: str,
+    agree_to_terms: bool,
 ) -> None:
     """Submit a job for a PIPELINE_NAME pipeline
 
@@ -54,8 +70,16 @@ def submit(
     # validate inputs
     pipelines_logic.validate_pipeline_inputs(pipeline_name, version, inputs_dict)
 
+    if not agree_to_terms:
+        LOGGER.error(
+            add_blankline_before(
+                "You must agree to the terms of service to run a pipeline. Use the --agreeToTerms flag to indicate your agreement."
+            )
+        )
+        exit(1)
+
     submitted_job_id = pipeline_runs_logic.prepare_upload_start_pipeline_run(
-        pipeline_name, version, inputs_dict, description
+        pipeline_name, version, inputs_dict, description, agree_to_terms
     )
 
     LOGGER.info(f"Successfully started {pipeline_name} job {submitted_job_id}")

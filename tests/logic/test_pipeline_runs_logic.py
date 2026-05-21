@@ -6,7 +6,7 @@ import pytest
 from mockito import when, mock, verify, times
 from teaspoons_client import (
     ApiException,
-    PreparePipelineRunRequestBody,
+    PreparePipelineRunRequestBodyV2,
     StartDataDeliveryRequestBody,
     StartPipelineRunRequestBody,
     JobControl,
@@ -51,12 +51,13 @@ def test_prepare_pipeline_run_local_input(mock_pipeline_runs_api):
     test_pipeline_version = 1
     test_pipeline_inputs = {}
     test_description = "i am a description"
-    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBodyV2(
         jobId=test_job_id,
         pipelineName=test_pipeline_name,
         pipelineVersion=test_pipeline_version,
         pipelineInputs=test_pipeline_inputs,
         description=test_description,
+        agreeToTerms=True,
     )
 
     test_input_name = "test_input"
@@ -70,7 +71,7 @@ def test_prepare_pipeline_run_local_input(mock_pipeline_runs_api):
             "file_input_upload_urls": test_file_input_upload_urls_dict,
         }
     )
-    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
@@ -80,10 +81,11 @@ def test_prepare_pipeline_run_local_input(mock_pipeline_runs_api):
         test_pipeline_version,
         test_pipeline_inputs,
         test_description,
+        True,
     )
 
     assert result == {test_input_name: test_signed_url}
-    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     )
 
@@ -94,12 +96,13 @@ def test_prepare_pipeline_run_local_input_no_description(mock_pipeline_runs_api)
     test_pipeline_version = 1
     test_pipeline_inputs = {}
     test_description = ""  # if no description is provided to command, it gets passed here as an empty string
-    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBodyV2(
         jobId=test_job_id,
         pipelineName=test_pipeline_name,
         pipelineVersion=test_pipeline_version,
         pipelineInputs=test_pipeline_inputs,
         description=test_description,
+        agreeToTerms=True,
     )
 
     test_input_name = "test_input"
@@ -113,7 +116,7 @@ def test_prepare_pipeline_run_local_input_no_description(mock_pipeline_runs_api)
             "file_input_upload_urls": test_file_input_upload_urls_dict,
         }
     )
-    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
@@ -123,10 +126,11 @@ def test_prepare_pipeline_run_local_input_no_description(mock_pipeline_runs_api)
         test_pipeline_version,
         test_pipeline_inputs,
         test_description,
+        True,
     )
 
     assert result == {test_input_name: test_signed_url}
-    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     )
 
@@ -139,17 +143,18 @@ def test_prepare_pipeline_run_cloud_input(mock_pipeline_runs_api):
     test_input_value = "gs://bucket/file"
     test_pipeline_inputs = {test_input_name: test_input_value}
     test_description = "i am a description"
-    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBody(
+    test_prepare_pipeline_run_request_body = PreparePipelineRunRequestBodyV2(
         jobId=test_job_id,
         pipelineName=test_pipeline_name,
         pipelineVersion=test_pipeline_version,
         pipelineInputs=test_pipeline_inputs,
         description=test_description,
+        agreeToTerms=True,
     )
 
     mock_pipeline_run_response = mock({"job_id": test_job_id})
     mock_pipeline_run_response.file_input_upload_urls = None  # service should not return signed urls when inputs are cloud files; this seems odd to have to mock a None value rather than the key not existing, which is what happens in the service, but this is how the mockito library handles missing keys
-    when(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    when(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     ).thenReturn(mock_pipeline_run_response)
 
@@ -159,10 +164,11 @@ def test_prepare_pipeline_run_cloud_input(mock_pipeline_runs_api):
         test_pipeline_version,
         test_pipeline_inputs,
         test_description,
+        True,
     )
 
     assert result is None
-    verify(mock_pipeline_runs_api).prepare_pipeline_run_v2(
+    verify(mock_pipeline_runs_api).prepare_pipeline_run_v3(
         test_prepare_pipeline_run_request_body
     )
 
@@ -234,6 +240,7 @@ def test_prepare_upload_start_pipeline_run_local_input():
         test_pipeline_version,
         test_inputs,
         test_description,
+        True,
     ).thenReturn(test_upload_url_dict)
 
     when(pipeline_runs_logic).upload_file_with_signed_url(
@@ -245,7 +252,7 @@ def test_prepare_upload_start_pipeline_run_local_input():
     )
 
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
-        test_pipeline_name, test_pipeline_version, test_inputs, test_description
+        test_pipeline_name, test_pipeline_version, test_inputs, test_description, True
     )
 
     assert response == test_job_id
@@ -269,6 +276,7 @@ def test_prepare_upload_start_pipeline_run_cloud_input():
         test_pipeline_version,
         test_inputs,
         test_description,
+        True,
     ).thenReturn()
 
     when(pipeline_runs_logic).start_pipeline_run(test_job_id_str).thenReturn(
@@ -276,7 +284,7 @@ def test_prepare_upload_start_pipeline_run_cloud_input():
     )
 
     response = pipeline_runs_logic.prepare_upload_start_pipeline_run(
-        test_pipeline_name, test_pipeline_version, test_inputs, test_description
+        test_pipeline_name, test_pipeline_version, test_inputs, test_description, True
     )
 
     assert response == test_job_id
