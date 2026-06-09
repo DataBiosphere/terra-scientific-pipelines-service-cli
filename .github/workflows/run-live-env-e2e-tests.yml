@@ -19,21 +19,6 @@ on:
         options:
           - dev
           - staging
-      input-vcf-file-name:
-        description: 'Name of the input VCF file to use in the test (just the file name and not the entire path)'
-        required: true
-        default: 'NA12878_10_samples_chr1_chr20.vcf.gz' # small VCF file with 10 samples, chr1 and chr20 data only
-        type: string
-      use-cloud-input:
-        description: 'Whether to use a cloud input file (true) or a local file (false) for the test. Default true.'
-        required: true
-        default: 'true'
-        type: string
-      pipeline-version:
-        description: 'version of the pipeline to run. default to 2.'
-        default: '2'
-        required: true
-        type: string
 
 jobs:
   init-github-context-and-params-gen:
@@ -56,7 +41,7 @@ jobs:
             echo "cli-version-ref=${{ inputs.cli-version-ref }}" >> $GITHUB_OUTPUT
           fi
 
-  run-live-env-e2e-test-job:
+  run-live-env-e2e-test-job-array-imputation-v2-cloud-inputs:
     runs-on: ubuntu-latest
     needs: [ init-github-context-and-params-gen ]
     permissions:
@@ -67,20 +52,101 @@ jobs:
         uses: broadinstitute/workflow-dispatch@v4.0.1
         with:
           workflow: teaspoons-live-env-e2e-cli-test
-          run-name: "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}"
+          run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/main
+          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
-              "run-name": "teaspoons-live-env-e2e-cli-test-${{ github.run_id }}-${{ github.run_attempt }}",
+              "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
               "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
-              "input-vcf-file-name": "${{inputs.input-vcf-file-name}}",
-              "use-cloud-input": "${{inputs.use-cloud-input}}",
-              "pipeline-version": "${{ inputs.pipeline-version }}"
+              "pipeline-name": "array_imputation",
+              "pipeline-version": "2",
+              "use-cloud-input": "true"
+            }'
+
+  run-live-env-e2e-test-job-array-imputation-v2-local-inputs:
+    runs-on: ubuntu-latest
+    needs: [ init-github-context-and-params-gen ]
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Dispatch to terra-github-workflows to run e2e test
+        uses: broadinstitute/workflow-dispatch@v4.0.1
+        with:
+          workflow: teaspoons-live-env-e2e-cli-test
+          run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          wait-for-completion: true
+          token: '${{ secrets.BROADBOT_TOKEN }}'
+          wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
+          inputs: '{
+              "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
+              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
+              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
+              "env-name": "${{inputs.env-name}}",
+              "pipeline-name": "array_imputation",
+              "pipeline-version": "2",
+              "use-cloud-input": "false"
+            }'
+
+  run-live-env-e2e-test-job-low-pass-imputation-v1-cloud-inputs:
+    runs-on: ubuntu-latest
+    needs: [ init-github-context-and-params-gen ]
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Dispatch to terra-github-workflows to run e2e test
+        uses: broadinstitute/workflow-dispatch@v4.0.1
+        with:
+          workflow: teaspoons-live-env-e2e-cli-test
+          run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          wait-for-completion: true
+          token: '${{ secrets.BROADBOT_TOKEN }}'
+          wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
+          inputs: '{
+              "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
+              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
+              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
+              "env-name": "${{inputs.env-name}}",
+              "pipeline-name": "low_pass_imputation",
+              "pipeline-version": "1",
+              "use-cloud-input": "true"
+            }'
+
+  run-live-env-e2e-test-job-low-pass-imputation-v1-local-inputs:
+    runs-on: ubuntu-latest
+    needs: [ init-github-context-and-params-gen ]
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Dispatch to terra-github-workflows to run e2e test
+        uses: broadinstitute/workflow-dispatch@v4.0.1
+        with:
+          workflow: teaspoons-live-env-e2e-cli-test
+          run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
+          repo: broadinstitute/terra-github-workflows
+          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          wait-for-completion: true
+          token: '${{ secrets.BROADBOT_TOKEN }}'
+          wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
+          inputs: '{
+              "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
+              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
+              "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
+              "env-name": "${{inputs.env-name}}",
+              "pipeline-name": "low_pass_imputation",
+              "pipeline-version": "1",
+              "use-cloud-input": "false"
             }'
 
   report-workflow:
