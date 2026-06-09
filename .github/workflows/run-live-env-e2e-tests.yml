@@ -54,7 +54,7 @@ jobs:
           workflow: teaspoons-live-env-e2e-cli-test
           run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
@@ -81,7 +81,7 @@ jobs:
           workflow: teaspoons-live-env-e2e-cli-test
           run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
@@ -108,7 +108,7 @@ jobs:
           workflow: teaspoons-live-env-e2e-cli-test
           run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
@@ -135,7 +135,7 @@ jobs:
           workflow: teaspoons-live-env-e2e-cli-test
           run-name: "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}"
           repo: broadinstitute/terra-github-workflows
-          ref: refs/heads/TSPS-829_e2e_tests_add_low_pass_pipeline # TODO revert to main
+          ref: refs/heads/main
           wait-for-completion: true
           token: '${{ secrets.BROADBOT_TOKEN }}'
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
