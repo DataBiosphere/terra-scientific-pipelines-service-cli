@@ -33,7 +33,7 @@ def quota(pipeline_name: str) -> None:
     )
     LOGGER.info(
         add_blankline_before(
-            "For more information on quotas and how to request more, visit: "
+            "For more information on quotas and how to purchase more, visit: "
             "https://broadscientificservices.zendesk.com/hc/en-us/articles/39903092619035"
         )
     )
