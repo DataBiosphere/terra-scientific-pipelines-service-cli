@@ -65,7 +65,7 @@ jobs:
     outputs:
         is-bump: ${{ steps.skiptest.outputs.is-bump }}
     steps:
-        - uses: actions/checkout@v6
+        - uses: actions/checkout@v7
         - name: Skip version bump merges
           id: skiptest
           uses: ./.github/actions/bump-skip
@@ -83,7 +83,7 @@ jobs:
       wdl-method-version: '${{ steps.extract-inputs-and-generate-params.outputs.wdl-method-version }}'
       cli-version-ref: '${{ steps.extract-inputs-and-generate-params.outputs.cli-version-ref }}'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Get inputs or use defaults, generate other parameters
@@ -131,7 +131,7 @@ jobs:
       id-token: write
     steps:
       - name: Get actions
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: dispatch to terra-github-workflows
         id: FirstAttemptCreateBee
