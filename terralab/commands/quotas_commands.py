@@ -4,7 +4,7 @@ import logging
 
 import click
 
-from terralab.log import indented
+from terralab.log import indented, add_blankline_before
 from terralab.logic import quotas_logic
 from terralab.utils import handle_api_exceptions
 
@@ -30,4 +30,10 @@ def quota(pipeline_name: str) -> None:
     LOGGER.info(indented(f"Quota Used: {quota_consumed} {quota_units}"))
     LOGGER.info(
         indented(f"Quota Available: {quota_limit - quota_consumed} {quota_units}")
+    )
+    LOGGER.info(
+        add_blankline_before(
+            "For more information on quotas and how to request more, visit: "
+            "https://broadscientificservices.zendesk.com/hc/en-us/articles/39903092619035"
+        )
     )
