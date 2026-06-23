@@ -779,6 +779,7 @@ def create_test_pipeline_with_inputs() -> PipelineWithDetails:
         defaultQuota=1000,
         minQuotaConsumed=500,
         quotaUnits="units",
+        maxQuotaConsumed=5000,
     )
     test_pipeline = PipelineWithDetails(
         pipelineName=test_pipeline_name,

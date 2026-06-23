@@ -74,6 +74,7 @@ def test_get_info_success_no_version(capture_logs):
         default_quota=1000,
         min_quota_consumed=500,
         quota_units="units",
+        max_quota_consumed=5000,
     )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
@@ -129,6 +130,7 @@ def test_get_info_success_version(capture_logs):
         default_quota=1000,
         min_quota_consumed=500,
         quota_units="units",
+        max_quota_consumed=5000,
     )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
@@ -189,6 +191,7 @@ def test_get_info_optional_inputs_displayed_correctly(capture_logs):
         default_quota=1000,
         min_quota_consumed=500,
         quota_units="units",
+        max_quota_consumed=5000
     )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
