@@ -37,6 +37,11 @@ def test_get_info_success(capture_logs, unstub):
     assert "Quota Used: 300 samples" in capture_logs.text
     # quota left
     assert "Quota Available: 700 samples" in capture_logs.text
+    # quotas article link
+    assert (
+        "https://broadscientificservices.zendesk.com/hc/en-us/articles/39903092619035"
+        in capture_logs.text
+    )
 
     unstub()
 
