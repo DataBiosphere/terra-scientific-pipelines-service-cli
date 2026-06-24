@@ -21,3 +21,6 @@ MAX_FILE_UPLOAD_SIZE_BYTES = 50 * 1025 * 1024 * 1024  # 50GB
 SUPPORT_EMAIL = "scientific-services-support@broadinstitute.org"
 SUPPORT_EMAIL_TEXT = f"For help troubleshooting, email {SUPPORT_EMAIL}"
 TERMS_OF_SERVICE_URL = "https://services.terra.bio/#pipelines/terms-of-service"
+QUOTAS_SUPPORT_ARTICLE_URL = (
+    "https://broadscientificservices.zendesk.com/hc/en-us/articles/39903092619035"
+)
