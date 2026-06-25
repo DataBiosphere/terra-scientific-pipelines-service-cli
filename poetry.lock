@@ -2292,14 +2292,14 @@ widechars = ["wcwidth"]
 
 [[package]]
 name = "terra-scientific-pipelines-service-api-client"
-version = "6.0.1"
+version = "6.0.6"
 description = "Terra Scientific Pipelines Service"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "terra_scientific_pipelines_service_api_client-6.0.1-py3-none-any.whl", hash = "sha256:e1e7f22332ed746412b64e04d4f51dfd5942f6035962b7f23cddb42faf3cb21c"},
-    {file = "terra_scientific_pipelines_service_api_client-6.0.1.tar.gz", hash = "sha256:7f8c40740d762a0f1b3be28efdbd95505e62b3c381a45bc461ec7b116f8cad48"},
+    {file = "terra_scientific_pipelines_service_api_client-6.0.6-py3-none-any.whl", hash = "sha256:ee73254ae6b67ce63e262355e6e3abfc38d316d319161c846816d63a5ccfc1a9"},
+    {file = "terra_scientific_pipelines_service_api_client-6.0.6.tar.gz", hash = "sha256:f09ddc494866d49de80f2a19f9d7224d25180eddc48ed9a51e9a26410f4de0c2"},
 ]
 
 [package.dependencies]
@@ -2557,4 +2557,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "e60295199b87d8d4139e20a25c8bec2c2369bd3f72874b8007aef3cfe0753916"
+content-hash = "ded0c4ea44b86a88ac9420ddc32cfdca1c06096e4a88eeaa6fe5b53da883a415"
