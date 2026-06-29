@@ -61,6 +61,11 @@ def details(pipeline_name: str, version: int) -> None:
             f"{pipeline_info.pipeline_quota.min_quota_consumed} {pipeline_info.pipeline_quota.quota_units.lower()}",
             "",
         ],
+        [
+            f"Max {pipeline_info.pipeline_quota.quota_units.capitalize()} Allowed Per Job",
+            f"{pipeline_info.pipeline_quota.max_quota_consumed} {pipeline_info.pipeline_quota.quota_units.lower()}",
+            "",
+        ],
     ]
     LOGGER.info(format_table_no_header(pipeline_info_rows))
 

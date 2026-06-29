@@ -101,11 +101,12 @@ def test_get_info_success_no_version(capture_logs):
         test_pipeline_name, None
     )
     assert test_pipeline_name in capture_logs.text
-    assert "Version             1" in capture_logs.text
+    assert "Version                    1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
     assert "test_output" in capture_logs.text
-    assert "Min Quota Consumed  500 units" in capture_logs.text
+    assert "Min Quota Consumed         500 units" in capture_logs.text
+    assert "Max Units Allowed Per Job  5000 units" in capture_logs.text
     assert "test input description" in capture_logs.text
     assert "test output description" in capture_logs.text
 
@@ -155,11 +156,12 @@ def test_get_info_success_version(capture_logs):
     assert result.exit_code == 0
     verify(pipelines_commands.pipelines_logic).get_pipeline_info(test_pipeline_name, 1)
     assert test_pipeline_name in capture_logs.text
-    assert "Version             1" in capture_logs.text
+    assert "Version                    1" in capture_logs.text
     assert "test_description" in capture_logs.text
     assert "test_input" in capture_logs.text
     assert "test_output" in capture_logs.text
-    assert "Min Quota Consumed  500 units" in capture_logs.text
+    assert "Min Quota Consumed         500 units" in capture_logs.text
+    assert "Max Units Allowed Per Job  5000 units" in capture_logs.text
     assert "test input description" in capture_logs.text
     assert "test output description" in capture_logs.text
 
@@ -191,7 +193,7 @@ def test_get_info_optional_inputs_displayed_correctly(capture_logs):
         default_quota=1000,
         min_quota_consumed=500,
         quota_units="units",
-        max_quota_consumed=5000
+        max_quota_consumed=5000,
     )
     test_pipeline = PipelineWithDetails(
         pipeline_name=test_pipeline_name,
