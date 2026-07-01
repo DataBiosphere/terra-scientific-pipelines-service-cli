@@ -11,6 +11,16 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [4.0.6] - 2026-06-29
+
+### Changed
+- The `terralab pipelines details <PIPELINE_NAME>` command has been updated to display the maximum number of samples that can be submitted in a single job.
+
+## [4.0.4] - 2026-06-24
+
+### Changed
+- The `terralab quota <PIPELINE_NAME>` command has been updated to include a link to learn more about how to purchase additional quota.
+
 ## [4.0.0] - 2026-05-19
 
 ### Changed
