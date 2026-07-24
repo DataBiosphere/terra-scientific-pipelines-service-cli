@@ -480,6 +480,7 @@ def test_details_succeeded_job_with_delivery(capture_logs, unstub):
     assert "Data Delivery:" in capture_logs.text
     assert "Status: Succeeded" in capture_logs.text
     assert f"Destination: {test_delivery_destination}" in capture_logs.text
+    assert "Citation: Here's how you cite this!" in capture_logs.text
 
     unstub()
 
