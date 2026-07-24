@@ -341,6 +341,7 @@ def test_details_running_job(capture_logs, unstub):
     assert TEST_INPUT_VALUE in capture_logs.text
     assert f"{OPTIONAL_INPUT_NAME}:" in capture_logs.text
     assert user_defined_optional_input_value in capture_logs.text
+    assert "Citation: This is how you cite this!" not in capture_logs.text
     unstub()
 
 
@@ -446,6 +447,7 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "output2:" in capture_logs.text
     assert "gs://bucket/path/to/output2" in capture_logs.text
     assert "Data Delivery:" not in capture_logs.text
+    assert "Citation: This is how you cite this!" in capture_logs.text
 
     unstub()
 
@@ -515,6 +517,7 @@ def test_details_failed_job_with_input_size(capture_logs, unstub):
     assert "Inputs:" in capture_logs.text
     assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
     assert TEST_INPUT_VALUE in capture_logs.text
+    assert "Citation: This is how you cite this!" not in capture_logs.text
 
     unstub()
 
