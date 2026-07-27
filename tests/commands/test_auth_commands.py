@@ -2,7 +2,7 @@
 
 import pytest
 from click.testing import CliRunner
-from mockito import when, verify
+from mockito import verify, when
 
 from terralab.commands import auth_commands
 from tests.conftest import capture_logs

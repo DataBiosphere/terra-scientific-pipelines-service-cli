@@ -3,13 +3,13 @@
 import uuid
 
 import pytest
-from mockito import when, mock, verify, times
+from mockito import mock, times, verify, when
 from teaspoons_client import (
     ApiException,
+    JobControl,
     PreparePipelineRunRequestBodyV2,
     StartDataDeliveryRequestBody,
     StartPipelineRunRequestBody,
-    JobControl,
 )
 
 from terralab.logic import pipeline_runs_logic

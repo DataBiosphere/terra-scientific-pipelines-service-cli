@@ -1,9 +1,11 @@
-import logging
-import requests
-import os
 import json
-from datetime import datetime, date
-from importlib.metadata import version, PackageNotFoundError
+import logging
+import os
+from datetime import date, datetime
+from importlib.metadata import PackageNotFoundError, version
+
+import requests
+import tzlocal
 
 from terralab.config import load_config
 
@@ -20,6 +22,11 @@ def get_version_info_file_path() -> str:
     return version_info_file_path
 
 
+def get_todays_date_local_timezone() -> date:
+    """Get today's date in the local timezone."""
+    return datetime.now().astimezone(tzlocal.get_localzone()).date()
+
+
 def get_last_version_check_date() -> date | None:
     """Get the date when the latest version was last checked."""
     info_file = get_version_info_file_path()
@@ -27,9 +34,11 @@ def get_last_version_check_date() -> date | None:
         if os.path.exists(info_file):
             with open(info_file, "r") as f:
                 data = json.load(f)
-                return datetime.strptime(
-                    data.get("last_version_check", ""), "%Y-%m-%d"
-                ).date()
+                return (
+                    datetime.strptime(data.get("last_version_check", ""), "%Y-%m-%d")
+                    .astimezone(tzlocal.get_localzone())
+                    .date()
+                )
     except (ValueError, KeyError):
         # Delete the potentially corrupted file
         try:
@@ -44,11 +53,11 @@ def get_last_version_check_date() -> date | None:
 def update_last_version_check_date() -> None:
     """Update the version check field with today's date."""
     info_file = get_version_info_file_path()
-    data = {"last_version_check": date.today().strftime("%Y-%m-%d")}
+    data = {"last_version_check": get_todays_date_local_timezone().strftime("%Y-%m-%d")}
     try:
         with open(info_file, "w") as f:
             json.dump(data, f)
-    except IOError:
+    except OSError:
         # Silently fail if we can't write to the info file
         LOGGER.debug("Failed to write to version info file")
 
@@ -56,7 +65,7 @@ def update_last_version_check_date() -> None:
 def check_version() -> None:
     """Check for new version and show warning only once per day."""
     last_version_check = get_last_version_check_date()
-    today = date.today()
+    today = get_todays_date_local_timezone()
 
     if last_version_check == today:
         LOGGER.debug(

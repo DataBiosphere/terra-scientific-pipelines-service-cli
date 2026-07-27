@@ -1,9 +1,10 @@
 # tests/commands/test_account_commands.py
 
+from urllib.error import URLError
+
 import pytest
 from click.testing import CliRunner
-from mockito import when, verify
-from urllib.error import URLError
+from mockito import verify, when
 
 from terralab.commands import account_commands
 from tests.conftest import capture_logs

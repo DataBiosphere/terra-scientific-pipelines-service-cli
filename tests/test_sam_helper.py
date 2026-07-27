@@ -1,8 +1,9 @@
 # tests/test_sam_helper.py
 
-import pytest
-from mockito import mock, when, verify
 from urllib.error import URLError
+
+import pytest
+from mockito import mock, verify, when
 
 from terralab import sam_helper
 from terralab.constants import SUPPORT_EMAIL
@@ -29,7 +30,7 @@ def test_get_user_proxy_group_success(mock_cli_config):
     when(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
 
     mock_response = mock()
-    when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode("utf-8"))
+    when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode())
     when(mock_response).__enter__().thenReturn(mock_response)
     when(mock_response).__exit__(None, None, None).thenReturn(None)
     when(sam_helper.urllibrequest).urlopen(...).thenReturn(mock_response)
@@ -44,7 +45,7 @@ def test_get_user_proxy_group_builds_correct_url(mock_cli_config):
     when(sam_helper)._get_email_from_token(TEST_ACCESS_TOKEN).thenReturn(TEST_EMAIL)
 
     mock_response = mock()
-    when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode("utf-8"))
+    when(mock_response).read().thenReturn(f'"{TEST_PROXY_GROUP}"'.encode())
     when(mock_response).__enter__().thenReturn(mock_response)
     when(mock_response).__exit__(None, None, None).thenReturn(None)
 

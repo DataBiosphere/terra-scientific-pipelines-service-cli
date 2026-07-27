@@ -1,10 +1,11 @@
 # tests/test_log.py
 
+import logging
+
 import pytest
 
-import logging
-from terralab.log import RetryMessageFilter
 from terralab import log
+from terralab.log import RetryMessageFilter
 
 
 def test_indented():

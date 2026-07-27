@@ -7,7 +7,7 @@ import urllib
 
 import pytest
 from jwt import ExpiredSignatureError
-from mockito import when, mock, verify, times
+from mockito import mock, times, verify, when
 from oauth2_cli_auth._timeout import TimeoutException
 
 from terralab import auth_helper
@@ -89,7 +89,7 @@ def test_get_or_refresh_access_token_valid_refresh(mock_cli_config):
 
     # mock a successful call to refresh_tokens
     when(auth_helper).refresh_tokens(mock_cli_config, test_refresh_token).thenReturn(
-        tuple([test_new_access_token, test_new_refresh_token])
+        (test_new_access_token, test_new_refresh_token)
     )
 
     when(auth_helper)._save_local_token("mock_access_token_file", test_new_access_token)
@@ -124,7 +124,7 @@ def test_get_or_refresh_access_token_failed_refresh(mock_cli_config):
 
     # mock a successful call to get new tokens via browser
     when(auth_helper).get_tokens_with_browser_open(mock_cli_config).thenReturn(
-        tuple([test_new_access_token, test_new_refresh_token])
+        (test_new_access_token, test_new_refresh_token)
     )
 
     when(auth_helper)._save_local_token("mock_access_token_file", test_new_access_token)
@@ -153,7 +153,7 @@ def test_get_or_refresh_access_token_none_found(mock_cli_config):
 
     # mock a successful call to get new tokens via browser
     when(auth_helper).get_tokens_with_browser_open(mock_cli_config).thenReturn(
-        tuple([test_new_access_token, test_new_refresh_token])
+        (test_new_access_token, test_new_refresh_token)
     )
 
     when(auth_helper)._save_local_token("mock_access_token_file", test_new_access_token)

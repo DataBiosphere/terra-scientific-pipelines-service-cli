@@ -1,6 +1,7 @@
 # config.py
 
 import logging
+import sys
 from dataclasses import dataclass
 from importlib import resources as impresources
 from pathlib import Path
@@ -36,7 +37,7 @@ def load_config(
         config = dotenv_values(importable_config_file)
     except ModuleNotFoundError as e:
         LOGGER.error(f"Failed to load config from {package}/{config_file}: {e}")
-        exit(1)
+        sys.exit(1)
     LOGGER.debug(f"Imported config with values: {config}")
 
     if (server_port := config.get("SERVER_PORT")) is None:

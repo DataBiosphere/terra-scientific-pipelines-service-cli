@@ -10,6 +10,7 @@ import pytest
 from mockito import mock, when
 from requests.exceptions import HTTPError
 from urllib3.exceptions import MaxRetryError
+
 from terralab import utils
 from terralab.utils import handle_api_exceptions
 from tests.conftest import capture_logs

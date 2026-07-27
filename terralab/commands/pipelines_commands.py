@@ -5,10 +5,10 @@ import logging
 import click
 
 from terralab.log import (
+    add_blankline_before,
+    format_table,
     format_table_no_header,
     pad_column,
-    format_table,
-    add_blankline_before,
 )
 from terralab.logic import pipelines_logic
 from terralab.utils import handle_api_exceptions

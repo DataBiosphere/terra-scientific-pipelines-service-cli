@@ -86,5 +86,13 @@ exclude = [
 line-length = 88
 indent-width = 4
 
+[tool.ruff.lint]
+ignore = [
+    # BLE001: this CLI intentionally catches broad exceptions at top-level command
+    # boundaries so it can log a friendly error and exit cleanly instead of showing
+    # a raw traceback.
+    "BLE001",
+]
+
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/**/test_*.py" = ["F811", "F401"]  # see https://github.com/astral-sh/ruff/issues/10662

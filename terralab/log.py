@@ -5,7 +5,7 @@ import logging
 import colorlog
 from tabulate import tabulate
 
-from terralab.constants import FAILED_KEY, SUCCEEDED_KEY, RUNNING_KEY, PREPARING_KEY
+from terralab.constants import FAILED_KEY, PREPARING_KEY, RUNNING_KEY, SUCCEEDED_KEY
 
 
 def configure_logging(debug: bool) -> None:

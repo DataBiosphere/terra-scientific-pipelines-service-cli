@@ -1,8 +1,9 @@
 # tests/logic/test_account_logic.py
 
+from urllib.error import URLError
+
 import pytest
 from mockito import mock, when
-from urllib.error import URLError
 
 from terralab.logic import account_logic
 
