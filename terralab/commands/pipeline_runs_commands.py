@@ -20,6 +20,7 @@ from terralab.constants import (
 )
 from terralab.log import (
     add_blankline_before,
+    format_markdown_string_with_click_style,
     format_status,
     format_table_with_status,
     indented,
@@ -174,7 +175,11 @@ def details(job_id: str) -> None:
 
     if response.pipeline_run_report.citation:
         LOGGER.info(
-            add_blankline_before(f"Citation: {response.pipeline_run_report.citation}")
+            add_blankline_before(
+                format_markdown_string_with_click_style(
+                    f"Citation: {response.pipeline_run_report.citation}"
+                )
+            )
         )
 
 

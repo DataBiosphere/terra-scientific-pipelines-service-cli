@@ -2,6 +2,7 @@
 
 import logging
 
+import click
 import colorlog
 from tabulate import tabulate
 
@@ -42,6 +43,16 @@ def pad_column(first_string: str, column_width: int = 20) -> str:
 
 def add_blankline_before(string: str) -> str:
     return f"\n{string}"
+
+
+def format_markdown_string_with_click_style(markdown_string: str) -> str:
+    """Format a markdown string with click style for terminal output. Currently supports italic formatting for text enclosed in *."""
+    # Find substrings enclosed in * and apply click.style with italic=True
+    parts = markdown_string.split("*")
+    return "".join(
+        click.style(part, italic=True) if i % 2 == 1 else part
+        for i, part in enumerate(parts)
+    )
 
 
 DEFAULT_MAX_COL_SIZE = 60
