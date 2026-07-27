@@ -11,10 +11,13 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
-## [4.0.11] - 2026-07-24
+## [4.1.0] - 2026-07-27
 
 ### Added
-- The `terralab jobs details <JOB_ID>` command returns the citation that should be used if the data produced by this job are used in a publication. The command has also been slightly reformatted for clarity.
+- The `terralab jobs details <JOB_ID>` command returns the citation that should be used if the data produced by this job are used in a publication. 
+
+### Changed
+- The `terralab jobs details <JOB_ID>` command has been reformatted for clarity, including removing the "Details:" header.
 
 ## [4.0.6] - 2026-06-29
 
