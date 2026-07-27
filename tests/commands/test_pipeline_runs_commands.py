@@ -341,6 +341,7 @@ def test_details_running_job(capture_logs, unstub):
     assert TEST_INPUT_VALUE in capture_logs.text
     assert f"{OPTIONAL_INPUT_NAME}:" in capture_logs.text
     assert user_defined_optional_input_value in capture_logs.text
+    assert "Citation: Here's how you cite this!" not in capture_logs.text
     unstub()
 
 
@@ -446,6 +447,7 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "output2:" in capture_logs.text
     assert "gs://bucket/path/to/output2" in capture_logs.text
     assert "Data Delivery:" not in capture_logs.text
+    assert "Citation: Here's how you cite this!" in capture_logs.text
 
     unstub()
 
@@ -478,6 +480,7 @@ def test_details_succeeded_job_with_delivery(capture_logs, unstub):
     assert "Data Delivery:" in capture_logs.text
     assert "Status: Succeeded" in capture_logs.text
     assert f"Destination: {test_delivery_destination}" in capture_logs.text
+    assert "Citation: Here's how you cite this!" in capture_logs.text
 
     unstub()
 
@@ -515,6 +518,7 @@ def test_details_failed_job_with_input_size(capture_logs, unstub):
     assert "Inputs:" in capture_logs.text
     assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
     assert TEST_INPUT_VALUE in capture_logs.text
+    assert "Citation: Here's how you cite this!" not in capture_logs.text
 
     unstub()
 
@@ -733,6 +737,7 @@ def create_test_pipeline_run_response(
             "output2": {"value": "gs://bucket/path/to/output2"},
         }
         pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
+        pipeline_run_report.citation = "Here's how you cite this!"
 
     if include_input_size:
         pipeline_run_report.input_size = TEST_INPUT_SIZE

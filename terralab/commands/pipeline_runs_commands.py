@@ -20,6 +20,7 @@ from terralab.constants import (
 )
 from terralab.log import (
     add_blankline_before,
+    format_markdown_string_with_click_style,
     format_status,
     format_table_with_status,
     indented,
@@ -136,56 +137,56 @@ def details(job_id: str) -> None:
     if response.job_report.status == FAILED_KEY:
         LOGGER.info(add_blankline_before(SUPPORT_EMAIL_TEXT))
 
-    LOGGER.info(add_blankline_before("Details:"))
     LOGGER.info(
-        indented(f"Pipeline Name: {response.pipeline_run_report.pipeline_name}")
-    )
-    LOGGER.info(
-        indented(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
-    )
-    LOGGER.info(indented(f"Description: {response.job_report.description}"))
-
-    LOGGER.info(indented("Inputs:"))
-    for input_name, input_value in response.pipeline_run_report.user_inputs.items():
-        LOGGER.info(indented(f"{input_name}:", n_spaces=4))
-        LOGGER.info(indented(input_value, n_spaces=6))
-
-    if response.pipeline_run_report.input_size:
-        LOGGER.info(
-            indented(
-                f"Input size: {response.pipeline_run_report.input_size} {response.pipeline_run_report.input_size_units}"
-            )
+        add_blankline_before(
+            f"Pipeline Name: {response.pipeline_run_report.pipeline_name}"
         )
+    )
+    LOGGER.info(f"Pipeline Version: {response.pipeline_run_report.pipeline_version}")
+    LOGGER.info(f"Description: {response.job_report.description}")
 
     LOGGER.info(
-        indented(
-            f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}"
-        )
+        f"Submitted: {format_timestamp(response.job_report.submitted, timestamp_format)}"
     )
     if response.job_report.completed:
         LOGGER.info(
-            indented(
-                f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}"
-            )
+            f"Completed: {format_timestamp(response.job_report.completed, timestamp_format)}"
         )
         quota_consumed = response.pipeline_run_report.quota_consumed or 0
-        LOGGER.info(indented(f"Quota Consumed: {quota_consumed}"))
+        LOGGER.info(f"Quota Consumed: {quota_consumed}")
+
+    LOGGER.info(add_blankline_before("Inputs:"))
+    for input_name, input_value in response.pipeline_run_report.user_inputs.items():
+        LOGGER.info(indented(f"{input_name}:"))
+        LOGGER.info(indented(input_value, n_spaces=4))
+
+    if response.pipeline_run_report.input_size:
+        LOGGER.info(
+            f"Input size: {response.pipeline_run_report.input_size} {response.pipeline_run_report.input_size_units}"
+        )
 
     if response.job_report.status == SUCCEEDED_KEY:
         display_outputs(response.pipeline_run_report.outputs)
         LOGGER.info(
-            indented(
-                f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
-            )
+            f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
         )
 
     display_data_delivery(response.pipeline_run_report.data_delivery_report)
+
+    if response.pipeline_run_report.citation:
+        LOGGER.info(
+            add_blankline_before(
+                format_markdown_string_with_click_style(
+                    f"Citation: {response.pipeline_run_report.citation}"
+                )
+            )
+        )
 
 
 def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
     if not outputs:
         return
-    LOGGER.info(indented("Outputs:"))
+    LOGGER.info(add_blankline_before("Outputs:"))
     for (
         output_name,
         output_value,
@@ -194,16 +195,11 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
             output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
         else:
             output_size_string = ""
-        LOGGER.info(
-            indented(
-                f"{output_name}:",
-                n_spaces=4,
-            )
-        )
+        LOGGER.info(indented(f"{output_name}:"))
         LOGGER.info(
             indented(
                 f"{output_value['value']} {output_size_string}",
-                n_spaces=6,
+                n_spaces=4,
             )
         )
 

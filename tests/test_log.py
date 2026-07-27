@@ -35,6 +35,23 @@ def test_add_blankline_before():
     assert log.add_blankline_before("") == "\n"
 
 
+def test_format_markdown_string_with_click_style():
+    # Test italic formatting
+    input_string = "This is *italic* text."
+    expected_output = "This is \x1b[3mitalic\x1b[0m text."
+    assert log.format_markdown_string_with_click_style(input_string) == expected_output
+
+    # Test multiple italic sections
+    input_string = "*Italic* and *more italic*."
+    expected_output = "\x1b[3mItalic\x1b[0m and \x1b[3mmore italic\x1b[0m."
+    assert log.format_markdown_string_with_click_style(input_string) == expected_output
+
+    # Test no formatting
+    input_string = "No formatting here."
+    expected_output = "No formatting here."
+    assert log.format_markdown_string_with_click_style(input_string) == expected_output
+
+
 format_table_with_status_testdata = [
     # rows, status_key, expected_substrings or None if error
     (  # no status in headers
