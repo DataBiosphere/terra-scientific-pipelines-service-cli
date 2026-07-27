@@ -2527,8 +2527,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-<<<<<<< HEAD
 content-hash = "a12ae2da9b463f18ae592c8c96484c51ee166cbd0f7991224c475148d9474756"
-=======
-content-hash = "34afd1fca607436fc681a5aaad3ea1f59ed7d6bc20c8f4f31d71d32c321760be"
->>>>>>> d038794 (TSPS-1073 Add citation to pipeline details output)
