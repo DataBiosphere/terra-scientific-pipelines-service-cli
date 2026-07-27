@@ -733,6 +733,7 @@ def create_test_pipeline_run_response(
             "output2": {"value": "gs://bucket/path/to/output2"},
         }
         pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
+        pipeline_run_report.citation = "Here's how you cite this!"
 
     if include_input_size:
         pipeline_run_report.input_size = TEST_INPUT_SIZE
