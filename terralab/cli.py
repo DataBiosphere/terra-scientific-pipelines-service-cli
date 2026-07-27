@@ -2,31 +2,40 @@
 
 import collections
 import logging
-from typing import Optional, MutableMapping, Any
+from collections.abc import MutableMapping
+from typing import Any
 
 import click
 
 from terralab import __version__, log
-from terralab.version_utils import check_version
 from terralab.commands.account_commands import account
-from terralab.commands.auth_commands import logout, login_with_oauth, login
+from terralab.commands.auth_commands import login, login_with_oauth, logout
 from terralab.commands.pipeline_runs_commands import (
-    submit,
-    download,
     deliver,
+    download,
     jobs,
+    submit,
+)
+from terralab.commands.pipeline_runs_commands import (
     details as details_jobs,
+)
+from terralab.commands.pipeline_runs_commands import (
     list_command as list_jobs,
 )
 from terralab.commands.pipelines_commands import (
-    pipelines,
-    list_command as list_pipelines,
     details as details_pipelines,
 )
+from terralab.commands.pipelines_commands import (
+    list_command as list_pipelines,
+)
+from terralab.commands.pipelines_commands import (
+    pipelines,
+)
 from terralab.commands.quotas_commands import quota
+from terralab.version_utils import check_version
 
 # Context settings for commands, for overwriting some click defaults
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,11 +45,11 @@ class OrderedGroup(click.Group):
 
     def __init__(
         self,
-        name: Optional[str] = None,
-        commands: Optional[MutableMapping[str, click.Command]] = None,
+        name: str | None = None,
+        commands: MutableMapping[str, click.Command] | None = None,
         **kwargs: Any
     ) -> None:
-        super(OrderedGroup, self).__init__(name, commands, **kwargs)
+        super().__init__(name, commands, **kwargs)
         #: the registered subcommands by their exported names.
         self.commands = commands or collections.OrderedDict()
 

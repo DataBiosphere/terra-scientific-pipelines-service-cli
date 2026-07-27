@@ -4,9 +4,9 @@ import logging
 
 import click
 
-from terralab.log import indented, add_blankline_before
-from terralab.logic import quotas_logic
 from terralab.constants import QUOTAS_SUPPORT_ARTICLE_URL
+from terralab.log import add_blankline_before, indented
+from terralab.logic import quotas_logic
 from terralab.utils import handle_api_exceptions
 
 LOGGER = logging.getLogger(__name__)

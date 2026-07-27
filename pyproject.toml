@@ -14,7 +14,7 @@ terralab = "terralab.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-terra-scientific-pipelines-service-api-client = "7.0.4"
+terra-scientific-pipelines-service-api-client = "7.0.8"
 python-dotenv = "^1.0.1"
 click = "^8.1.7"
 colorlog = "^6.9.0"
@@ -34,7 +34,7 @@ pytest = ">=8.3.3,<10.0.0"
 pytest-cov = ">=3,<8"
 mockito = ">=1.4.0"
 pytest-mockito = ">=0.0.4"
-ruff = ">=0.7.1,<0.16.0"
+ruff = ">=0.7.1,<0.17.0"
 black = ">=24.8,<27.0"
 mypy = ">=1.7,<3.0"
 types-tabulate = ">=0.9,<0.11"
@@ -85,6 +85,14 @@ exclude = [
 # Same as Black.
 line-length = 88
 indent-width = 4
+
+[tool.ruff.lint]
+ignore = [
+    # BLE001: this CLI intentionally catches broad exceptions at top-level command
+    # boundaries so it can log a friendly error and exit cleanly instead of showing
+    # a raw traceback.
+    "BLE001",
+]
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/**/test_*.py" = ["F811", "F401"]  # see https://github.com/astral-sh/ruff/issues/10662

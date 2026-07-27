@@ -20,8 +20,8 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 from terralab.client import ClientWrapper
 from terralab.log import indented
 from terralab.utils import (
-    upload_file_with_signed_url,
     download_files_with_signed_urls,
+    upload_file_with_signed_url,
 )
 
 LOGGER = logging.getLogger(__name__)

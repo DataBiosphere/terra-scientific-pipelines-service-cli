@@ -4,14 +4,14 @@ import os
 import tempfile
 
 import pytest
-from mockito import when, mock, verify
+from mockito import mock, verify, when
 from teaspoons_client import ApiException, GetPipelineDetailsRequestBody
 
 from terralab.constants import (
-    STRING_TYPE_KEY,
     FILE_TYPE_KEY,
     INTEGER_TYPE_KEY,
     STRING_ARRAY_TYPE_KEY,
+    STRING_TYPE_KEY,
 )
 from terralab.logic import pipelines_logic
 from tests.conftest import capture_logs

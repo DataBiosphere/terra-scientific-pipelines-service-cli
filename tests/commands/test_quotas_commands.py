@@ -1,8 +1,8 @@
 # tests/commands/test_quotas_commands.py
 
 from click.testing import CliRunner
-from mockito import when, verify
-from teaspoons_client import QuotaWithDetails, ApiException
+from mockito import verify, when
+from teaspoons_client import ApiException, QuotaWithDetails
 
 from terralab.commands import quotas_commands
 from tests.conftest import capture_logs

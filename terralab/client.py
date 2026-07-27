@@ -1,7 +1,7 @@
 # client.py
 
 import logging
-from typing import Any
+from types import TracebackType
 
 from teaspoons_client import ApiClient, Configuration  # type: ignore[attr-defined]
 
@@ -30,6 +30,11 @@ class ClientWrapper:
         access_token = get_or_refresh_access_token(cli_config)
         return _get_api_client(access_token, cli_config.teaspoons_api_url)
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    def __exit__(
+        self,
+        typ: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         # no action needed
         pass

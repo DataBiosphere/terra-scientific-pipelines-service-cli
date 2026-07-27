@@ -6,7 +6,7 @@ import jwt
 
 from terralab.auth_helper import get_or_refresh_access_token
 from terralab.config import load_config
-from terralab.sam_helper import get_user_proxy_group, _get_email_from_token
+from terralab.sam_helper import _get_email_from_token, get_user_proxy_group
 
 LOGGER = logging.getLogger(__name__)
 

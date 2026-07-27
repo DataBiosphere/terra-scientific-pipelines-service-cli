@@ -1,8 +1,9 @@
 # tests/test_config
 
+from pathlib import Path
+
 import pytest
 from mockito import mock, when
-from pathlib import Path
 
 from terralab import config
 

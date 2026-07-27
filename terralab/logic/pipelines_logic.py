@@ -1,6 +1,7 @@
 # logic/pipelines_logic.py
 
 import logging
+import sys
 from typing import Any
 
 from teaspoons_client import (  # type: ignore[attr-defined]
@@ -16,7 +17,7 @@ from terralab.constants import (
     FILE_TYPE_KEY,
     GCS_PREFIX,
 )
-from terralab.log import join_lines, add_blankline_before
+from terralab.log import add_blankline_before, join_lines
 from terralab.utils import is_valid_local_file, validate_file_size
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ def validate_pipeline_inputs(
 
     if errors:
         LOGGER.error(add_blankline_before(join_lines(errors)))
-        exit(1)
+        sys.exit(1)
 
 
 def _validate_single_input(

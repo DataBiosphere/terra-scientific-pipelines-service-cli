@@ -1,13 +1,16 @@
-from terralab.version_utils import (
-    get_version_info_file_path,
-    check_version,
-    update_last_version_check_date,
-    get_last_version_check_date,
-)
-from unittest.mock import patch, MagicMock, mock_open
-from datetime import date
-import requests
 import json
+from datetime import date, datetime
+from unittest.mock import MagicMock, mock_open, patch
+
+import requests
+import tzlocal
+
+from terralab.version_utils import (
+    check_version,
+    get_last_version_check_date,
+    get_version_info_file_path,
+    update_last_version_check_date,
+)
 
 
 @patch("terralab.version_utils.get_last_version_check_date")
@@ -76,19 +79,22 @@ def test_check_version_newer_available(
 def test_check_version_already_checked_today(mock_get_date):
     """Test that version check is skipped if already checked today"""
     # Mock that we already checked today
-    mock_get_date.return_value = date.today()
+    mock_get_date.return_value = (
+        datetime.now().astimezone(tzlocal.get_localzone()).date()
+    )
 
-    with patch("terralab.version_utils.LOGGER") as mock_logger:
-        with patch("terralab.version_utils.version") as mock_version:
-            check_version()
+    with patch("terralab.version_utils.LOGGER") as mock_logger, patch(
+        "terralab.version_utils.version"
+    ) as mock_version:
+        check_version()
 
-            # Should log debug message about skipping
-            mock_logger.debug.assert_called_once()
-            debug_call = mock_logger.debug.call_args[0][0]
-            assert "Skipping version check" in debug_call
+        # Should log debug message about skipping
+        mock_logger.debug.assert_called_once()
+        debug_call = mock_logger.debug.call_args[0][0]
+        assert "Skipping version check" in debug_call
 
-            # Should not call version() since we skip early
-            mock_version.assert_not_called()
+        # Should not call version() since we skip early
+        mock_version.assert_not_called()
 
 
 @patch("terralab.version_utils.get_last_version_check_date")
@@ -143,14 +149,14 @@ def test_check_version_package_not_found(mock_version, mock_get_date):
 
 @patch("terralab.version_utils.get_version_info_file_path")
 @patch("builtins.open", new_callable=mock_open)
-@patch("terralab.version_utils.date")
+@patch("terralab.version_utils.get_todays_date_local_timezone")
 def test_update_last_version_check_date_success(
-    mock_date, mock_file_open, mock_get_path
+    mock_get_todays_date, mock_file_open, mock_get_path
 ):
     """Test successful update of version check date"""
-    # Mock today's date
+    # Mock date
     test_date = date(2023, 10, 15)
-    mock_date.today.return_value = test_date
+    mock_get_todays_date.return_value = test_date
 
     # Mock file path
     mock_file_path = "/test/path/version_info.json"
@@ -170,7 +176,7 @@ def test_update_last_version_check_date_success(
 
 
 @patch("terralab.version_utils.get_version_info_file_path")
-@patch("builtins.open", side_effect=IOError("Permission denied"))
+@patch("builtins.open", side_effect=OSError("Permission denied"))
 def test_update_last_version_check_date_io_error(mock_file_open, mock_get_path):
     """Test that IOError is handled gracefully"""
     # Mock file path
@@ -209,7 +215,7 @@ def test_get_last_version_check_date_success(
     result = get_last_version_check_date()
 
     # Should return the parsed date
-    expected_date = date(2023, 10, 15)
+    expected_date = datetime(2023, 10, 15, tzinfo=tzlocal.get_localzone()).date()
     assert result == expected_date
 
     # Verify file operations

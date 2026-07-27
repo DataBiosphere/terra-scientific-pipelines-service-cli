@@ -1,7 +1,8 @@
 # commands/auth_commands.py
 
-import click
 import logging
+
+import click
 
 from terralab.logic import auth_logic
 

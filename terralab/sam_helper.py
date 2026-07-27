@@ -1,7 +1,8 @@
 # sam_helper.py
 
 import logging
-from urllib import request as urllibrequest, error as urlliberror
+from urllib import error as urlliberror
+from urllib import request as urllibrequest
 
 import jwt
 

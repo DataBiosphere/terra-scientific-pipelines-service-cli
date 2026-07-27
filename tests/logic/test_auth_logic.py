@@ -1,7 +1,7 @@
 # tests/logic/test_auth_logic.py
 
 import pytest
-from mockito import when, mock, verify
+from mockito import mock, verify, when
 
 from terralab.logic import auth_logic
 

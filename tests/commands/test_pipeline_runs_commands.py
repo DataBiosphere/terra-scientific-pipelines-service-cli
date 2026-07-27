@@ -5,12 +5,12 @@ import uuid
 
 import pytest
 from click.testing import CliRunner
-from mockito import when, verify, mock
+from mockito import mock, verify, when
 from teaspoons_client import (
     AsyncPipelineRunResponseV2,
     DataDeliveryReport,
-    JobReport,
     ErrorReport,
+    JobReport,
     PipelineOutputDefinition,
     PipelineQuota,
     PipelineRunReportV2,
@@ -20,9 +20,9 @@ from teaspoons_client import (
 
 from terralab.commands import pipeline_runs_commands
 from terralab.constants import (
-    SUPPORT_EMAIL_TEXT,
-    SUCCEEDED_KEY,
     FAILED_KEY,
+    SUCCEEDED_KEY,
+    SUPPORT_EMAIL_TEXT,
 )
 from terralab.utils import format_timestamp
 from tests.conftest import capture_logs
@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 # common constants for tests
 TEST_PIPELINE_NAME = "test_pipeline"
 TEST_INPUT_KEY = "--foo_key"
-TEST_INPUT_KEY_STRIPPED = TEST_INPUT_KEY.lstrip("--")
+TEST_INPUT_KEY_STRIPPED = TEST_INPUT_KEY.removeprefix("--")
 TEST_INPUT_VALUE = "foo_value"
 TEST_INPUTS_TUPLE = (TEST_INPUT_KEY, TEST_INPUT_VALUE)
 TEST_INPUTS_DICT = {TEST_INPUT_KEY_STRIPPED: TEST_INPUT_VALUE}
@@ -309,7 +309,7 @@ def test_details_running_job(capture_logs, unstub):
     test_job_id_str = str(TEST_JOB_ID)
     user_defined_optional_input_value = "user_value"
     test_inputs_dict_with_optional = {
-        TEST_INPUT_KEY.lstrip("--"): TEST_INPUT_VALUE,
+        TEST_INPUT_KEY.removeprefix("--"): TEST_INPUT_VALUE,
         OPTIONAL_INPUT_NAME: user_defined_optional_input_value,
     }
 
@@ -696,9 +696,9 @@ def create_test_pipeline_run_response(
     job_id: str,
     status: str,
     include_input_size: bool = False,
-    error_message: str = None,
-    delivery_status: str = None,
-    delivery_destination: str = None,
+    error_message: str | None = None,
+    delivery_status: str | None = None,
+    delivery_destination: str | None = None,
 ) -> AsyncPipelineRunResponseV2:
     """Helper function for creating AsyncPipelineRunResponse objects used in tests"""
     status_code = 200
@@ -754,7 +754,7 @@ def create_test_pipeline_with_inputs() -> PipelineWithDetails:
     """Helper function for creating PipelineWithDetails objects used in tests"""
     test_pipeline_name = TEST_PIPELINE_NAME
     test_input_definition = PipelineUserProvidedInputDefinition(
-        name=TEST_INPUT_KEY.lstrip("--"),
+        name=TEST_INPUT_KEY.removeprefix("--"),
         displayName="Test Input",
         type="test_type",
         description="test input description",

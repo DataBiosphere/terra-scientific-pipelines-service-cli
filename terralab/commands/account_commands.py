@@ -4,7 +4,7 @@ import logging
 
 import click
 
-from terralab.log import format_table_no_header, indented, add_blankline_before
+from terralab.log import add_blankline_before, format_table_no_header, indented
 from terralab.logic import account_logic
 
 LOGGER = logging.getLogger(__name__)

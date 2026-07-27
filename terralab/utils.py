@@ -5,6 +5,7 @@ import json
 import logging
 import math
 import os
+import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
@@ -18,9 +19,9 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from urllib3.exceptions import MaxRetryError
 
 from terralab.constants import (
+    GCS_PREFIX,
     MAX_FILE_UPLOAD_SIZE_BYTES,
     SUPPORT_EMAIL_TEXT,
-    GCS_PREFIX,
 )
 from terralab.log import add_blankline_before
 
@@ -40,14 +41,14 @@ def handle_api_exceptions(func: Any) -> Any:
                         "User not found in Terra. Are you sure you've registered? Visit https://services.terra.bio to register."
                     )
                 )
-                exit(1)
+                sys.exit(1)
             elif e.status == 401 and "401 Unauthorized" in str(message):
                 LOGGER.error(
                     add_blankline_before(
                         f"Something went wrong with authorization. Please run 'terralab logout' and then try again.\n{SUPPORT_EMAIL_TEXT}"
                     )
                 )
-                exit(1)
+                sys.exit(1)
             reason = f" ({e.reason})" if e.reason else ""
             formatted_message = (
                 f"API call failed with status code {e.status}{reason}: {message}"
@@ -56,7 +57,7 @@ def handle_api_exceptions(func: Any) -> Any:
             )
             LOGGER.error(add_blankline_before(formatted_message))
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
-            exit(1)
+            sys.exit(1)
         except MaxRetryError:
             LOGGER.error(
                 add_blankline_before(
@@ -65,11 +66,11 @@ def handle_api_exceptions(func: Any) -> Any:
                 )
             )
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             LOGGER.error(add_blankline_before(str(e)))
             LOGGER.error(add_blankline_before(SUPPORT_EMAIL_TEXT))
-            exit(1)
+            sys.exit(1)
 
     return wrapper
 
@@ -156,7 +157,7 @@ def process_value(raw_value: str) -> str | list[str]:
 
 def is_valid_local_file(local_file_path: str) -> bool:
     """Validate that the provided local file path exists."""
-    return True if os.path.exists(local_file_path) else False
+    return bool(os.path.exists(local_file_path))
 
 
 def validate_file_size(file_path: str) -> str | None:
@@ -175,10 +176,10 @@ def convert_file_size_to_human_readable(size_bytes: int) -> str:
     if size_bytes == 0:
         return "0 B"
     size_name = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB")
-    i = int(math.floor(math.log(size_bytes, 1024)))
+    i = math.floor(math.log(size_bytes, 1024))
     p = math.pow(1024, i)
     s = round(size_bytes / p, 1) if p > 1 else size_bytes
-    return "%s %s" % (s, size_name[i])
+    return f"{s} {size_name[i]}"
 
 
 ## upload and download methods
@@ -208,7 +209,7 @@ def upload_file_with_signed_url(local_file_path: str, signed_url: str) -> None:
         LOGGER.info(add_blankline_before(f"File '{local_file_path}' upload complete"))
     except Exception as e:
         LOGGER.error(add_blankline_before(f"Error uploading file: {e}"))
-        exit(1)
+        sys.exit(1)
 
 
 class SignedUrlDownload:
@@ -233,19 +234,18 @@ def download_with_pbar(download: SignedUrlDownload) -> str:
     Return the local file path of the downloaded file."""
     download_block_size = 8192  # https://stackoverflow.com/questions/48719893/why-is-the-block-size-for-python-httplibs-reads-hard-coded-as-8192-bytes
 
-    with open(download.local_file_path, "wb") as file:
-        with tqdm(
-            total=download.total_size_bytes,
-            unit="B",
-            unit_scale=True,
-            desc=f"Downloading {download.file_name}",
-            bar_format=PROGRESS_BAR_FORMAT,
-            leave=False,  # remove progress bar when complete
-            dynamic_ncols=True,  # play nice with window resizing
-        ) as progress_bar:
-            for data in download.response.iter_content(download_block_size):
-                file.write(data)
-                progress_bar.update(len(data))
+    with open(download.local_file_path, "wb") as file, tqdm(
+        total=download.total_size_bytes,
+        unit="B",
+        unit_scale=True,
+        desc=f"Downloading {download.file_name}",
+        bar_format=PROGRESS_BAR_FORMAT,
+        leave=False,  # remove progress bar when complete
+        dynamic_ncols=True,  # play nice with window resizing
+    ) as progress_bar:
+        for data in download.response.iter_content(download_block_size):
+            file.write(data)
+            progress_bar.update(len(data))
 
     with logging_redirect_tqdm():  # log without interfering with progress bars
         LOGGER.info(f"Downloading {download.file_name}: complete")
@@ -271,7 +271,7 @@ def download_files_with_signed_urls(
             )
     except Exception as e:
         LOGGER.error(add_blankline_before(f"Error downloading files: {e}"))
-        exit(1)
+        sys.exit(1)
 
     LOGGER.info(add_blankline_before("All downloads complete"))
     return downloaded_file_paths
@@ -285,7 +285,7 @@ def validate_job_id(job_id: str) -> uuid.UUID:
         return uuid.UUID(job_id)
     except (TypeError, ValueError):
         LOGGER.error("Error: JOB_ID must be a valid uuid.")
-        exit(1)
+        sys.exit(1)
 
 
 def validate_gcs_path(gcs_path: str) -> str:
@@ -296,7 +296,7 @@ def validate_gcs_path(gcs_path: str) -> str:
         LOGGER.error(
             f"Error: '{gcs_path}' is not a valid GCS path. GCS paths must start with '{GCS_PREFIX}' followed by a bucket name."
         )
-        exit(1)
+        sys.exit(1)
     return gcs_path
 
 

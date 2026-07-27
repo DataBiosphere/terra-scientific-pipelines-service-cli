@@ -1,17 +1,17 @@
 # tests/commands/test_pipelines_commands.py
 
 import logging
-import pytest
 
+import pytest
 from click.testing import CliRunner
-from mockito import when, verify
+from mockito import verify, when
 from teaspoons_client import (
+    ApiException,
     Pipeline,
     PipelineOutputDefinition,
-    PipelineWithDetails,
-    PipelineUserProvidedInputDefinition,
-    ApiException,
     PipelineQuota,
+    PipelineUserProvidedInputDefinition,
+    PipelineWithDetails,
 )
 
 from terralab.commands import pipelines_commands

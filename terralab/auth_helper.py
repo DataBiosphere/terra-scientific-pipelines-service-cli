@@ -3,10 +3,12 @@
 import base64
 import logging
 import os
-import typing as t
+import sys
 import webbrowser
 from collections.abc import Callable
-from prompt_toolkit import prompt
+from urllib import error as urlliberror
+from urllib import parse as urllibparse
+from urllib import request as urllibrequest
 
 import jwt
 from oauth2_cli_auth import (
@@ -15,7 +17,7 @@ from oauth2_cli_auth import (
     get_auth_url,
 )
 from oauth2_cli_auth._urllib_util import _load_json
-from urllib import parse as urllibparse, request as urllibrequest, error as urlliberror
+from prompt_toolkit import prompt
 
 from terralab.config import CliConfig
 
@@ -97,7 +99,7 @@ def get_tokens_with_custom_redirect(cli_config: CliConfig) -> tuple[str, str]:
         response_dict = _exchange_code_for_response(client_info, code)
     except urlliberror.URLError:
         LOGGER.error(f"Failed to get tokens with code {code}")
-        exit(1)
+        sys.exit(1)
 
     return response_dict["access_token"], response_dict["refresh_token"]
 
@@ -185,7 +187,7 @@ def _exchange_code_for_response(
     # validate grant_type input. note this is not determined by user input.
     if grant_type not in ["authorization_code", "refresh_token"]:
         LOGGER.error(f"Authentication error: Unexpected grant_type {grant_type}")
-        exit(1)
+        sys.exit(1)
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -241,7 +243,7 @@ def _clear_local_token(token_file: str) -> None:
         LOGGER.debug("No local token found to clean up")
 
 
-def _load_local_token(token_file: str, validate: bool = True) -> t.Optional[str]:
+def _load_local_token(token_file: str, validate: bool = True) -> str | None:
     try:
         with open(token_file, "r") as f:
             token = f.read()
