@@ -200,11 +200,17 @@ def display_outputs(outputs: dict[str, Any] | None) -> None:
             display_single_output_value(output_value)
 
 
+def get_output_size_in_bytes(output_value: Any) -> Any:
+    return output_value.get("metadata", {}).get("sizeInBytes", 0)
+
+
 def display_single_output_value(output_value: Any) -> None:
-    if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
-        output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
-    else:
-        output_size_string = ""
+    size_in_bytes = get_output_size_in_bytes(output_value)
+    output_size_string = (
+        f"({convert_file_size_to_human_readable(size_in_bytes)})"
+        if size_in_bytes
+        else ""
+    )
     LOGGER.info(
         indented(
             f"{output_value['value']} {output_size_string}",
@@ -216,15 +222,11 @@ def display_single_output_value(output_value: Any) -> None:
 def display_total_output_file_size(outputs: dict[str, Any] | None) -> None:
     if not outputs:
         return
-    total_size_in_bytes = 0
-    for output_value in outputs.values():
-        if isinstance(output_value, list):
-            for item in output_value:
-                if "metadata" in item and "sizeInBytes" in item["metadata"]:
-                    total_size_in_bytes += item["metadata"]["sizeInBytes"]
-        else:
-            if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
-                total_size_in_bytes += output_value["metadata"]["sizeInBytes"]
+    total_size_in_bytes = sum(
+        get_output_size_in_bytes(item)
+        for output_value in outputs.values()
+        for item in (output_value if isinstance(output_value, list) else [output_value])
+    )
 
     if total_size_in_bytes > 0:
         LOGGER.info(
