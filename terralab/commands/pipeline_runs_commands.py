@@ -183,7 +183,7 @@ def details(job_id: str) -> None:
         )
 
 
-def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
+def display_outputs(outputs: dict[str, Any] | None) -> None:
     if not outputs:
         return
     LOGGER.info(add_blankline_before("Outputs:"))
@@ -191,17 +191,29 @@ def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
         output_name,
         output_value,
     ) in outputs.items():
-        if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
-            output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
-        else:
-            output_size_string = ""
         LOGGER.info(indented(f"{output_name}:"))
-        LOGGER.info(
-            indented(
-                f"{output_value['value']} {output_size_string}",
-                n_spaces=4,
-            )
+        if isinstance(output_value, list):
+            for i, item in enumerate(output_value):
+                display_single_output(item)
+        else:
+            display_single_output(output_value)
+
+
+def display_single_output(output_value: Any) -> None:
+    LOGGER.info(
+        indented(
+            process_file_output_with_size_string(output_value),
+            n_spaces=4,
         )
+    )
+
+
+def process_file_output_with_size_string(output_value: dict[str, Any]) -> str:
+    if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
+        output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
+    else:
+        output_size_string = ""
+    return f"{output_value['value']} {output_size_string}"
 
 
 def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:

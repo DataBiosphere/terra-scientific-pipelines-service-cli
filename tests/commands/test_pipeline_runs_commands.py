@@ -446,6 +446,9 @@ def test_details_succeeded_job(capture_logs, unstub):
     )  # input size is 1048576 bytes
     assert "output2:" in capture_logs.text
     assert "gs://bucket/path/to/output2" in capture_logs.text
+    assert "output3:" in capture_logs.text
+    assert "gs://bucket/path/to/output3 (2.0 KiB)" in capture_logs.text
+    assert "gs://bucket/path/to/output3_2 (4.0 KiB)" in capture_logs.text
     assert "Data Delivery:" not in capture_logs.text
     assert "Citation: Here's how you cite this!" in capture_logs.text
 
@@ -735,6 +738,16 @@ def create_test_pipeline_run_response(
                 "metadata": {"sizeInBytes": 1048576},
             },
             "output2": {"value": "gs://bucket/path/to/output2"},
+            "output3": [
+                {
+                    "value": "gs://bucket/path/to/output3",
+                    "metadata": {"sizeInBytes": 2048},
+                },
+                {
+                    "value": "gs://bucket/path/to/output3_2",
+                    "metadata": {"sizeInBytes": 4096},
+                },
+            ],
         }
         pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
         pipeline_run_report.citation = "Here's how you cite this!"
