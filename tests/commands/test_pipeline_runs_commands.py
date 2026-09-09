@@ -449,6 +449,7 @@ def test_details_succeeded_job(capture_logs, unstub):
     assert "output3:" in capture_logs.text
     assert "gs://bucket/path/to/output3 (2.0 KiB)" in capture_logs.text
     assert "gs://bucket/path/to/output3_2 (4.0 KiB)" in capture_logs.text
+    assert "Total Output File Size: 1.0 MiB" in capture_logs.text
     assert "Data Delivery:" not in capture_logs.text
     assert "Citation: Here's how you cite this!" in capture_logs.text
 

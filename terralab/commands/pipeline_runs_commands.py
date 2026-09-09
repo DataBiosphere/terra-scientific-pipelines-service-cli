@@ -167,6 +167,7 @@ def details(job_id: str) -> None:
 
     if response.job_report.status == SUCCEEDED_KEY:
         display_outputs(response.pipeline_run_report.outputs)
+        display_total_output_file_size(response.pipeline_run_report.outputs)
         LOGGER.info(
             f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
         )
@@ -210,6 +211,25 @@ def display_single_output_value(output_value: Any) -> None:
             n_spaces=4,
         )
     )
+
+
+def display_total_output_file_size(outputs: dict[str, Any] | None) -> None:
+    if not outputs:
+        return
+    total_size_in_bytes = 0
+    for output_value in outputs.values():
+        if isinstance(output_value, list):
+            for item in output_value:
+                if "metadata" in item and "sizeInBytes" in item["metadata"]:
+                    total_size_in_bytes += item["metadata"]["sizeInBytes"]
+        else:
+            if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
+                total_size_in_bytes += output_value["metadata"]["sizeInBytes"]
+
+    if total_size_in_bytes > 0:
+        LOGGER.info(
+            f"Total Output File Size: {convert_file_size_to_human_readable(total_size_in_bytes)}"
+        )
 
 
 def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:
