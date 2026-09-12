@@ -190,7 +190,7 @@ def details(job_id: str) -> None:
         )
 
 
-def display_outputs(outputs: dict[str, Any]) -> None:
+def display_outputs(outputs: dict[str, dict[str, Any] | list[dict[str, Any]]]) -> None:
     LOGGER.info(add_blankline_before("Outputs:"))
     for (
         output_name,
@@ -204,11 +204,14 @@ def display_outputs(outputs: dict[str, Any]) -> None:
             display_single_output_value(output_value)
 
 
-def get_output_size_in_bytes(output_value: dict[str, dict[str, Any]]) -> int | None:
-    return output_value.get("metadata", {}).get("sizeInBytes", None)
+def get_output_size_in_bytes(output_value: dict[str, Any]) -> int | None:
+    size_in_bytes: int | None = output_value.get("metadata", {}).get(
+        "sizeInBytes", None
+    )
+    return size_in_bytes
 
 
-def display_single_output_value(output_value: Any) -> None:
+def display_single_output_value(output_value: dict[str, Any]) -> None:
     size_in_bytes = get_output_size_in_bytes(output_value)
     output_size_string = (
         f"({convert_file_size_to_human_readable(size_in_bytes)})"
@@ -230,7 +233,9 @@ def is_not_none(val: int | None) -> TypeGuard[int]:
     return val is not None
 
 
-def display_total_output_file_size(outputs: dict[str, Any]) -> None:
+def display_total_output_file_size(
+    outputs: dict[str, dict[str, Any] | list[dict[str, Any]]],
+) -> None:
     all_output_sizes: list[int] = list(
         filter(
             is_not_none,  # remove None values from the list of output sizes
