@@ -224,6 +224,7 @@ def display_single_output_value(output_value: Any) -> None:
 
 
 def is_not_none(val: int | None) -> TypeGuard[int]:
+    """Check if the given value is not None, returning True if it is an int. Used as a TypeGuard for filtering out None values to guarantee that the resulting filtered list contains only ints."""
     return val is not None
 
 
