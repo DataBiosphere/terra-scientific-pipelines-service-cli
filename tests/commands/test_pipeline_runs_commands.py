@@ -22,6 +22,7 @@ from terralab.commands import pipeline_runs_commands
 from terralab.constants import (
     FAILED_KEY,
     SUCCEEDED_KEY,
+    SUPPORT_EMAIL,
     SUPPORT_EMAIL_TEXT,
 )
 from terralab.utils import format_timestamp
@@ -446,6 +447,161 @@ def test_details_succeeded_job(capture_logs, unstub):
     )  # input size is 1048576 bytes
     assert "output2:" in capture_logs.text
     assert "gs://bucket/path/to/output2" in capture_logs.text
+    assert "output3:" in capture_logs.text
+    assert "gs://bucket/path/to/output3 (2.0 KiB)" in capture_logs.text
+    assert "gs://bucket/path/to/output3_2 (4.0 KiB)" in capture_logs.text
+    assert "Total Output File Size: 1.0 MiB" in capture_logs.text
+    assert "Data Delivery:" not in capture_logs.text
+    assert "Citation: Here's how you cite this!" in capture_logs.text
+
+    unstub()
+
+
+def test_details_succeeded_job_no_outputs(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY, include_input_size=True
+    )
+    test_response.pipeline_run_report.outputs = None
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 1
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" in capture_logs.text
+    assert f"Quota Consumed: {TEST_QUOTA_CONSUMED}" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
+    assert "Outputs:" not in capture_logs.text
+    assert (
+        f"No outputs found for successful run. Please contact support at {SUPPORT_EMAIL}."
+        in capture_logs.text
+    )
+
+    unstub()
+
+
+def test_details_succeeded_job_output_sizes_zero(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY, include_input_size=True
+    )
+
+    test_response.pipeline_run_report.outputs = {
+        "output1": {
+            "value": "gs://bucket/path/to/output1",
+            "metadata": {"sizeInBytes": 0},
+        },
+        "output2": [
+            {"value": "gs://bucket/path/to/output2", "metadata": {"sizeInBytes": 0}}
+        ],
+        "output3": [
+            {"value": "gs://bucket/path/to/output3", "metadata": {"sizeInBytes": 0}},
+            {"value": "gs://bucket/path/to/output3_2", "metadata": {"sizeInBytes": 0}},
+        ],
+    }
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" in capture_logs.text
+    assert "File Download Expiration:" in capture_logs.text
+    assert f"Quota Consumed: {TEST_QUOTA_CONSUMED}" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
+    assert "Outputs:" in capture_logs.text
+    assert "output1:" in capture_logs.text
+    assert "gs://bucket/path/to/output1 (0 B)" in capture_logs.text
+    assert "output2:" in capture_logs.text
+    assert "gs://bucket/path/to/output2 (0 B)" in capture_logs.text
+    assert "output3:" in capture_logs.text
+    assert "gs://bucket/path/to/output3 (0 B)" in capture_logs.text
+    assert "gs://bucket/path/to/output3_2 (0 B)" in capture_logs.text
+    assert "Total Output File Size: 0 B" in capture_logs.text
+    assert "Data Delivery:" not in capture_logs.text
+    assert "Citation: Here's how you cite this!" in capture_logs.text
+
+    unstub()
+
+
+def test_details_succeeded_job_without_output_sizes(capture_logs, unstub):
+    runner = CliRunner()
+
+    test_job_id_str = str(TEST_JOB_ID)
+
+    test_response = create_test_pipeline_run_response(
+        TEST_PIPELINE_NAME, test_job_id_str, SUCCEEDED_KEY, include_input_size=True
+    )
+    test_response.pipeline_run_report.outputs = {
+        "output1": {"value": "gs://bucket/path/to/output1"},
+        "output2": [{"value": "gs://bucket/path/to/output2", "metadata": {}}],
+        "output3": [
+            {"value": "gs://bucket/path/to/output3"},
+            {"value": "gs://bucket/path/to/output3_2"},
+        ],
+    }
+
+    when(pipeline_runs_commands.pipelines_logic).get_pipeline_info(
+        TEST_PIPELINE_NAME, TEST_PIPELINE_VERSION
+    ).thenReturn(create_test_pipeline_with_inputs())
+    when(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    ).thenReturn(test_response)
+
+    result = runner.invoke(pipeline_runs_commands.jobs, ["details", test_job_id_str])
+
+    assert result.exit_code == 0
+    verify(pipeline_runs_commands.pipeline_runs_logic).get_pipeline_run_status(
+        TEST_JOB_ID
+    )
+    assert "Status:" in capture_logs.text
+    assert "Completed:" in capture_logs.text
+    assert "File Download Expiration:" in capture_logs.text
+    assert f"Quota Consumed: {TEST_QUOTA_CONSUMED}" in capture_logs.text
+    assert f"Input size: {TEST_INPUT_SIZE} {TEST_INPUT_UNIT}" in capture_logs.text
+    assert "Inputs:" in capture_logs.text
+    assert f"{TEST_INPUT_KEY_STRIPPED}:" in capture_logs.text
+    assert TEST_INPUT_VALUE in capture_logs.text
+    assert "Outputs:" in capture_logs.text
+    assert "output1:" in capture_logs.text
+    assert "gs://bucket/path/to/output1" in capture_logs.text
+    assert "output2:" in capture_logs.text
+    assert "gs://bucket/path/to/output2" in capture_logs.text
+    assert "output3:" in capture_logs.text
+    assert "gs://bucket/path/to/output3" in capture_logs.text
+    assert "gs://bucket/path/to/output3_2" in capture_logs.text
+    assert "Total Output File Size:" not in capture_logs.text
     assert "Data Delivery:" not in capture_logs.text
     assert "Citation: Here's how you cite this!" in capture_logs.text
 
@@ -735,6 +891,16 @@ def create_test_pipeline_run_response(
                 "metadata": {"sizeInBytes": 1048576},
             },
             "output2": {"value": "gs://bucket/path/to/output2"},
+            "output3": [
+                {
+                    "value": "gs://bucket/path/to/output3",
+                    "metadata": {"sizeInBytes": 2048},
+                },
+                {
+                    "value": "gs://bucket/path/to/output3_2",
+                    "metadata": {"sizeInBytes": 4096},
+                },
+            ],
         }
         pipeline_run_report.quota_consumed = TEST_QUOTA_CONSUMED
         pipeline_run_report.citation = "Here's how you cite this!"

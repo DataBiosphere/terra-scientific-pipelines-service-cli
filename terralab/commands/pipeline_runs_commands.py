@@ -3,7 +3,7 @@
 import logging
 import sys
 import uuid
-from typing import Any
+from typing import Any, TypeGuard
 
 import click
 from teaspoons_client import (  # type: ignore[attr-defined]
@@ -15,6 +15,7 @@ from teaspoons_client import (  # type: ignore[attr-defined]
 from terralab.constants import (
     FAILED_KEY,
     SUCCEEDED_KEY,
+    SUPPORT_EMAIL,
     SUPPORT_EMAIL_TEXT,
     TERMS_OF_SERVICE_URL,
 )
@@ -166,7 +167,13 @@ def details(job_id: str) -> None:
         )
 
     if response.job_report.status == SUCCEEDED_KEY:
+        if not response.pipeline_run_report.outputs:
+            LOGGER.error(
+                f"No outputs found for successful run. Please contact support at {SUPPORT_EMAIL}."
+            )
+            sys.exit(1)
         display_outputs(response.pipeline_run_report.outputs)
+        display_total_output_file_size(response.pipeline_run_report.outputs)
         LOGGER.info(
             f"File Download Expiration: {format_timestamp(response.pipeline_run_report.output_expiration_date, timestamp_format)}"
         )
@@ -183,25 +190,69 @@ def details(job_id: str) -> None:
         )
 
 
-def display_outputs(outputs: dict[str, dict[str, Any]] | None) -> None:
-    if not outputs:
-        return
+def display_outputs(outputs: dict[str, dict[str, Any] | list[dict[str, Any]]]) -> None:
     LOGGER.info(add_blankline_before("Outputs:"))
     for (
         output_name,
         output_value,
     ) in outputs.items():
-        if "metadata" in output_value and "sizeInBytes" in output_value["metadata"]:
-            output_size_string = f"({convert_file_size_to_human_readable(output_value['metadata']['sizeInBytes'])})"
-        else:
-            output_size_string = ""
         LOGGER.info(indented(f"{output_name}:"))
-        LOGGER.info(
-            indented(
-                f"{output_value['value']} {output_size_string}",
-                n_spaces=4,
-            )
+        if isinstance(output_value, list):
+            for item in output_value:
+                display_single_output_value(item)
+        else:
+            display_single_output_value(output_value)
+
+
+def get_output_size_in_bytes(output_value: dict[str, Any]) -> int | None:
+    size_in_bytes: int | None = output_value.get("metadata", {}).get(
+        "sizeInBytes", None
+    )
+    return size_in_bytes
+
+
+def display_single_output_value(output_value: dict[str, Any]) -> None:
+    size_in_bytes = get_output_size_in_bytes(output_value)
+    output_size_string = (
+        f"({convert_file_size_to_human_readable(size_in_bytes)})"
+        if size_in_bytes is not None
+        else ""
+    )
+    LOGGER.info(
+        indented(
+            f"{output_value['value']} {output_size_string}",
+            n_spaces=4,
         )
+    )
+
+
+def is_not_none(val: int | None) -> TypeGuard[int]:
+    """Check if the given value is not None, returning True if it is an int. Used as a
+    TypeGuard for filtering out None values to guarantee that the resulting filtered
+    list contains only ints."""
+    return val is not None
+
+
+def display_total_output_file_size(
+    outputs: dict[str, dict[str, Any] | list[dict[str, Any]]],
+) -> None:
+    all_output_sizes: list[int] = list(
+        filter(
+            is_not_none,  # remove None values from the list of output sizes
+            (
+                get_output_size_in_bytes(item)
+                for output_value in outputs.values()
+                for item in (
+                    output_value if isinstance(output_value, list) else [output_value]
+                )
+            ),
+        )
+    )
+    if all_output_sizes == []:  # we have no output sizes to display
+        return
+    LOGGER.info(
+        f"Total Output File Size: {convert_file_size_to_human_readable(sum(all_output_sizes))}"
+    )
 
 
 def display_data_delivery(data_delivery_report: DataDeliveryReport | None) -> None:
