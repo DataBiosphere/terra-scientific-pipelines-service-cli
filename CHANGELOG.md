@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [4.1.1] - 2026-09-11
+
+### Added
+- The `terralab jobs details` command now supports Array[File] pipeline outputs.
+
 ## [4.1.0] - 2026-07-27
 
 ### Added
