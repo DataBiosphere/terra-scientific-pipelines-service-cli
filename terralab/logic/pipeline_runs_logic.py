@@ -206,9 +206,16 @@ def get_signed_urls_and_download_pipeline_run_outputs(
     )
     response = get_pipeline_run_output_signed_urls(job_id)
 
-    signed_urls_dict: dict[str, str] = response.output_signed_urls
-    # extract output signed urls and download them all
-    signed_url_list: list[str] = list(signed_urls_dict.values())
+    signed_urls_dict: dict[str, str | list[str]] = response.output_signed_urls
+    # extract output signed urls and download them all;
+    # values may be a single signed url (scalar File output) or a list of
+    # signed urls (Array[File] output), so flatten into one list of urls
+    signed_url_list: list[str] = []
+    for value in signed_urls_dict.values():
+        if isinstance(value, list):
+            signed_url_list.extend(value)
+        else:
+            signed_url_list.append(value)
     downloaded_files: list[str] = download_files_with_signed_urls(
         local_destination, signed_url_list
     )
