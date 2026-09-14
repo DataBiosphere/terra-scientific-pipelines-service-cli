@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file with the fol
 ### Fixed
 - Bug fixes.
 
+## [4.1.10] - 2026-09-14
+
+### Added
+- The `terralab download` command now supports downloading Array[File] pipeline outputs.
+
 ## [4.1.1] - 2026-09-11
 
 ### Added
