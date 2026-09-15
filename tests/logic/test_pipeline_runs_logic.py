@@ -461,6 +461,46 @@ def test_get_signed_urls_and_download_pipeline_run_outputs(capture_logs):
     )
 
 
+def test_get_signed_urls_and_download_pipeline_run_outputs_array_file(capture_logs):
+    test_job_id = uuid.uuid4()
+    test_local_destination = "local/path"
+
+    # mock signed url response containing both a scalar File output and an
+    # Array[File] output (list of signed urls)
+    test_scalar_output_name = "output1"
+    test_scalar_signed_url = "signed_url_1"
+    test_array_output_name = "output2"
+    test_array_signed_urls = ["signed_url_2", "signed_url_3"]
+    pipeline_run_output_signed_urls = {
+        test_scalar_output_name: test_scalar_signed_url,
+        test_array_output_name: test_array_signed_urls,
+    }
+    pipeline_run_output_signed_urls_response = mock(
+        {"output_signed_urls": pipeline_run_output_signed_urls, "status": 200}
+    )
+
+    when(pipeline_runs_logic).get_pipeline_run_output_signed_urls(
+        test_job_id
+    ).thenReturn(pipeline_run_output_signed_urls_response)
+
+    expected_flattened_urls = [test_scalar_signed_url] + test_array_signed_urls
+    expected_downloaded_file_paths = ["file1", "file2", "file3"]
+    when(pipeline_runs_logic).download_files_with_signed_urls(
+        test_local_destination, expected_flattened_urls
+    ).thenReturn(expected_downloaded_file_paths)
+
+    pipeline_runs_logic.get_signed_urls_and_download_pipeline_run_outputs(
+        test_job_id, test_local_destination
+    )
+    assert f"Getting output signed URLs for job {test_job_id}" in capture_logs.text
+    assert "All file outputs downloaded" in capture_logs.text
+
+    verify(pipeline_runs_logic).get_pipeline_run_output_signed_urls(test_job_id)
+    verify(pipeline_runs_logic).download_files_with_signed_urls(
+        test_local_destination, expected_flattened_urls
+    )
+
+
 def test_get_result_and_download_pipeline_run_outputs_error():
     test_job_id = uuid.uuid4()
     test_local_destination = "local/path"
