@@ -109,6 +109,8 @@ To test changes in Teaspoons locally against your local CLI, do the following on
 ```
 3. Run `poetry update`. (This is equivalent to running `poetry lock` and then `poetry install`.)
 
+Note: Make sure your local poetry version is up to date with what is in `poetry.lock` file. You can check your poetry version with `poetry --version`. 
+
 Your CLI should now be importing the `teaspoons_client` via the local code rather than the package from PyPi.
 
 Note: if the locally generated code is not being imported as expected, try deleting and recreating the poetry virtual environment by running the following:
