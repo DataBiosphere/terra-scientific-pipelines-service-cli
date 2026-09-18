@@ -60,7 +60,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "array_imputation",
@@ -87,7 +86,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-array-imputation-v2-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "array_imputation",
@@ -114,7 +112,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "low_pass_imputation",
@@ -141,7 +138,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-low-pass-imputation-v1-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "low_pass_imputation",
@@ -168,7 +164,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-sv-imputation-v1-cloud-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "sv_imputation",
@@ -195,7 +190,6 @@ jobs:
           wait-for-completion-timeout: 2h # default timeout is 1 hour, but this e2e test can sometimes take around 1.5 hours to complete
           inputs: '{
               "run-name": "teaspoons-${{inputs.env-name}}-live-env-e2e-cli-test-sv-imputation-v1-local-inputs-${{ github.run_id }}-${{ github.run_attempt }}",
-              "e2e-test-version-ref": "${{ inputs.e2e-test-version-ref }}",
               "cli-version-ref": "${{ needs.init-github-context-and-params-gen.outputs.cli-version-ref }}",
               "env-name": "${{inputs.env-name}}",
               "pipeline-name": "sv_imputation",
