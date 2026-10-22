@@ -145,5 +145,4 @@ jobs:
     with:
       cli-version-ref: ${{ needs.tag-job.outputs.checkout-ref }}
       version-template: 'dev'
-      pipeline-version: '1'
       e2e-test-version-ref: 'main'
