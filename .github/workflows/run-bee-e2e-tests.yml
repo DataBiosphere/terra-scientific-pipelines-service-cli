@@ -18,8 +18,9 @@ on:
         required: true
         type: string
       pipeline-version:
-        description: 'version of the pipeline to run'
-        required: true
+        description: 'version of the pipeline to run. defaults to 3.'
+        default: '3'
+        required: false
         type: string
   workflow_dispatch:
     inputs:
@@ -50,9 +51,9 @@ on:
           - staging
           - prod
       pipeline-version:
-        description: 'version of the pipeline to run. default to 3.'
+        description: 'version of the pipeline to run. defaults to 3.'
         default: '3'
-        required: true
+        required: false
         type: string
 
 env:
