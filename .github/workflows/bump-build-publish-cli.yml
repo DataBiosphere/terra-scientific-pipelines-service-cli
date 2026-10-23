@@ -24,6 +24,14 @@ on:
         default: 'main'
 
 jobs:
+  log-workflow-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write inputs to job summary
+        uses: Databiosphere/github-actions/actions/write-json-to-job-summary@master
+        with:
+          inputs-json: ${{ toJSON(inputs) }}
+
   bump-check:
     runs-on: ubuntu-latest
     outputs:
